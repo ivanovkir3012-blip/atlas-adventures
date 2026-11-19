@@ -552,3 +552,13 @@ html,body{background:#111315!important}
 .category-0,.category-1{background-position:center 18%;}
 .stat-art{width:88px;height:88px;flex-basis:88px;object-fit:contain;background:#10251c;border-radius:12px;}
 @media(max-width:620px){.category-tile{height:205px}.category-0,.category-1{background-position:center 16%}.stat-art{width:66px;height:66px;flex-basis:66px}}
+
+/* Final stat emblem clarity: show the original large PNG artwork at a readable size. */
+.stat-grid-home .stat-card{min-height:132px;gap:12px;padding:12px 14px;}
+.stat-grid-home .stat-art{display:block;width:104px;height:104px;min-width:104px;flex:0 0 104px;object-fit:contain;object-position:center;background:transparent;border:0;border-radius:0;box-shadow:none;image-rendering:auto;}
+@media(max-width:620px){
+ .stat-grid-home .stat-card{min-height:126px;gap:8px;padding:8px 7px;}
+ .stat-grid-home .stat-art{width:84px;height:84px;min-width:84px;flex-basis:84px;}
+ .stat-grid-home .stat-card small{font-size:9px;line-height:1.25;}
+ .stat-grid-home .stat-card strong{font-size:23px;}
+}
