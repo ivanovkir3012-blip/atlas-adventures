@@ -114,3 +114,20 @@ input:focus,select:focus,textarea:focus{border-color:#d0ae68}
 .media-existing select{max-width:65%}
 .outing-map{margin:0 0 18px}
 @media(max-width:620px){.form-pair{flex-wrap:wrap}.form-pair label{flex:1 1 42%}.media-existing{align-items:flex-start;flex-direction:column}.media-existing select{max-width:100%;width:100%}.wide-modal{padding:18px}}
+
+.report-modal{width:min(850px,100%);max-height:90vh;overflow:auto;padding:27px;border:1px solid #c6a562;border-radius:13px;background:#11281e;box-shadow:0 20px 80px #0009}
+.report-modal .modal-head{margin-bottom:10px}.report-modal .modal-head h2{font-size:30px}
+.report-place{color:#b9c5b6;font-size:12px;margin:5px 0}
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 20px}
+.danger-button{border:1px solid #b86e5e;border-radius:6px;background:#542b25;color:#f0c2b7;padding:9px 12px;font-size:10px;font-weight:700}
+.report-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0 22px}
+.report-media{height:170px;overflow:hidden;border-radius:7px;background:#081810}
+.report-media img,.report-media video{width:100%;height:100%;object-fit:cover}
+.report-block{padding:17px 0;border-top:1px solid #b99b5c35}
+.report-block h3{font:700 18px 'Playfair Display',Georgia,serif;color:#e5d5ad;margin:0 0 10px}
+.report-block p{font-size:12px;color:#d0d8ca;line-height:1.7;margin:7px 0 0;white-space:pre-wrap}
+.detail-chips{display:flex;flex-wrap:wrap;gap:8px}
+.detail-chips span{padding:8px 10px;border:1px solid #b99b5c44;border-radius:6px;color:#d0d8ca;font-size:11px}
+.detail-chips b{color:#e0c27b}.timeline-list>div{display:flex;gap:14px;padding:7px 0;border-bottom:1px solid #ffffff10}
+.timeline-list time{min-width:52px;color:#d5b975;font-size:11px}.timeline-list p{margin:0}
+@media(max-width:620px){.report-modal{padding:18px}.report-gallery{grid-template-columns:repeat(2,1fr)}.report-media{height:125px}.report-modal .modal-head h2{font-size:23px}}
