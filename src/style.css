@@ -593,3 +593,32 @@ input,select,textarea{background:#fffdf7!important;color:#302d25!important;borde
 .app-footer{border-color:#b99a55!important;color:#806323!important}
 .app-footer small{color:#777064!important}
 .connection{color:#58734c!important}
+
+
+/* SUNSET THEME — warm dusk gradient, apricot light and muted gold */
+:root{color-scheme:light;background:#f2b38d;color:#3d2b28}
+html,body{min-height:100%;background:#e9a07f!important;color:#3d2b28!important}
+body{background:linear-gradient(155deg,#f7d2a4 0%,#efad8b 38%,#d98278 72%,#8e6672 100%) fixed!important}
+#root,.app-shell{min-height:100vh;background:transparent!important}
+.topbar{background:rgba(255,246,229,.88)!important;border-color:#c28b53!important;backdrop-filter:blur(12px);box-shadow:0 3px 18px #613d3020}
+.brand,.brand-name{color:#70452f!important}
+.main-nav button{color:#694c43!important}
+.main-nav button:hover,.main-nav button.selected{color:#8d4d35!important}
+.main-nav button.selected{border-bottom-color:#c17b43!important}
+.dashboard-hero{border-color:#d3a36a!important;box-shadow:0 12px 30px #5a302b35!important}
+.category-tile{border-color:#d3a36a!important;box-shadow:0 5px 16px #5a302b28!important}
+.dashboard-section,.stat-card,.outing-row,.record-card,.setting-card,.outing-modal,.report-modal{background:linear-gradient(145deg,#fff8eb,#f7e3d1)!important;border-color:#cb986b!important;color:#3d2b28!important;box-shadow:0 5px 18px #603d3020}
+.stat-grid-home .stat-card{background:linear-gradient(145deg,#fff8eb,#f4dfcf)!important;border-color:#c99568!important}
+.stat-card strong,.stat-grid-home .stat-card strong{color:#75452f!important}
+.stat-card small,.stat-grid-home .stat-card small{color:#765d50!important}
+.section-title h2,.section-page h1,.record-card h2,.setting-card h3,.form-section h3{color:#633f32!important}
+.outing-info h3,.outing-info p,.outing-result,.record-card p,.setting-card p{color:#634b42!important}
+.text-button,.outline-button{color:#875333!important}
+.outline-button{border-color:#c28b53!important;background:#fff6e9!important}
+input,select,textarea{background:#fffaf2!important;color:#3d2b28!important;border-color:#d0a078!important}
+input:focus,select:focus,textarea:focus{outline-color:#c27b50!important}
+.coming-panel,.empty-state{background:#fff5e8!important;color:#634b42!important;border-color:#c99568!important}
+.app-footer{border-color:#c28b53!important;color:#704a39!important}
+.app-footer small{color:#765f56!important}
+.connection{color:#58734c!important}
+.modal-shade{background:#35252bcc!important}
