@@ -42,9 +42,10 @@ export default function App() {
   useEffect(() => {
     let active = true;
     const urls: Record<string, string> = {};
-    Promise.all(rows.filter(row => row.coverMediaId).map(async row => {
+    Promise.all(rows.map(async row => {
       const items = await getMediaForOuting(row.id);
-      const cover = items.find(item => item.id === row.coverMediaId && item.type === 'image');
+      const cover = items.find(item => item.id === row.coverMediaId && item.type === 'image')
+        || items.find(item => item.type === 'image');
       if (cover?.blob) urls[row.id] = URL.createObjectURL(cover.blob);
     })).then(() => { if (active) setCoverUrls(urls); else Object.values(urls).forEach(URL.revokeObjectURL); });
     return () => { active = false; Object.values(urls).forEach(URL.revokeObjectURL); };
@@ -141,7 +142,7 @@ export default function App() {
     if (!items.length) return <div className="recent-empty"><span>✧</span><div><b>Первое приключение ещё впереди</b><small>Добавь выезд — здесь появится его фотография и история.</small></div><button className="outline-button" onClick={openNew}>Добавить</button></div>;
     return <div className="recent-list">{items.map(row => <button className="recent-line" key={row.id} onClick={() => setReport(row)}>
       <div className="recent-photo" style={{backgroundImage:`linear-gradient(0deg,#071a13aa,transparent 75%),url(${coverUrls[row.id] || pics[row.category]})`}} />
-      <div className="recent-copy"><small>{row.category}</small><b>{row.title}</b></div><span className="recent-date">▦ &nbsp;{row.date}</span><span className="recent-place">● &nbsp;{row.place || 'Место не указано'}</span><i>›</i>
+      <div className="recent-copy"><small>{row.category} · {row.date}</small><b>{row.title || 'Выезд без названия'}</b><span className="recent-place">⌖ {row.place || 'Место не указано'}</span></div><i>›</i>
     </button>)}</div>;
   }
 
@@ -217,7 +218,7 @@ export default function App() {
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
           <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /><strong>{stat.value}</strong></div>)}</div>
         </section>
-        <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
+        <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent([...rows].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4))}</section>
 
       </>}
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
