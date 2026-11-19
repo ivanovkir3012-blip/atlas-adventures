@@ -704,8 +704,9 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
 }
 
 
-/* Hunting category: stretch the user's goose-hunting photo across the entire tile frame. */
-.category-0{background-size:100% 100%,100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;}
+/* Restore the original portrait display for the goose-hunting photo. */
+.category-0{background-size:cover,auto 100%!important;background-position:center,center top!important;background-repeat:no-repeat!important;background-color:#10251c!important;}
+@media(max-width:620px){.category-0{background-size:cover,auto 100%!important;background-position:center,center top!important;}}
 
 
 /* Latest four outings: a clear photo card with category, outing title and location. */
