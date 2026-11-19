@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { all, put, del, Cat, Outing } from './db';
+import { all, put, del, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
@@ -11,15 +11,19 @@ const pics: Record<Cat, string> = {
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const heroImage = 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=90';
+const emptyDetails = { geese: '', ducks: '', otherGame: '', result: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
   const [rows, setRows] = useState<Outing[]>([]);
   const [modal, setModal] = useState(false);
   const [edit, setEdit] = useState<Outing | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
   const [online, setOnline] = useState(navigator.onLine);
+  const [showMap, setShowMap] = useState(false);
   const refresh = () => all().then(setRows);
 
   useEffect(() => {
@@ -27,11 +31,13 @@ export default function App() {
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
-    return () => {
-      removeEventListener('online', update);
-      removeEventListener('offline', update);
-    };
+    return () => { removeEventListener('online', update); removeEventListener('offline', update); };
   }, []);
+
+  useEffect(() => {
+    if (!edit) { setMedia([]); return; }
+    getMediaForOuting(edit.id).then(setMedia);
+  }, [edit]);
 
   const stats = useMemo(() => {
     const days = new Set(rows.map(row => row.date).filter(Boolean)).size;
@@ -53,117 +59,116 @@ export default function App() {
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await put({
-      id: edit?.id || crypto.randomUUID(),
-      title: String(form.get('title')),
-      category: form.get('category') as Cat,
-      date: String(form.get('date')),
-      place: String(form.get('place')),
-      note: String(form.get('note')),
-      participants: edit?.participants ?? [],
-      timeline: edit?.timeline ?? [],
-      mediaIds: edit?.mediaIds ?? [],
-      favorite: edit?.favorite ?? false,
-      details: edit?.details ?? {},
+    const id = edit?.id || crypto.randomUUID();
+    const selectedCategory = form.get('category') as Cat;
+    const details: Record<string, string | number | boolean | string[]> = {};
+    for (const key of Object.keys(emptyDetails)) {
+      const value = form.get(key);
+      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance'].includes(key) ? Number(value) : String(value);
+    }
+    const timelineText = String(form.get('timeline') || '');
+    const timeline = timelineText.split('\n').map(line => line.trim()).filter(Boolean).map((line, index) => {
+      const match = line.match(/^(\d{1,2}:\d{2})\s*[-–—:]\s*(.*)$/);
+      return { id: crypto.randomUUID(), ...(match ? { time: match[1], title: match[2] } : { title: line }), description: '' };
     });
-    setModal(false);
-    setEdit(null);
-    await refresh();
-    setPage('Выезды');
+    const lat = String(form.get('lat') || '').trim();
+    const lng = String(form.get('lng') || '').trim();
+    const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
+    const row: Outing = {
+      id, title: String(form.get('title')), category: selectedCategory,
+      date: String(form.get('date')), time: String(form.get('time') || ''),
+      place: String(form.get('place') || ''),
+      ...(lat && lng && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { coordinates: { lat: Number(lat), lng: Number(lng) } } : {}),
+      participants, weather: String(form.get('weather') || ''), timeline,
+      note: String(form.get('note') || ''), impressions: String(form.get('impressions') || ''),
+      conclusion: String(form.get('conclusion') || ''),
+      mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
+      details,
+    };
+    const newlySaved: string[] = [];
+    for (const file of files) {
+      const item: MediaItem = {
+        id: crypto.randomUUID(), outingId: id, name: file.name,
+        type: file.type.startsWith('video/') ? 'video' : 'image',
+        mimeType: file.type, size: file.size, createdAt: new Date().toISOString(),
+        blob: file, uploadState: 'local',
+      };
+      await saveMedia(item);
+      row.mediaIds.push(item.id);
+      newlySaved.push(item.id);
+    }
+    const cover = String(form.get('coverMediaId') || '');
+    if (cover) row.coverMediaId = cover;
+    else if (!edit?.coverMediaId && newlySaved.length) row.coverMediaId = newlySaved[0];
+    await put(row);
+    setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
   }
 
-  function openNew() {
-    setEdit(null);
-    setModal(true);
-  }
+  function openNew() { setEdit(null); setFiles([]); setModal(true); }
+  function openEdit(row: Outing) { setEdit(row); setFiles([]); setModal(true); }
 
   function renderRows(items: Outing[]) {
-    if (!items.length) {
-      return <div className="empty-state">
-        <div className="empty-landscape">✧</div>
-        <h3>Твои приключения начнутся здесь</h3>
-        <p>Сохраняй поездки, встречи с природой и важные моменты.</p>
-        <button className="gold-button" onClick={openNew}>＋ Добавить первый выезд</button>
-      </div>;
-    }
+    if (!items.length) return <div className="empty-state"><div className="empty-landscape">✧</div><h3>Твои приключения начнутся здесь</h3><p>Сохраняй поездки, встречи с природой и важные моменты.</p><button className="gold-button" onClick={openNew}>＋ Добавить первый выезд</button></div>;
     return <div className="outing-list">{items.map(row => <article className="outing-row" key={row.id}>
       <div className="outing-thumb" style={{ backgroundImage: `linear-gradient(0deg,#071a13aa,#071a1300),url(${pics[row.category]})` }} />
-      <div className="outing-info">
-        <small>{row.category} <span>·</span> {row.date}</small>
-        <h3>{row.title}</h3>
-        <p>{row.place || 'Место не указано'}</p>
-      </div>
+      <div className="outing-info"><small>{row.category} <span>·</span> {row.date}</small><h3>{row.title}</h3><p>{row.place || 'Место не указано'}</p></div>
       <div className="outing-result">{row.note || 'Открыть отчёт'}</div>
-      <button className="outline-button" onClick={() => { setEdit(row); setModal(true); }}>Открыть ↗</button>
+      <button className="outline-button" onClick={() => openEdit(row)}>Открыть ↗</button>
     </article>)}</div>;
   }
 
-  const form = <div className="modal-shade" onClick={event => { if (event.target === event.currentTarget) setModal(false); }}>
-    <form className="outing-modal" onSubmit={save}>
-      <div className="modal-head"><div><small>НОВАЯ ЗАПИСЬ В АТЛАСЕ</small><h2>{edit ? 'Редактировать выезд' : 'Добавить выезд'}</h2></div><button type="button" className="close-button" onClick={() => setModal(false)}>×</button></div>
-      <label>Название<input name="title" required defaultValue={edit?.title ?? ''} placeholder="Например, Осенний выезд на озеро" /></label>
-      <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? 'Охота'}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0, 10)} /></label></div>
-      <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
-      <label>Краткие заметки<textarea name="note" rows={3} defaultValue={edit?.note ?? ''} placeholder="Что запомнилось?" /></label>
-      <div className="modal-actions"><button type="button" className="outline-button" onClick={() => setModal(false)}>Отмена</button><button className="gold-button">Сохранить выезд</button></div>
+  const form = <div className="modal-shade" onClick={event => { if (event.target === event.currentTarget) { setModal(false); setEdit(null); } }}>
+    <form className="outing-modal wide-modal" onSubmit={save}>
+      <div className="modal-head"><div><small>ЛИЧНЫЙ ПОЛЕВОЙ ЖУРНАЛ</small><h2>{edit ? 'Редактировать выезд' : 'Добавить выезд'}</h2></div><button type="button" className="close-button" onClick={() => { setModal(false); setEdit(null); }}>×</button></div>
+      <div className="form-section"><h3>Основная информация</h3>
+        <label>Название выезда<input name="title" required defaultValue={edit?.title ?? ''} placeholder="Например, Осенний выезд на озеро" /></label>
+        <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? category === 'Все' ? 'Охота' : category}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0,10)} /></label><label>Время<input name="time" type="time" defaultValue={edit?.time ?? ''} /></label></div>
+        <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
+        <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? ''} placeholder="Например, 53.9" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? ''} placeholder="Например, 27.5" /></label></div>
+        <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
+        <label>Погода и условия<input name="weather" defaultValue={edit?.weather ?? ''} placeholder="Температура, ветер, осадки, состояние воды..." /></label>
+      </div>
+      <div className="form-section"><h3>Детали категории</h3>
+        <div className="category-fields" data-category={edit?.category ?? 'Охота'}>
+          <label>Категория выезда<select name="categoryDetail" defaultValue={edit?.category ?? 'Охота'} onChange={e => { const panel = e.currentTarget.closest('form')?.querySelector('.category-fields'); panel?.setAttribute('data-category', e.currentTarget.value); (e.currentTarget.form?.elements.namedItem('category') as HTMLSelectElement).value = e.currentTarget.value; }}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label>
+          <div className="category-field-group" data-for="Охота"><div className="form-pair"><label>Добыто гусей<input name="geese" type="number" min="0" defaultValue={edit?.details.geese as number ?? ''} /></label><label>Добыто уток<input name="ducks" type="number" min="0" defaultValue={edit?.details.ducks as number ?? ''} /></label></div><label>Другая добыча / наблюдения<input name="otherGame" defaultValue={edit?.details.otherGame as string ?? ''} /></label><label>Результат охоты<input name="result" defaultValue={edit?.details.result as string ?? ''} placeholder="Кратко об итогах" /></label></div>
+          <div className="category-field-group" data-for="Рыбалка"><label>Общий вес улова, кг<input name="catchWeight" type="number" min="0" step="0.01" defaultValue={edit?.details.catchWeight as number ?? ''} /></label><label>Виды рыб<input name="fishSpecies" defaultValue={edit?.details.fishSpecies as string ?? ''} placeholder="Щука, окунь, лещ..." /></label><label>Количество по видам<input name="fishQuantities" defaultValue={edit?.details.fishQuantities as string ?? ''} /></label><label>Приманки и снасти<input name="lures" defaultValue={edit?.details.lures as string ?? ''} /></label></div>
+          <div className="category-field-group" data-for="Кемпинг"><label>Количество ночёвок<input name="nights" type="number" min="0" defaultValue={edit?.details.nights as number ?? ''} /></label><label>Условия стоянки<input name="conditions" defaultValue={edit?.details.conditions as string ?? ''} placeholder="Погода, место лагеря, доступность воды..." /></label></div>
+          <div className="category-field-group" data-for="Путешествия"><label>Маршрут<input name="route" defaultValue={edit?.details.route as string ?? ''} /></label><label>Посещённые места<input name="visitedPlaces" defaultValue={edit?.details.visitedPlaces as string ?? ''} /></label><div className="form-pair"><label>Дистанция, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} /></label><label>Продолжительность<input name="duration" defaultValue={edit?.details.duration as string ?? ''} placeholder="Например, 3 дня" /></label></div></div>
+        </div>
+      </div>
+      <div className="form-section"><h3>Ход выезда и впечатления</h3>
+        <label>Хронология (каждое событие с новой строки; время можно указать в начале)<textarea name="timeline" rows={4} defaultValue={edit?.timeline.map(item => item.time ? `${item.time} — ${item.title}` : item.title).join('\n') ?? ''} placeholder={'06:30 — Прибыли на место\n08:15 — Начало маршрута'} /></label>
+        <label>Краткие заметки<textarea name="note" rows={2} defaultValue={edit?.note ?? ''} placeholder="Что произошло?" /></label>
+        <label>Впечатления<textarea name="impressions" rows={3} defaultValue={edit?.impressions ?? ''} /></label>
+        <label>Выводы на будущее<textarea name="conclusion" rows={3} defaultValue={edit?.conclusion ?? ''} /></label>
+      </div>
+      <div className="form-section"><h3>Фотографии и видео</h3>
+        <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => setFiles(Array.from(e.target.files ?? []))} /></label>
+        {files.length > 0 && <p className="file-summary">Новых файлов выбрано: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
+        {media.length > 0 && <div className="media-existing"><span>Уже добавлено: {media.length}</span><select name="coverMediaId" defaultValue={edit?.coverMediaId ?? ''}><option value="">Сохранить текущую обложку</option>{media.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></div>}
+        <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
+      </div>
+      <div className="modal-actions"><button type="button" className="outline-button" onClick={() => { setModal(false); setEdit(null); }}>Отмена</button><button className="gold-button">Сохранить выезд</button></div>
     </form>
   </div>;
 
   return <div className="app-shell">
-    <header className="topbar">
-      <button className="brand" onClick={() => setPage('Главная')} aria-label="На главную"><span className="brand-mark">✧</span><span className="brand-name">АТЛАС ПРИКЛЮЧЕНИЙ<small>ЛИЧНЫЙ ПОЛЕВОЙ ЖУРНАЛ</small></span></button>
-      <nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item}</button>)}</nav>
-      <div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div>
-    </header>
-
+    <header className="topbar"><button className="brand" onClick={() => setPage('Главная')} aria-label="На главную"><span className="brand-mark">✧</span><span className="brand-name">АТЛАС ПРИКЛЮЧЕНИЙ<small>ЛИЧНЫЙ ПОЛЕВОЙ ЖУРНАЛ</small></span></button><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
     <main className="page-content">
       {page === 'Главная' && <>
-        <section className="dashboard-hero" style={{ backgroundImage: `linear-gradient(90deg,rgba(5,22,16,.96) 0%,rgba(5,22,16,.78) 42%,rgba(5,22,16,.12) 100%),url(${heroImage})` }}>
-          <div className="hero-copy">
-            <span className="eyebrow">ТВОЯ ИСТОРИЯ ПРИКЛЮЧЕНИЙ</span>
-            <h1>Мой дневник<br/>приключений</h1>
-            <p>Места, маршруты и впечатления, которые хочется сохранить.</p>
-            <button className="gold-button" onClick={openNew}>＋ Добавить выезд</button>
-          </div>
-          <div className="hero-caption">ПРИРОДА · СВОБОДА · ПУТЕШЕСТВИЯ</div>
-        </section>
-
-        <section className="category-grid">
-          {cats.map((cat, index) => <button key={cat} className="category-tile" style={{ backgroundImage: `linear-gradient(0deg,rgba(4,18,13,.9),rgba(4,18,13,.04) 80%),url(${pics[cat]})` }} onClick={() => { setCategory(cat); setPage('Выезды'); }}>
-            <span className="tile-index">0{index + 1}</span><strong>{cat}</strong><small>СМОТРЕТЬ ВЫЕЗДЫ ↗</small>
-          </button>)}
-        </section>
-
-        <section className="dashboard-section">
-          <div className="section-title"><div><span className="eyebrow">ТВОЙ ПУТЬ В ЦИФРАХ</span><h2>Мои приключения</h2></div><button className="text-button" onClick={() => setPage('Статистика')}>Подробная статистика ↗</button></div>
-          <div className="stat-grid">{stats.map(stat => <div className="stat-card" key={stat.label}>
-            <div className="stat-emblem"><span>{stat.mark}</span></div><div><strong>{stat.value}</strong><small>{stat.label}</small></div>
-          </div>)}</div>
-        </section>
-
-        <section className="dashboard-section">
-          <div className="section-title"><div><span className="eyebrow">ИЗ ПОСЛЕДНИХ ЗАПИСЕЙ</span><h2>Недавние выезды</h2></div><button className="text-button" onClick={() => { setCategory('Все'); setPage('Выезды'); }}>Все выезды ↗</button></div>
-          {renderRows(rows.slice(0, 4))}
-        </section>
-
-        <section className="dashboard-section map-preview">
-          <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ВПЕЧАТЛЕНИЙ</span><h2>Карта приключений</h2></div><button className="text-button" onClick={() => setPage('Выезды')}>К выездам ↗</button></div>
-          <div className="map-placeholder"><div className="map-lines" /><span className="map-pin">✧</span><p>Здесь будут отмечены места твоих выездов</p><small>Карта появится после подключения картографического сервиса</small></div>
-        </section>
+        <section className="dashboard-hero" style={{ backgroundImage: `linear-gradient(90deg,rgba(5,22,16,.96) 0%,rgba(5,22,16,.78) 42%,rgba(5,22,16,.12) 100%),url(${heroImage})` }}><div className="hero-copy"><span className="eyebrow">ТВОЯ ИСТОРИЯ ПРИКЛЮЧЕНИЙ</span><h1>Мой дневник<br/>приключений</h1><p>Места, маршруты и впечатления, которые хочется сохранить.</p><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="hero-caption">ПРИРОДА · СВОБОДА · ПУТЕШЕСТВИЯ</div></section>
+        <section className="category-grid">{cats.map((cat,index) => <button key={cat} className="category-tile" style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.9),rgba(4,18,13,.04) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="tile-index">0{index+1}</span><strong>{cat}</strong><small>СМОТРЕТЬ ВЫЕЗДЫ ↗</small></button>)}</section>
+        <section className="dashboard-section"><div className="section-title"><div><span className="eyebrow">ТВОЙ ПУТЬ В ЦИФРАХ</span><h2>Мои приключения</h2></div><button className="text-button" onClick={()=>setPage('Статистика')}>Подробная статистика ↗</button></div><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><div className="stat-emblem"><span>{stat.mark}</span></div><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div></section>
+        <section className="dashboard-section"><div className="section-title"><div><span className="eyebrow">ИЗ ПОСЛЕДНИХ ЗАПИСЕЙ</span><h2>Недавние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRows(rows.slice(0,4))}</section>
+        <section className="dashboard-section map-preview"><div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ВПЕЧАТЛЕНИЙ</span><h2>Карта приключений</h2></div><button className="text-button" onClick={()=>setPage('Выезды')}>К выездам ↗</button></div><div className="map-placeholder"><div className="map-lines"/><span className="map-pin">✧</span><p>Здесь будут отмечены места твоих выездов</p><small>Карта появится после подключения картографического сервиса</small></div></section>
       </>}
-
-      {page === 'Выезды' && <section className="section-page">
-        <div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div>
-        <div className="outing-toolbar"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Поиск по названию и месту" /><div className="category-filters"><button className={category === 'Все' ? 'active' : ''} onClick={() => setCategory('Все')}>Все</button>{cats.map(cat => <button key={cat} className={category === cat ? 'active' : ''} onClick={() => setCategory(cat)}>{cat}</button>)}</div><button className="outline-button" onClick={() => alert('Карта будет подключена на этапе картографии.')}>Показать карту</button></div>
-        {renderRows(filtered)}
-      </section>}
-
-      {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat => <div className="stat-card" key={stat.label}><div className="stat-emblem"><span>{stat.mark}</span></div><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
-      {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name, description]) => <div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
-      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title, description]) => <div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
+      {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div><button className="outline-button" onClick={()=>setShowMap(v=>!v)}>{showMap?'Скрыть карту':'Показать карту'}</button></div>{showMap&&<div className="map-placeholder outing-map"><div className="map-lines"/><span className="map-pin">✧</span><p>Карта выездов</p><small>Отображение точек появится после подключения картографического сервиса.</small></div>}{renderRows(filtered)}</section>}
+      {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><div className="stat-emblem"><span>{stat.mark}</span></div><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
+      {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name,description])=><div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
+      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
-
     <footer className="app-footer"><span>АТЛАС ПРИКЛЮЧЕНИЙ</span><small>Личная история больших и маленьких приключений</small></footer>
-    {modal && form}
+    {modal&&form}
   </div>;
 }
