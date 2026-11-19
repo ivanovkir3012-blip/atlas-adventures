@@ -540,3 +540,9 @@ html,body{background:#111315!important}
 @media(max-width:620px){
   .dashboard-hero{min-height:230px!important;height:230px!important;background-position:center 52%!important}
 }
+
+/* Home dashboard: uploaded category photography and illustrated statistic badges */
+.stat-grid-home .stat-card{gap:14px;}
+.stat-art{width:78px;height:78px;flex:0 0 78px;object-fit:cover;border-radius:13px;border:1px solid #c8a663;box-shadow:0 4px 14px #0004;}
+.stat-grid-home .stat-card>div{min-width:0;}
+@media(max-width:620px){.stat-art{width:58px;height:58px;flex-basis:58px;border-radius:10px}.stat-grid-home .stat-card{gap:10px;padding:11px;}}
