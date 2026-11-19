@@ -1,3 +1,4 @@
+
 name: Unpack project
 
 on:
@@ -9,29 +10,48 @@ permissions:
 jobs:
   unpack:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Unpack ZIP
+        shell: bash
         run: |
-          ARCHIVE=$(find . -maxdepth 2 -type f -name "atlas_priklyucheniya_mvp_0_1.zip" -print -quit)
+          set -e
 
-          if [ -z "$ARCHIVE" ]; then
-            echo "ZIP archive not found"
-            find . -maxdepth 3 -type f
+          ARCHIVE="./atlas_priklyucheniya_mvp_0_1.zip"
+
+          if [ ! -f "$ARCHIVE" ]; then
+            echo "ERROR: ZIP archive not found: $ARCHIVE"
+            echo "Files in repository root:"
+            ls -la
             exit 1
           fi
 
+          echo "Found archive: $ARCHIVE"
+
           mkdir -p extracted
           unzip -o "$ARCHIVE" -d extracted
+
+          echo "Archive contents:"
+          find extracted -maxdepth 3 -type f
+
           cp -R extracted/. .
           rm -rf extracted
           rm -f "$ARCHIVE"
 
       - name: Save files
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add -A
-          git diff --cached --quiet || git commit -m "Unpack project files"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Unpack project files"
+            git push
+          fi
