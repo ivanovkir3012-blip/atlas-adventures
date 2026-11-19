@@ -5,9 +5,9 @@ const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путе
 type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
-  'Охота': '/images/categories/hunting.jpg',
-  'Рыбалка': '/images/categories/fishing.jpg',
-  'Кемпинг': '/images/categories/camping.jpg',
+  'Охота': '/images/IMG_20241003_153019.jpg',
+  'Рыбалка': '/images/IMG_20251023_084247.jpg',
+  'Кемпинг': '/images/IMG_20260405_122727.jpg',
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
@@ -209,7 +209,7 @@ export default function App() {
         <section className="dashboard-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
-          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/stats/${({'Всего выездов':'total-outings','Дней на природе':'days-outdoors','Добыто гусей':'geese','Добыто уток':'ducks'} as Record<string,string>)[stat.label]}.jpg`} alt="" /><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/${({'Всего выездов':'stat-outings','Дней на природе':'stat-days','Добыто гусей':'stat-geese','Добыто уток':'stat-ducks'} as Record<string,string>)[stat.label]}.webp`} alt="" /><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
 
