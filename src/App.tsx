@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { all, put, del, softDelete, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
+import { all, put, softDelete, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
   'Охота': 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=85',
-  'Рыбалка': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85',
+  'Рыбалка': 'https://images.unsplash.com/photo-1638238268221-a9a01e04747e?auto=format&fit=crop&w=1400&q=88',
   'Кемпинг': 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1200&q=85',
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
