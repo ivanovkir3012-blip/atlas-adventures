@@ -22,6 +22,7 @@ export default function App() {
   const [report, setReport] = useState<Outing | null>(null);
   const [reportMedia, setReportMedia] = useState<MediaItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<File[]>([]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
@@ -37,6 +38,17 @@ export default function App() {
     addEventListener('offline', update);
     return () => { removeEventListener('online', update); removeEventListener('offline', update); };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const urls: Record<string, string> = {};
+    Promise.all(rows.filter(row => row.coverMediaId).map(async row => {
+      const items = await getMediaForOuting(row.id);
+      const cover = items.find(item => item.id === row.coverMediaId && item.type === 'image');
+      if (cover?.blob) urls[row.id] = URL.createObjectURL(cover.blob);
+    })).then(() => { if (active) setCoverUrls(urls); else Object.values(urls).forEach(URL.revokeObjectURL); });
+    return () => { active = false; Object.values(urls).forEach(URL.revokeObjectURL); };
+  }, [rows]);
 
   useEffect(() => {
     if (!report) { setReportMedia([]); return; }
@@ -136,7 +148,7 @@ export default function App() {
   function renderRows(items: Outing[]) {
     if (!items.length) return <div className="empty-state"><div className="empty-landscape">✧</div><h3>Твои приключения начнутся здесь</h3><p>Сохраняй поездки, встречи с природой и важные моменты.</p><button className="gold-button" onClick={openNew}>＋ Добавить первый выезд</button></div>;
     return <div className="outing-list">{items.map(row => <article className="outing-row" key={row.id}>
-      <div className="outing-thumb" style={{ backgroundImage: `linear-gradient(0deg,#071a13aa,#071a1300),url(${pics[row.category]})` }} />
+      <div className="outing-thumb" style={{ backgroundImage: `linear-gradient(0deg,#071a13aa,#071a1300),url(${coverUrls[row.id] || pics[row.category]})` }} />
       <div className="outing-info"><small>{row.category} <span>·</span> {row.date}</small><h3>{row.title}</h3><p>{row.place || 'Место не указано'}</p></div>
       <div className="outing-result">{row.note || 'Открыть отчёт'}</div>
       <button className="outline-button" onClick={() => setReport(row)}>Открыть ↗</button>
@@ -185,7 +197,7 @@ export default function App() {
       <div className="form-section"><h3>Фотографии и видео</h3>
         <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => setFiles(Array.from(e.target.files ?? []))} /></label>
         {files.length > 0 && <p className="file-summary">Новых файлов выбрано: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
-        <div className="media-existing"><label>Главное фото выезда<select name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.some(file => file.type.startsWith('image/')) ? 'new:0' : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
+        <div className="media-existing"><label>Главное фото выезда<select key={files.map(file => file.name).join('|')} name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.findIndex(file => file.type.startsWith('image/')) >= 0 ? `new:${files.findIndex(file => file.type.startsWith('image/'))}` : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
         <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
       </div>
       <div className="modal-actions"><button type="button" className="outline-button" onClick={() => { setModal(false); setEdit(null); }}>Отмена</button><button className="gold-button">Сохранить выезд</button></div>
