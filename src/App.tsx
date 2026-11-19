@@ -26,6 +26,7 @@ export default function App() {
   const [category, setCategory] = useState('Все');
   const [online, setOnline] = useState(navigator.onLine);
   const [showMap, setShowMap] = useState(false);
+  const [statsPeriod, setStatsPeriod] = useState<'all' | 'year' | 'month'>('all');
   const refresh = () => all().then(setRows);
 
   useEffect(() => {
@@ -47,16 +48,23 @@ export default function App() {
   }, [edit]);
 
   const stats = useMemo(() => {
-    const days = new Set(rows.map(row => row.date).filter(Boolean)).size;
-    const geese = rows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
-    const ducks = rows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
+    const now = new Date();
+    const periodRows = rows.filter(row => {
+      if (statsPeriod === 'all') return true;
+      const date = new Date(`${row.date}T12:00:00`);
+      return statsPeriod === 'year' ? date.getFullYear() === now.getFullYear()
+        : date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    });
+    const days = new Set(periodRows.map(row => row.date).filter(Boolean)).size;
+    const geese = periodRows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
+    const ducks = periodRows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
     return [
-      { label: 'Всего выездов', value: rows.length, mark: '01', image: 'stat-outings.webp' },
-      { label: 'Дней на природе', value: days, mark: '02', image: 'stat-days.webp' },
-      { label: 'Добыто гусей', value: geese, mark: '03', image: 'stat-geese.webp' },
-      { label: 'Добыто уток', value: ducks, mark: '04', image: 'stat-ducks.webp' },
+      { label: 'Всего выездов', value: periodRows.length, image: 'stat-outings.webp' },
+      { label: 'Дней на природе', value: days, image: 'stat-days.webp' },
+      { label: 'Добыто гусей', value: geese, image: 'stat-geese.webp' },
+      { label: 'Добыто уток', value: ducks, image: 'stat-ducks.webp' },
     ];
-  }, [rows]);
+  }, [rows, statsPeriod]);
 
   const filtered = rows.filter(row =>
     (category === 'Все' || row.category === category) &&
@@ -199,6 +207,7 @@ export default function App() {
         <section className="category-grid">{cats.map((cat,index) => <button key={cat} className="category-tile" style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.88),rgba(4,18,13,.02) 82%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="tile-index">0{index+1}</span><strong>{cat}</strong><small>СМОТРЕТЬ ВЫЕЗДЫ ↗</small></button>)}</section>
         <section className="dashboard-section">
           <div className="section-title"><div><span className="eyebrow">ТВОЙ ПУТЬ В ЦИФРАХ</span><h2>Мои приключения</h2></div><button className="text-button" onClick={()=>setPage('Статистика')}>Подробная статистика ↗</button></div>
+          <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
           <div className="stat-grid stat-grid-home">{stats.map((stat,index)=><div className="stat-card" key={stat.label}><img className="stat-emblem-image" src={`${import.meta.env.BASE_URL}images/${stat.image}`} alt={stat.label} /><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><span className="eyebrow">ИЗ ПОСЛЕДНИХ ЗАПИСЕЙ</span><h2>Недавние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
