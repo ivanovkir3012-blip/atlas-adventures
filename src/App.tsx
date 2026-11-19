@@ -11,6 +11,7 @@ const pics: Record<Cat, string> = {
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const heroImage = 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=90';
+const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
 const emptyDetails = { geese: '', ducks: '', otherGame: '', result: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
 
 export default function App() {
@@ -208,7 +209,7 @@ export default function App() {
         <section className="dashboard-section">
           <div className="section-title"><div><span className="eyebrow">ТВОЙ ПУТЬ В ЦИФРАХ</span><h2>Мои приключения</h2></div><button className="text-button" onClick={()=>setPage('Статистика')}>Подробная статистика ↗</button></div>
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
-          <div className="stat-grid stat-grid-home">{stats.map((stat,index)=><div className="stat-card" key={stat.label}><img className="stat-emblem-image" src={`${import.meta.env.BASE_URL}images/${stat.image}`} alt={stat.label} /><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map((stat,index)=><div className="stat-card" key={stat.label}><img className="stat-emblem-image" src={`${assetBase}images/${stat.image}`} alt={stat.label} /><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><span className="eyebrow">ИЗ ПОСЛЕДНИХ ЗАПИСЕЙ</span><h2>Недавние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
         <section className="dashboard-section map-preview"><div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ВПЕЧАТЛЕНИЙ</span><h2>Карта приключений</h2></div><button className="text-button" onClick={()=>setPage('Выезды')}>К выездам ↗</button></div><div className="map-placeholder map-home"><div className="map-lines"/><span className="map-pin">✧</span><p>{rows.some(row=>row.coordinates)?'Точки твоих приключений':'Здесь будут отмечены места твоих выездов'}</p><small>{rows.some(row=>row.coordinates)?'Карта с координатами выездов будет доступна в разделе «Выезды».':'Добавляй координаты в отчётах, чтобы собрать свою карту.'}</small><div className="map-compass">N<br/>✥</div></div></section>
