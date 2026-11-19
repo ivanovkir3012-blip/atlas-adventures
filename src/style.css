@@ -702,3 +702,7 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
  .recent-date{display:none}
  .recent-line .recent-copy b{font-size:12px}
 }
+
+
+/* Hunting category: stretch the user's goose-hunting photo across the entire tile frame. */
+.category-0{background-size:100% 100%,100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;}
