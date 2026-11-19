@@ -64,6 +64,7 @@ export default function App() {
       { label: 'Дней на природе', value: days, symbol: '☼' },
       { label: 'Добыто гусей', value: geese, symbol: '➤' },
       { label: 'Добыто уток', value: ducks, symbol: '➤' },
+      { label: 'Пройденное расстояние', value: periodRows.reduce((sum, row) => sum + Number(row.details?.distance ?? 0), 0).toLocaleString('ru-RU') + ' км', symbol: '⌁' },
     ];
   }, [rows, statsPeriod]);
 
@@ -209,7 +210,7 @@ export default function App() {
         <section className="dashboard-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
-          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png'} as Record<string,string>)[stat.label]}`} alt="" /><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'stat-distance.png'} as Record<string,string>)[stat.label]}`} alt="" /><strong>{stat.value}</strong></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
 
