@@ -83,6 +83,7 @@ export default function App() {
     const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
     const row: Outing = {
       id, title: String(form.get('title')), category: selectedCategory,
+      createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
       date: String(form.get('date')), time: String(form.get('time') || ''),
       place: String(form.get('place') || ''),
       ...(lat && lng && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { coordinates: { lat: Number(lat), lng: Number(lng) } } : {}),
