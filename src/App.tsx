@@ -5,9 +5,9 @@ const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путе
 type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
-  'Охота': 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=85',
-  'Рыбалка': 'https://images.unsplash.com/photo-1638238268221-a9a01e04747e?auto=format&fit=crop&w=1400&q=88',
-  'Кемпинг': 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1200&q=85',
+  'Охота': '/images/categories/hunting.jpg',
+  'Рыбалка': '/images/categories/fishing.jpg',
+  'Кемпинг': '/images/categories/camping.jpg',
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
@@ -203,13 +203,13 @@ export default function App() {
     <main className="page-content">
       {page === 'Главная' && <>
         <section className="dashboard-hero" style={{ backgroundImage: `linear-gradient(90deg,rgba(5,22,16,.94) 0%,rgba(5,22,16,.68) 43%,rgba(5,22,16,.08) 100%),url(${heroImage})` }}>
-          <div className="hero-copy"><h1>Мой дневник<br/>приключений</h1><p className="hero-categories">Охота&nbsp; • &nbsp;Рыбалка&nbsp; • &nbsp;Кемпинг&nbsp; • &nbsp;Путешествия</p></div>
+          <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
         </section>
         <section className="category-grid">{cats.map((cat,index) => <button key={cat} className={`category-tile category-${index}`} style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.92),rgba(4,18,13,.02) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><strong>{cat}</strong><small>Выездов: {rows.filter(row=>row.category===cat).length}</small><span className="tile-arrow">›</span></button>)}</section>
         <section className="dashboard-section">
-          <div className="section-title"><div><h2>▮ Мои приключения в цифрах</h2></div><button className="text-button" onClick={()=>setPage('Статистика')}>Подробная статистика ↗</button></div>
+          <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
-          <div className="stat-grid stat-grid-home">{[...stats,{label:'Кемпинги',value:rows.filter(r=>r.category==='Кемпинг').length,symbol:'⌂'},{label:'Пройденное расстояние',value:'≈ '+rows.reduce((s,r)=>s+Number(r.details?.distance||0),0).toLocaleString('ru-RU')+' км',symbol:'⌁'}].map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-art" src={`/images/stats/${({'Всего выездов':'total-outings','Дней на природе':'days-outdoors','Добыто гусей':'geese','Добыто уток':'ducks'} as Record<string,string>)[stat.label]}.jpg`} alt="" /><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
 
