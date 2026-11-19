@@ -566,3 +566,30 @@ html,body{background:#111315!important}
 /* Fit the complete portrait hunting photo into its category tile without cropping the head or birds. */
 .category-0{background-size:cover,auto 100%;background-position:center,center top;background-repeat:no-repeat;background-color:#10251c;}
 @media(max-width:620px){.category-0{background-size:cover,auto 100%;background-position:center,center top;}}
+
+
+/* LIGHT THEME EXPERIMENT — warm ivory canvas with retained antique-gold accents */
+:root{color:#292821;background:#f3f0e7}
+html,body{background:#f3f0e7!important;color:#292821!important}
+body{background:linear-gradient(180deg,#faf8f1 0%,#eee9dc 100%)!important}
+.app-shell{background:transparent!important}
+.topbar{background:#f8f5ec!important;border-color:#b99a55!important;box-shadow:0 2px 12px #493b1a12}
+.brand,.brand-name{color:#715a2b!important}
+.main-nav button{color:#5d594e!important}
+.main-nav button:hover,.main-nav button.selected{color:#8a6824!important}
+.main-nav button.selected{border-bottom-color:#b28a39!important}
+.dashboard-hero{border-color:#b99a55!important;box-shadow:0 12px 32px #46371920!important}
+.category-tile{border-color:#b99a55!important;box-shadow:0 4px 14px #46371918}
+.dashboard-section,.stat-card,.outing-row,.record-card,.setting-card{background:linear-gradient(145deg,#fffdf7,#eee8d9)!important;border-color:#b99a55!important;color:#302d25!important;box-shadow:0 4px 14px #46371912}
+.stat-grid-home .stat-card{background:linear-gradient(145deg,#fffdf7,#eee8d9)!important;border-color:#b99a55!important}
+.stat-card strong,.stat-grid-home .stat-card strong{color:#71551f!important}
+.stat-card small,.stat-grid-home .stat-card small{color:#625c4d!important}
+.section-title h2,.section-page h1,.record-card h2,.setting-card h3{color:#4d4028!important}
+.outing-info h3,.outing-info p,.outing-result,.record-card p,.setting-card p{color:#514c40!important}
+.text-button,.outline-button{color:#806323!important}
+.outline-button{border-color:#b99a55!important}
+input,select,textarea{background:#fffdf7!important;color:#302d25!important;border-color:#b99a55!important}
+.coming-panel,.empty-state{background:#fffdf7!important;color:#514c40!important;border-color:#b99a55!important}
+.app-footer{border-color:#b99a55!important;color:#806323!important}
+.app-footer small{color:#777064!important}
+.connection{color:#58734c!important}
