@@ -562,3 +562,7 @@ html,body{background:#111315!important}
  .stat-grid-home .stat-card small{font-size:9px;line-height:1.25;}
  .stat-grid-home .stat-card strong{font-size:23px;}
 }
+
+/* Fit the complete portrait hunting photo into its category tile without cropping the head or birds. */
+.category-0{background-size:cover,auto 100%;background-position:center,center top;background-repeat:no-repeat;background-color:#10251c;}
+@media(max-width:620px){.category-0{background-size:cover,auto 100%;background-position:center,center top;}}
