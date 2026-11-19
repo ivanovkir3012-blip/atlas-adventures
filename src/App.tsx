@@ -10,8 +10,8 @@ const pics: Record<Cat, string> = {
   'Кемпинг': 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1200&q=85',
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
-const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
+const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 const emptyDetails = { geese: '', ducks: '', otherGame: '', result: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
 
 export default function App() {
