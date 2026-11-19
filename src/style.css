@@ -706,3 +706,27 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
 
 /* Hunting category: stretch the user's goose-hunting photo across the entire tile frame. */
 .category-0{background-size:100% 100%,100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;}
+
+
+/* Latest four outings: a clear photo card with category, outing title and location. */
+.recent-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.recent-line{grid-template-columns:minmax(125px,42%) minmax(0,1fr) 18px;min-height:116px;gap:12px;padding:10px}
+.recent-line .recent-photo{width:100%;height:96px;border-radius:8px;background-size:cover;background-position:center}
+.recent-line .recent-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;min-width:0}
+.recent-line .recent-copy small{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#e5c879}
+.recent-line .recent-copy b{font-size:15px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.recent-line .recent-place{display:block;font-size:12px;white-space:normal;line-height:1.25;color:#d0c8b8}
+.recent-line>i{align-self:center}
+@media(max-width:850px){
+ .recent-list{grid-template-columns:1fr}
+ .recent-line{grid-template-columns:130px minmax(0,1fr) 18px;min-height:104px}
+ .recent-line .recent-photo{height:84px;width:100%}
+ .recent-place{display:block!important}
+}
+@media(max-width:560px){
+ .recent-list{grid-template-columns:1fr;gap:8px}
+ .recent-line{grid-template-columns:108px minmax(0,1fr) 16px;min-height:94px;padding:8px;gap:9px}
+ .recent-line .recent-photo{width:100%;height:76px}
+ .recent-line .recent-copy b{font-size:13px}
+ .recent-line .recent-place{font-size:11px}
+}
