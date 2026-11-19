@@ -12,7 +12,7 @@ const pics: Record<Cat, string> = {
 };
 const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
 const heroImage = `${assetBase}atlas-lake-bg.jpg`;
-const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
+const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
@@ -56,7 +56,7 @@ export default function App() {
       return statsPeriod === 'year' ? date.getFullYear() === now.getFullYear()
         : date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
     });
-    const days = new Set(periodRows.map(row => row.date).filter(Boolean)).size;
+    const days = periodRows.reduce((sum, row) => sum + Number(row.details?.daysOutdoors ?? 1), 0);
     const geese = periodRows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
     const ducks = periodRows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
     return [
@@ -81,7 +81,7 @@ export default function App() {
     const details: Record<string, string | number | boolean | string[]> = {};
     for (const key of Object.keys(emptyDetails)) {
       const value = form.get(key);
-      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance'].includes(key) ? Number(value) : String(value);
+      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','daysOutdoors'].includes(key) ? Number(value) : String(value);
     }
     const timeline: Outing['timeline'] = [];
     const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
@@ -107,9 +107,14 @@ export default function App() {
       row.mediaIds.push(item.id);
       newlySaved.push(item.id);
     }
-    const cover = String(form.get('coverMediaId') || '');
-    if (cover) row.coverMediaId = cover;
-    else if (!edit?.coverMediaId && newlySaved.length) row.coverMediaId = newlySaved[0];
+    const coverChoice = String(form.get('coverChoice') || '');
+    if (coverChoice.startsWith('new:')) {
+      const selectedIndex = Number(coverChoice.slice(4));
+      const selectedId = newlySaved[selectedIndex];
+      if (selectedId) row.coverMediaId = selectedId;
+    } else if (coverChoice) row.coverMediaId = coverChoice;
+    else if (edit?.coverMediaId) row.coverMediaId = edit.coverMediaId;
+    else if (newlySaved.length) row.coverMediaId = newlySaved[0];
     await put(row);
     setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
   }
@@ -165,6 +170,7 @@ export default function App() {
         <label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label>
         <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
         <label>Погода и условия<input name="weather" defaultValue={edit?.weather ?? ''} placeholder="Температура, ветер, осадки, состояние воды..." /></label>
+        <div className="form-pair"><label>Дней на природе<input name="daysOutdoors" type="number" min="0" step="1" defaultValue={edit?.details.daysOutdoors as number ?? 1} /></label><label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label></div>
       </div>
       <div className="form-section"><h3>Детали категории</h3>
         <div className="category-fields" data-category={edit?.category ?? 'Охота'}>
@@ -179,7 +185,7 @@ export default function App() {
       <div className="form-section"><h3>Фотографии и видео</h3>
         <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => setFiles(Array.from(e.target.files ?? []))} /></label>
         {files.length > 0 && <p className="file-summary">Новых файлов выбрано: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
-        {media.length > 0 && <div className="media-existing"><span>Уже добавлено: {media.length}</span><select name="coverMediaId" defaultValue={edit?.coverMediaId ?? ''}><option value="">Сохранить текущую обложку</option>{media.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></div>}
+        <div className="media-existing"><label>Главное фото выезда<select name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.some(file => file.type.startsWith('image/')) ? 'new:0' : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
         <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
       </div>
       <div className="modal-actions"><button type="button" className="outline-button" onClick={() => { setModal(false); setEdit(null); }}>Отмена</button><button className="gold-button">Сохранить выезд</button></div>
@@ -190,7 +196,7 @@ export default function App() {
     <header className="topbar"><button className="brand" onClick={() => setPage('Главная')} aria-label="На главную"><span className="brand-mark">♠</span><span className="brand-name">Атлас<br/>приключений</span></button><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
     <main className="page-content">
       {page === 'Главная' && <>
-        <section className="dashboard-hero" style={{ backgroundImage: `linear-gradient(90deg,rgba(5,22,16,.94) 0%,rgba(5,22,16,.68) 43%,rgba(5,22,16,.08) 100%),url(${heroImage})` }}>
+        <section className="dashboard-hero">
           <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
         </section>
         <section className="category-grid">{cats.map((cat,index) => <button key={cat} className={`category-tile category-${index}`} style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.92),rgba(4,18,13,.02) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><strong>{cat}</strong><small>Выездов: {rows.filter(row=>row.category===cat).length}</small><span className="tile-arrow">›</span></button>)}</section>
