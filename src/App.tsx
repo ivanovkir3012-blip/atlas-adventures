@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { all, put, del, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
+import { all, put, del, softDelete, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
@@ -18,6 +18,8 @@ export default function App() {
   const [rows, setRows] = useState<Outing[]>([]);
   const [modal, setModal] = useState(false);
   const [edit, setEdit] = useState<Outing | null>(null);
+  const [report, setReport] = useState<Outing | null>(null);
+  const [reportMedia, setReportMedia] = useState<MediaItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [query, setQuery] = useState('');
@@ -33,6 +35,11 @@ export default function App() {
     addEventListener('offline', update);
     return () => { removeEventListener('online', update); removeEventListener('offline', update); };
   }, []);
+
+  useEffect(() => {
+    if (!report) { setReportMedia([]); return; }
+    getMediaForOuting(report.id).then(setReportMedia);
+  }, [report]);
 
   useEffect(() => {
     if (!edit) { setMedia([]); return; }
@@ -104,6 +111,9 @@ export default function App() {
     setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
   }
 
+  async function toggleFavorite(row: Outing) { await put({ ...row, favorite: !row.favorite }); await refresh(); setReport({ ...row, favorite: !row.favorite }); }
+  async function removeOuting(row: Outing) { if (!confirm('Переместить выезд в корзину? Его можно восстановить в течение 30 дней.')) return; await softDelete(row.id); setReport(null); await refresh(); }
+
   function openNew() { setEdit(null); setFiles([]); setModal(true); }
   function openEdit(row: Outing) { setEdit(row); setFiles([]); setModal(true); }
 
@@ -113,9 +123,26 @@ export default function App() {
       <div className="outing-thumb" style={{ backgroundImage: `linear-gradient(0deg,#071a13aa,#071a1300),url(${pics[row.category]})` }} />
       <div className="outing-info"><small>{row.category} <span>·</span> {row.date}</small><h3>{row.title}</h3><p>{row.place || 'Место не указано'}</p></div>
       <div className="outing-result">{row.note || 'Открыть отчёт'}</div>
-      <button className="outline-button" onClick={() => openEdit(row)}>Открыть ↗</button>
+      <button className="outline-button" onClick={() => setReport(row)}>Открыть ↗</button>
     </article>)}</div>;
   }
+
+
+  const reportView = report && <div className="modal-shade" onClick={e => { if (e.target === e.currentTarget) setReport(null); }}>
+    <section className="report-modal">
+      <div className="modal-head"><div><small>{report.category.toUpperCase()} · {report.date}</small><h2>{report.title}</h2><p className="report-place">{report.place || 'Место не указано'}</p></div><button className="close-button" onClick={() => setReport(null)}>×</button></div>
+      <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
+      {reportMedia.length > 0 && <div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}</div> : null)}</div>}
+      {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
+      {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
+      {Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').length > 0 && <div className="report-block"><h3>Результаты выезда</h3><div className="detail-chips">{Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').map(([k,v]) => <span key={k}><b>{k}:</b> {String(v)}</span>)}</div></div>}
+      {report.timeline.length > 0 && <div className="report-block"><h3>Хронология</h3><div className="timeline-list">{report.timeline.map(item => <div key={item.id}><time>{item.time || '•'}</time><p>{item.title}</p></div>)}</div></div>}
+      {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
+      {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
+      {report.conclusion && <div className="report-block"><h3>Выводы на будущее</h3><p>{report.conclusion}</p></div>}
+      {reportMedia.length === 0 && <p className="muted-note">К этому выезду пока не добавлены фото и видео.</p>}
+    </section>
+  </div>;
 
   const form = <div className="modal-shade" onClick={event => { if (event.target === event.currentTarget) { setModal(false); setEdit(null); } }}>
     <form className="outing-modal wide-modal" onSubmit={save}>
@@ -169,6 +196,6 @@ export default function App() {
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
     <footer className="app-footer"><span>АТЛАС ПРИКЛЮЧЕНИЙ</span><small>Личная история больших и маленьких приключений</small></footer>
-    {modal&&form}
+    {reportView}{modal&&form}
   </div>;
 }
