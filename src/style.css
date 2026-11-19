@@ -272,3 +272,155 @@ body{background-color:var(--atlas-ink);background-image:
  .stat-grid-home .stat-card{min-height:112px;padding:7px;gap:7px}
  .stat-grid-home .stat-card strong{font-size:23px}
 }
+
+
+/* ===== APPROVED DESIGN: ATLAS ADVENTURES — VARIANT 1 ===== */
+/* Clear the later experimental decorations and restore the original visual hierarchy. */
+body{
+  background:#0b1d16;
+  background-image:radial-gradient(ellipse at 50% -18%,#254735 0%,#10271d 46%,#091810 100%);
+}
+.app-shell{max-width:1440px;padding:0 clamp(16px,3vw,40px)}
+.topbar{min-height:78px;flex-wrap:nowrap;gap:22px}
+.brand-mark{width:42px;height:42px;font-size:28px;border:1px solid #c7a562;border-radius:50%;display:grid;place-items:center}
+.main-nav{flex:1;justify-content:center;gap:8px}
+.main-nav button{padding:14px 13px 12px;font-size:12px}
+.page-content{padding:28px 0 58px}
+
+/* Panoramic cover: restrained height, landscape crop, no decorative rings. */
+.dashboard-hero{
+  height:340px;min-height:0;max-height:none;
+  border:1px solid #c5a56290;border-radius:16px;
+  background-size:cover;background-position:center 54%;
+  box-shadow:0 16px 44px #0003;
+}
+.dashboard-hero:after{content:none!important;display:none!important}
+.hero-copy{max-width:570px;padding:34px 48px}
+.hero-copy h1{font-size:clamp(38px,4.5vw,56px);line-height:1.04;margin:14px 0}
+.hero-copy p{font-size:14px;max-width:410px}
+.hero-caption{font-size:9px;letter-spacing:2px}
+
+/* Four photographic categories: one row on desktop, two columns on a phone. */
+.category-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;margin:22px 0 42px;
+}
+.category-tile{
+  height:172px;min-width:0;padding:18px;
+  border:1px solid #c5a56280;border-radius:10px;
+  background-size:cover;background-position:center;
+}
+.category-tile:before{content:none!important}
+.category-tile strong{font-size:22px}
+.category-tile small{font-size:9px;letter-spacing:1.25px}
+.tile-index{display:none!important}
+
+/* Statistics: original four gold artworks, not substitute medallions. */
+.dashboard-section{margin-bottom:38px}
+.section-title{margin-bottom:15px}
+.section-title h2{font-size:29px}
+.stats-period{display:flex;gap:6px;margin:-2px 0 14px}
+.stats-period button{
+  padding:7px 13px;border:1px solid #b99b5c66;border-radius:20px;
+  color:#c5cdbf;background:#10271d;font-size:10px;
+}
+.stats-period button.active{background:#c5a15b22;border-color:#d4b56e;color:#f0d99e}
+.stat-grid-home{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat-grid-home .stat-card{
+  min-width:0;min-height:150px;padding:10px 12px;gap:12px;
+  border:1px solid #c1a05a70;border-radius:10px;
+  background:linear-gradient(140deg,#193629,#10251c);
+}
+.stat-emblem-image{
+  width:112px;height:126px;object-fit:contain;display:block;
+  flex:0 0 auto;border-radius:7px;filter:none;
+}
+.stat-grid-home .stat-card>div{min-width:0}
+.stat-grid-home .stat-card strong{font-size:29px}
+.stat-grid-home .stat-card small{font-size:10px;line-height:1.35}
+
+/* Latest outings: horizontal photo cards. */
+.recent-section{margin-top:0}
+.recent-strip{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);
+  gap:13px;overflow-x:auto;padding:2px 2px 12px;
+  scroll-snap-type:x mandatory;
+}
+.recent-card{
+  position:relative;height:172px;min-width:0;overflow:hidden;
+  border:1px solid #c4a15d70;border-radius:10px;background:#10271c;
+  color:#eee8d8;text-align:left;padding:0;scroll-snap-align:start;
+}
+.recent-photo{position:absolute;inset:0;background-size:cover;background-position:center}
+.recent-copy{position:absolute;left:15px;right:34px;bottom:14px;display:flex;flex-direction:column;gap:4px}
+.recent-copy small{font-size:9px;color:#e0c47f;letter-spacing:.7px}
+.recent-copy b{font:700 19px 'Playfair Display',Georgia,serif}
+.recent-copy span{font-size:10px;color:#d0d7c9}
+.recent-card>i{position:absolute;right:13px;bottom:14px;color:#e4c77f;font-style:normal}
+.recent-empty{padding:20px;border:1px dashed #b99b5c66;border-radius:10px;background:#12291f}
+
+/* Map closes the home page as a large geographic panel. */
+.map-preview{margin-top:34px}
+.map-home{
+  height:350px;border-radius:12px;
+  background-color:#183a2a;
+  background-image:
+    linear-gradient(135deg,#244b36a8,#10281dcc),
+    repeating-radial-gradient(ellipse at 25% 35%,transparent 0 24px,#d0b77a2b 25px 26px,transparent 27px 48px),
+    repeating-radial-gradient(ellipse at 78% 70%,transparent 0 36px,#d0b77a20 37px 38px,transparent 39px 62px);
+}
+.map-home .map-compass{right:20px;top:18px}
+.map-home p{font-size:20px}
+
+/* Tablet */
+@media(min-width:621px) and (max-width:1000px){
+  .app-shell{padding-inline:20px}
+  .topbar{flex-wrap:wrap}
+  .main-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}
+  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-grid-home .stat-card{justify-content:flex-start}
+}
+/* Phone: same composition, compact proportions. */
+@media(max-width:620px){
+  .app-shell{padding:0 14px}
+  .topbar{min-height:0;padding:12px 0 8px;gap:8px;flex-wrap:wrap}
+  .brand-mark{width:36px;height:36px;font-size:23px}
+  .brand-name{font-size:10px;letter-spacing:1.5px}
+  .brand-name small{font-size:8px;letter-spacing:1.4px}
+  .main-nav{order:3;width:100%;justify-content:space-between;gap:0;overflow-x:auto}
+  .main-nav button{font-size:10px;padding:11px 8px 9px;white-space:nowrap}
+  .connection{margin-left:auto}
+  .page-content{padding:18px 0 42px}
+  .dashboard-hero{height:270px;min-height:270px;border-radius:12px;background-position:center}
+  .hero-copy{padding:22px 20px;max-width:78%}
+  .hero-copy h1{font-size:34px;line-height:1.04;margin:11px 0}
+  .hero-copy p{font-size:11px;line-height:1.5;margin-bottom:15px}
+  .hero-copy .eyebrow{font-size:8px;letter-spacing:1.5px}
+  .hero-copy .gold-button{font-size:10px;padding:10px 13px}
+  .hero-caption{right:12px;bottom:11px;font-size:7px;letter-spacing:1px}
+  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:16px 0 30px}
+  .category-tile{height:132px;padding:13px;border-radius:9px}
+  .category-tile strong{font-size:19px}
+  .category-tile small{font-size:8px;letter-spacing:.8px}
+  .dashboard-section{margin-bottom:29px}
+  .section-title{align-items:flex-end;gap:8px;margin-bottom:12px}
+  .section-title h2{font-size:24px}
+  .section-title .eyebrow{font-size:8px;letter-spacing:1.6px}
+  .text-button{font-size:9px;max-width:112px;text-align:right}
+  .stats-period{margin-bottom:10px}
+  .stats-period button{font-size:9px;padding:6px 10px}
+  .stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stat-grid-home .stat-card{min-height:112px;padding:7px;gap:6px}
+  .stat-emblem-image{width:76px;height:92px}
+  .stat-grid-home .stat-card strong{font-size:23px}
+  .stat-grid-home .stat-card small{font-size:8px}
+  .recent-strip{grid-auto-columns:minmax(205px,78%)}
+  .recent-card{height:145px}
+  .recent-copy b{font-size:17px}
+  .map-preview{margin-top:22px}
+  .map-home{height:245px}
+  .map-home p{font-size:16px;text-align:center;padding:0 18px}
+  .map-home small{font-size:9px;text-align:center;padding:0 18px}
+  .app-footer{flex-direction:column}
+}
