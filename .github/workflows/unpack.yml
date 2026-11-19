@@ -15,16 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Unpack ZIP
+      - name: Find and unpack ZIP
         shell: bash
         run: |
           set -e
 
-          ARCHIVE="./atlas_priklyucheniya_mvp_0_1.zip"
+          ARCHIVE=$(find . -maxdepth 1 -type f -iname "*.zip" -print -quit)
 
-          if [ ! -f "$ARCHIVE" ]; then
-            echo "ERROR: ZIP archive not found: $ARCHIVE"
-            echo "Files in repository root:"
+          if [ -z "$ARCHIVE" ]; then
+            echo "ERROR: ZIP archive not found"
             ls -la
             exit 1
           fi
@@ -34,7 +33,7 @@ jobs:
           mkdir -p extracted
           unzip -o "$ARCHIVE" -d extracted
 
-          echo "Archive contents:"
+          echo "Extracted files:"
           find extracted -maxdepth 3 -type f
 
           cp -R extracted/. .
@@ -55,3 +54,4 @@ jobs:
             git commit -m "Unpack project files"
             git push
           fi
+          
