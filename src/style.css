@@ -248,3 +248,17 @@ body{background-color:var(--atlas-ink);background-image:
  .map-home p{font-size:17px;text-align:center;padding:0 18px}
  .map-home small{font-size:9px;text-align:center;padding:0 18px}
 }
+
+/* Variant 1: four category tiles and four KPI emblems in one row on wide screens */
+@media(min-width:1001px){
+ .category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .category-tile{height:190px}
+ .stat-grid-home{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .stat-card{padding:15px;gap:12px}
+ .stat-emblem{width:56px;height:56px}
+ .stat-emblem svg{width:37px;height:37px}
+}
+@media(min-width:621px) and (max-width:1000px){
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
