@@ -196,3 +196,55 @@ body{background-color:var(--atlas-ink);background-image:
  .stat-card strong{font-size:24px}
  .map-placeholder{height:210px}
 }
+
+
+/* Approved Home v1 composition: hero → 2x2 categories → 2x2 emblems → recent strip → expedition map */
+.category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:26px 0 52px}
+.category-tile{height:214px;border-radius:12px;padding:22px;background-position:center 48%}
+.category-tile strong{font-size:27px}
+.category-tile small{font-size:9px;letter-spacing:1.8px}
+.stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.stat-card{min-height:116px;padding:18px 22px;gap:18px}
+.stat-emblem{width:66px;height:66px;position:relative;border:1px solid #c9a75f;background:radial-gradient(circle,#c8a45a18 0 48%,#10271c 50%);box-shadow:inset 0 0 0 4px #c8a45a12,0 0 0 3px #c8a45a18,0 5px 18px #0003}
+.stat-emblem:after{content:"";position:absolute;inset:5px;border:1px solid #c8a45a70;border-radius:50%}
+.stat-emblem svg{width:43px;height:43px;fill:none;stroke:#d8bd7d;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}
+.stat-emblem span{display:none}
+.stat-card strong{font-size:32px}
+.stat-card small{font-size:11px}
+.recent-section{margin-top:2px}
+.recent-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(245px,1fr);gap:14px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x mandatory}
+.recent-card{position:relative;min-width:0;height:178px;overflow:hidden;border:1px solid #c4a15d70;border-radius:11px;background:#10271c;color:#eee8d8;text-align:left;padding:0;scroll-snap-align:start}
+.recent-photo{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .35s}
+.recent-card:hover .recent-photo{transform:scale(1.045)}
+.recent-copy{position:absolute;left:16px;right:38px;bottom:15px;display:flex;flex-direction:column;gap:5px}
+.recent-copy small{font-size:9px;letter-spacing:.8px;color:#e0c47f;text-transform:uppercase}
+.recent-copy b{font:700 19px 'Playfair Display',Georgia,serif}
+.recent-copy span{font-size:10px;color:#d0d7c9}
+.recent-card>i{position:absolute;right:14px;bottom:15px;font-style:normal;color:#e4c77f}
+.recent-empty{display:flex;align-items:center;gap:16px;padding:22px;border:1px dashed #b99b5c66;border-radius:10px;background:#12291f}
+.recent-empty>span{font-size:30px;color:#d7b86f}
+.recent-empty div{flex:1;display:flex;flex-direction:column;gap:5px}
+.recent-empty b{font:600 17px 'Playfair Display',Georgia,serif}
+.recent-empty small{font-size:10px;color:#b8c4b6}
+.map-home{height:340px;border-radius:13px;background-color:#183a2a;background-image:linear-gradient(135deg,#244b36aa,#10281dcc),repeating-radial-gradient(ellipse at 25% 35%,transparent 0 24px,#d0b77a2b 25px 26px,transparent 27px 48px),repeating-radial-gradient(ellipse at 78% 70%,transparent 0 36px,#d0b77a20 37px 38px,transparent 39px 62px)}
+.map-home:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,#d0b77a18 50%,transparent 50.2%),linear-gradient(0deg,transparent 49.8%,#d0b77a18 50%,transparent 50.2%);pointer-events:none}
+.map-home .map-pin{font-size:36px}
+.map-compass{position:absolute;right:22px;top:18px;width:48px;height:48px;border:1px solid #d3b46d88;border-radius:50%;display:grid;place-content:center;text-align:center;color:#e0c27b;font:700 11px 'Playfair Display',serif;background:#0b1e16aa;line-height:1.1}
+.map-home p{font:600 21px 'Playfair Display',Georgia,serif;text-shadow:0 2px 12px #0008}
+.map-home small{font-size:11px}
+@media(max-width:620px){
+ .category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 34px}
+ .category-tile{height:166px;padding:14px}
+ .category-tile strong{font-size:21px}
+ .stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stat-card{min-height:94px;padding:11px 10px;gap:9px}
+ .stat-emblem{width:48px;height:48px}
+ .stat-emblem svg{width:31px;height:31px}
+ .stat-card strong{font-size:25px}
+ .stat-card small{font-size:9px;line-height:1.3}
+ .recent-strip{grid-auto-columns:minmax(225px,82%)}
+ .recent-card{height:160px}
+ .map-home{height:250px}
+ .map-home p{font-size:17px;text-align:center;padding:0 18px}
+ .map-home small{font-size:9px;text-align:center;padding:0 18px}
+}
