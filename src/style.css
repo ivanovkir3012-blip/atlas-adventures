@@ -262,3 +262,13 @@ body{background-color:var(--atlas-ink);background-image:
  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Original user-approved emblem artwork */
+.stat-emblem-image{display:block;width:104px;height:128px;object-fit:contain;flex:0 0 auto;border-radius:8px;filter:drop-shadow(0 5px 9px #0005)}
+.stat-grid-home .stat-card{min-height:146px;gap:16px;padding:10px 14px}
+.stat-grid-home .stat-card strong{font-size:30px}
+@media(max-width:620px){
+ .stat-emblem-image{width:72px;height:98px}
+ .stat-grid-home .stat-card{min-height:112px;padding:7px;gap:7px}
+ .stat-grid-home .stat-card strong{font-size:23px}
+}
