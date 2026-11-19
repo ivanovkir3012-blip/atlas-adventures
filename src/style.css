@@ -131,3 +131,68 @@ input:focus,select:focus,textarea:focus{border-color:#d0ae68}
 .detail-chips b{color:#e0c27b}.timeline-list>div{display:flex;gap:14px;padding:7px 0;border-bottom:1px solid #ffffff10}
 .timeline-list time{min-width:52px;color:#d5b975;font-size:11px}.timeline-list p{margin:0}
 @media(max-width:620px){.report-modal{padding:18px}.report-gallery{grid-template-columns:repeat(2,1fr)}.report-media{height:125px}.report-modal .modal-head h2{font-size:23px}}
+
+
+/* Atlas Adventures — approved expedition visual language refinements */
+:root{
+  --atlas-ink:#081810;--atlas-forest:#10291f;--atlas-panel:#173528;
+  --atlas-gold:#c8a663;--atlas-pale:#eee5ce;--atlas-muted:#aab9a9;
+}
+body{background-color:var(--atlas-ink);background-image:
+ radial-gradient(ellipse at 16% 0%,rgba(55,91,66,.30),transparent 38%),
+ radial-gradient(ellipse at 90% 34%,rgba(28,66,49,.18),transparent 42%),
+ repeating-linear-gradient(132deg,transparent 0 78px,rgba(197,168,108,.018) 79px 80px,transparent 81px 160px)}
+.app-shell{max-width:1440px;padding-inline:clamp(14px,3vw,42px)}
+.topbar{min-height:82px;gap:20px}
+.brand-mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid #c7a562;border-radius:50%;font-size:26px;box-shadow:inset 0 0 0 4px #c7a56218;color:#e1c47d}
+.brand-name{font-size:11px;letter-spacing:2.4px}
+.main-nav{gap:7px}
+.main-nav button{font-size:11px;letter-spacing:.25px;padding:15px 14px 13px}
+.dashboard-hero{min-height:390px;border-radius:18px;border-color:#c7a56288;box-shadow:0 24px 70px #0005,inset 0 0 0 1px #fff1}
+.dashboard-hero:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;background:repeating-radial-gradient(ellipse at 80% 15%,transparent 0 32px,#d9c18a 33px 34px,transparent 35px 63px);mask-image:linear-gradient(90deg,transparent 35%,#000)}
+.hero-copy{position:relative;z-index:1}
+.hero-copy h1{letter-spacing:-1.2px;text-shadow:0 3px 24px #0008}
+.hero-caption{z-index:1}
+.category-grid{gap:16px;margin:24px 0 48px}
+.category-tile{height:188px;border-radius:12px;border-color:#c7a56278;box-shadow:0 10px 28px #0003;isolation:isolate}
+.category-tile:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#07170e12 20%,#06170fbb 100%);transition:opacity .2s}
+.category-tile:hover{transform:translateY(-4px);box-shadow:0 16px 32px #0005}
+.category-tile strong{font-size:25px;text-shadow:0 2px 12px #0009}
+.category-tile small{letter-spacing:1.7px}
+.tile-index{border:1px solid #e0c27c88;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;background:#08181088}
+.dashboard-section{margin-bottom:48px}
+.section-title h2,.section-page h1{letter-spacing:-.5px}
+.stat-grid{gap:14px}
+.stat-card{min-height:112px;border-color:#bda06470;background:linear-gradient(135deg,rgba(29,62,46,.96),rgba(13,35,25,.98));box-shadow:inset 0 1px #ffffff08,0 8px 22px #0002}
+.stat-emblem{width:62px;height:62px;border-width:1.5px;background:radial-gradient(circle,#c5a35d16 0 52%,transparent 54%);box-shadow:inset 0 0 0 4px #c6a35e12,0 0 0 4px #c6a35e12}
+.stat-card strong{font-size:30px}
+.map-placeholder{height:260px;background-color:#122d21;background-image:
+ repeating-radial-gradient(ellipse at 25% 35%,transparent 0 22px,#bfa66c22 23px 24px,transparent 25px 42px),
+ repeating-radial-gradient(ellipse at 75% 65%,transparent 0 35px,#bfa66c18 36px 37px,transparent 38px 60px),
+ linear-gradient(135deg,#1c4330,#10251b)}
+.map-placeholder p{font-size:18px}
+.outing-row{border-color:#b99b5c55;box-shadow:0 6px 20px #0002}
+.record-card,.setting-card{box-shadow:inset 0 1px #ffffff09,0 8px 22px #0002}
+@media(max-width:1000px){
+ .topbar{align-items:center}
+ .brand{min-height:48px}
+ .main-nav{padding-bottom:2px}
+}
+@media(max-width:620px){
+ .app-shell{padding-inline:13px}
+ .topbar{padding:10px 0 8px;gap:8px}
+ .brand-mark{width:34px;height:34px;font-size:21px}
+ .brand-name{font-size:9px;letter-spacing:1.7px}
+ .brand-name small{font-size:7px;letter-spacing:1.4px}
+ .main-nav{gap:0;justify-content:space-between}
+ .main-nav button{padding:12px 9px 10px;font-size:10px}
+ .dashboard-hero{height:350px;min-height:350px;border-radius:14px}
+ .hero-copy{padding:24px}
+ .hero-copy h1{font-size:38px}
+ .category-tile{height:150px;border-radius:10px}
+ .category-tile strong{font-size:20px}
+ .stat-card{min-height:91px}
+ .stat-emblem{width:46px;height:46px}
+ .stat-card strong{font-size:24px}
+ .map-placeholder{height:210px}
+}
