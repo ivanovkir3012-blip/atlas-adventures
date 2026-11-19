@@ -12,7 +12,7 @@ const pics: Record<Cat, string> = {
 };
 const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
 const heroImage = `${assetBase}atlas-lake-bg.jpg`;
-const emptyDetails = { geese: '', ducks: '', otherGame: '', result: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
+const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', duration: '' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
@@ -83,23 +83,15 @@ export default function App() {
       const value = form.get(key);
       if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance'].includes(key) ? Number(value) : String(value);
     }
-    const timelineText = String(form.get('timeline') || '');
-    const timeline = timelineText.split('\n').map(line => line.trim()).filter(Boolean).map((line, index) => {
-      const match = line.match(/^(\d{1,2}:\d{2})\s*[-–—:]\s*(.*)$/);
-      return { id: crypto.randomUUID(), ...(match ? { time: match[1], title: match[2] } : { title: line }), description: '' };
-    });
-    const lat = String(form.get('lat') || '').trim();
-    const lng = String(form.get('lng') || '').trim();
+    const timeline: Outing['timeline'] = [];
     const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
     const row: Outing = {
       id, title: String(form.get('title')), category: selectedCategory,
       createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
-      date: String(form.get('date')), time: String(form.get('time') || ''),
+      date: String(form.get('date')), time: '',
       place: String(form.get('place') || ''),
-      ...(lat && lng && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { coordinates: { lat: Number(lat), lng: Number(lng) } } : {}),
       participants, weather: String(form.get('weather') || ''), timeline,
-      note: String(form.get('note') || ''), impressions: String(form.get('impressions') || ''),
-      conclusion: String(form.get('conclusion') || ''),
+      note: String(form.get('note') || ''), impressions: '', conclusion: '',
       mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
       details,
     };
@@ -154,11 +146,11 @@ export default function App() {
       {reportMedia.length > 0 && <div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}</div> : null)}</div>}
       {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
       {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
-      {Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').length > 0 && <div className="report-block"><h3>Результаты выезда</h3><div className="detail-chips">{Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').map(([k,v]) => <span key={k}><b>{k}:</b> {String(v)}</span>)}</div></div>}
-      {report.timeline.length > 0 && <div className="report-block"><h3>Хронология</h3><div className="timeline-list">{report.timeline.map(item => <div key={item.id}><time>{item.time || '•'}</time><p>{item.title}</p></div>)}</div></div>}
+      {Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').length > 0 && <div className="report-block"><h3>Детали выезда</h3><div className="detail-chips">{Object.entries(report.details).filter(([,v]) => String(v).trim() !== '').map(([k,v]) => <span key={k}><b>{k}:</b> {String(v)}</span>)}</div></div>}
+      
       {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
-      {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
-      {report.conclusion && <div className="report-block"><h3>Выводы на будущее</h3><p>{report.conclusion}</p></div>}
+      
+      
       {reportMedia.length === 0 && <p className="muted-note">К этому выезду пока не добавлены фото и видео.</p>}
     </section>
   </div>;
@@ -168,27 +160,22 @@ export default function App() {
       <div className="modal-head"><div><small>ЛИЧНЫЙ ПОЛЕВОЙ ЖУРНАЛ</small><h2>{edit ? 'Редактировать выезд' : 'Добавить выезд'}</h2></div><button type="button" className="close-button" onClick={() => { setModal(false); setEdit(null); }}>×</button></div>
       <div className="form-section"><h3>Основная информация</h3>
         <label>Название выезда<input name="title" required defaultValue={edit?.title ?? ''} placeholder="Например, Осенний выезд на озеро" /></label>
-        <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? (category === 'Все' ? 'Охота' : category)}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0,10)} /></label><label>Время<input name="time" type="time" defaultValue={edit?.time ?? ''} /></label></div>
+        <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? (category === 'Все' ? 'Охота' : category)}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0,10)} /></label></div>
         <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
-        <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? ''} placeholder="Например, 53.9" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? ''} placeholder="Например, 27.5" /></label></div>
+        <label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label>
         <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
         <label>Погода и условия<input name="weather" defaultValue={edit?.weather ?? ''} placeholder="Температура, ветер, осадки, состояние воды..." /></label>
       </div>
       <div className="form-section"><h3>Детали категории</h3>
         <div className="category-fields" data-category={edit?.category ?? 'Охота'}>
           <label>Категория выезда<select name="categoryDetail" defaultValue={edit?.category ?? 'Охота'} onChange={e => { const panel = e.currentTarget.closest('form')?.querySelector('.category-fields'); panel?.setAttribute('data-category', e.currentTarget.value); (e.currentTarget.form?.elements.namedItem('category') as HTMLSelectElement).value = e.currentTarget.value; }}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label>
-          <div className="category-field-group" data-for="Охота"><div className="form-pair"><label>Добыто гусей<input name="geese" type="number" min="0" defaultValue={edit?.details.geese as number ?? ''} /></label><label>Добыто уток<input name="ducks" type="number" min="0" defaultValue={edit?.details.ducks as number ?? ''} /></label></div><label>Другая добыча / наблюдения<input name="otherGame" defaultValue={edit?.details.otherGame as string ?? ''} /></label><label>Результат охоты<input name="result" defaultValue={edit?.details.result as string ?? ''} placeholder="Кратко об итогах" /></label></div>
+          <div className="category-field-group" data-for="Охота"><div className="form-pair"><label>Добыто гусей<input name="geese" type="number" min="0" defaultValue={edit?.details.geese as number ?? ''} /></label><label>Добыто уток<input name="ducks" type="number" min="0" defaultValue={edit?.details.ducks as number ?? ''} /></label></div><label>Другая добыча / наблюдения<input name="otherGame" defaultValue={edit?.details.otherGame as string ?? ''} /></label></div>
           <div className="category-field-group" data-for="Рыбалка"><label>Общий вес улова, кг<input name="catchWeight" type="number" min="0" step="0.01" defaultValue={edit?.details.catchWeight as number ?? ''} /></label><label>Виды рыб<input name="fishSpecies" defaultValue={edit?.details.fishSpecies as string ?? ''} placeholder="Щука, окунь, лещ..." /></label><label>Количество по видам<input name="fishQuantities" defaultValue={edit?.details.fishQuantities as string ?? ''} /></label><label>Приманки и снасти<input name="lures" defaultValue={edit?.details.lures as string ?? ''} /></label></div>
           <div className="category-field-group" data-for="Кемпинг"><label>Количество ночёвок<input name="nights" type="number" min="0" defaultValue={edit?.details.nights as number ?? ''} /></label><label>Условия стоянки<input name="conditions" defaultValue={edit?.details.conditions as string ?? ''} placeholder="Погода, место лагеря, доступность воды..." /></label></div>
-          <div className="category-field-group" data-for="Путешествия"><label>Маршрут<input name="route" defaultValue={edit?.details.route as string ?? ''} /></label><label>Посещённые места<input name="visitedPlaces" defaultValue={edit?.details.visitedPlaces as string ?? ''} /></label><div className="form-pair"><label>Дистанция, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} /></label><label>Продолжительность<input name="duration" defaultValue={edit?.details.duration as string ?? ''} placeholder="Например, 3 дня" /></label></div></div>
+          <div className="category-field-group" data-for="Путешествия"><label>Маршрут<input name="route" defaultValue={edit?.details.route as string ?? ''} /></label><label>Посещённые места<input name="visitedPlaces" defaultValue={edit?.details.visitedPlaces as string ?? ''} /></label><label>Продолжительность<input name="duration" defaultValue={edit?.details.duration as string ?? ''} placeholder="Например, 3 дня" /></label></div>
         </div>
       </div>
-      <div className="form-section"><h3>Ход выезда и впечатления</h3>
-        <label>Хронология (каждое событие с новой строки; время можно указать в начале)<textarea name="timeline" rows={4} defaultValue={edit?.timeline.map(item => item.time ? `${item.time} — ${item.title}` : item.title).join('\n') ?? ''} placeholder={'06:30 — Прибыли на место\n08:15 — Начало маршрута'} /></label>
-        <label>Краткие заметки<textarea name="note" rows={2} defaultValue={edit?.note ?? ''} placeholder="Что произошло?" /></label>
-        <label>Впечатления<textarea name="impressions" rows={3} defaultValue={edit?.impressions ?? ''} /></label>
-        <label>Выводы на будущее<textarea name="conclusion" rows={3} defaultValue={edit?.conclusion ?? ''} /></label>
-      </div>
+      <div className="form-section"><h3>Заметки</h3><textarea name="note" rows={5} defaultValue={edit?.note ?? ''} placeholder="Запиши всё, что захочешь сохранить об этом выезде..." /></div>
       <div className="form-section"><h3>Фотографии и видео</h3>
         <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => setFiles(Array.from(e.target.files ?? []))} /></label>
         {files.length > 0 && <p className="file-summary">Новых файлов выбрано: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
