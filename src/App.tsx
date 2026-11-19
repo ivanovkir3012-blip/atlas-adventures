@@ -26,7 +26,7 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
   const [online, setOnline] = useState(navigator.onLine);
-  const [showMap, setShowMap] = useState(false);
+  
   const [statsPeriod, setStatsPeriod] = useState<'all' | 'year' | 'month'>('all');
   const refresh = () => all().then(setRows);
 
@@ -60,10 +60,10 @@ export default function App() {
     const geese = periodRows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
     const ducks = periodRows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
     return [
-      { label: 'Всего выездов', value: periodRows.length, image: 'stat-outings.webp' },
-      { label: 'Дней на природе', value: days, image: 'stat-days.webp' },
-      { label: 'Добыто гусей', value: geese, image: 'stat-geese.webp' },
-      { label: 'Добыто уток', value: ducks, image: 'stat-ducks.webp' },
+      { label: 'Всего выездов', value: periodRows.length, symbol: '▦' },
+      { label: 'Дней на природе', value: days, symbol: '☼' },
+      { label: 'Добыто гусей', value: geese, symbol: '➤' },
+      { label: 'Добыто уток', value: ducks, symbol: '➤' },
     ];
   }, [rows, statsPeriod]);
 
@@ -209,13 +209,13 @@ export default function App() {
         <section className="dashboard-section">
           <div className="section-title"><div><h2>▮ Мои приключения в цифрах</h2></div><button className="text-button" onClick={()=>setPage('Статистика')}>Подробная статистика ↗</button></div>
           <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
-          <div className="stat-grid stat-grid-home">{[...stats,{label:'Кемпинги',value:rows.filter(r=>r.category==='Кемпинг').length,image:''},{label:'Пройденное расстояние',value:'≈ '+rows.reduce((s,r)=>s+Number(r.details?.distance||0),0).toLocaleString('ru-RU')+' км',image:''}].map((stat,index)=><div className="stat-card" key={stat.label}>{stat.image?<img className="stat-emblem-image" src={`${assetBase}images/${stat.image}`} alt={stat.label}/>:<span className="stat-symbol">{['♧','⌁'][index-4]}</span>}<div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
+          <div className="stat-grid stat-grid-home">{[...stats,{label:'Кемпинги',value:rows.filter(r=>r.category==='Кемпинг').length,symbol:'⌂'},{label:'Пройденное расстояние',value:'≈ '+rows.reduce((s,r)=>s+Number(r.details?.distance||0),0).toLocaleString('ru-RU')+' км',symbol:'⌁'}].map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><small>{stat.label}</small><strong>{stat.value}</strong></div></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent(rows.slice(0,4))}</section>
-        <section className="dashboard-section map-preview"><div className="section-title"><div><h2>◫ Карта приключений</h2></div><button className="text-button" onClick={()=>setPage('Выезды')}>К выездам ↗</button></div><div className="map-placeholder map-home"><div className="map-lines"/><span className="map-pin">✧</span><p>{rows.some(row=>row.coordinates)?'Точки твоих приключений':'Здесь будут отмечены места твоих выездов'}</p><small>{rows.some(row=>row.coordinates)?'Карта с координатами выездов будет доступна в разделе «Выезды».':'Добавляй координаты в отчётах, чтобы собрать свою карту.'}</small><div className="map-compass">N<br/>✥</div></div></section>
+
       </>}
-      {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div><button className="outline-button" onClick={()=>setShowMap(v=>!v)}>{showMap?'Скрыть карту':'Показать карту'}</button></div>{showMap&&<div className="map-placeholder outing-map"><div className="map-lines"/><span className="map-pin">✧</span><p>Карта выездов</p><small>Отображение точек появится после подключения картографического сервиса.</small></div>}{renderRows(filtered)}</section>}
-      {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><img className="stat-emblem-image" src={`${assetBase}images/${stat.image}`} alt={stat.label} /><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
+      {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
+      {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
       {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name,description])=><div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
