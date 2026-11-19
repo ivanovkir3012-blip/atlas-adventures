@@ -140,7 +140,7 @@ export default function App() {
   function renderRecent(items: Outing[]) {
     if (!items.length) return <div className="recent-empty"><span>✧</span><div><b>Первое приключение ещё впереди</b><small>Добавь выезд — здесь появится его фотография и история.</small></div><button className="outline-button" onClick={openNew}>Добавить</button></div>;
     return <div className="recent-list">{items.map(row => <button className="recent-line" key={row.id} onClick={() => setReport(row)}>
-      <div className="recent-photo" style={{backgroundImage:`linear-gradient(0deg,#071a13aa,transparent 75%),url(${pics[row.category]})`}} />
+      <div className="recent-photo" style={{backgroundImage:`linear-gradient(0deg,#071a13aa,transparent 75%),url(${coverUrls[row.id] || pics[row.category]})`}} />
       <div className="recent-copy"><small>{row.category}</small><b>{row.title}</b></div><span className="recent-date">▦ &nbsp;{row.date}</span><span className="recent-place">● &nbsp;{row.place || 'Место не указано'}</span><i>›</i>
     </button>)}</div>;
   }
