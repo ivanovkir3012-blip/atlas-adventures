@@ -14,15 +14,24 @@ jobs:
 
       - name: Unpack ZIP
         run: |
-          unzip -o atlas_priklyucheniya_mvp_0_1.zip -d extracted
+          ARCHIVE=$(find . -maxdepth 2 -type f -name "atlas_priklyucheniya_mvp_0_1.zip" -print -quit)
+
+          if [ -z "$ARCHIVE" ]; then
+            echo "ZIP archive not found"
+            find . -maxdepth 3 -type f
+            exit 1
+          fi
+
+          mkdir -p extracted
+          unzip -o "$ARCHIVE" -d extracted
           cp -R extracted/. .
           rm -rf extracted
-          rm atlas_priklyucheniya_mvp_0_1.zip
+          rm -f "$ARCHIVE"
 
       - name: Save files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Unpack project files"
+          git add -A
+          git diff --cached --quiet || git commit -m "Unpack project files"
           git push
