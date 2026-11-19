@@ -523,3 +523,30 @@ input,select,textarea{background:#191b1e;color:#f1ead9;border-color:#a98a48}
 .category-tile strong,.category-tile small{margin-left:0!important}
 .category-tile{align-items:center;text-align:center;justify-content:flex-end}
 @media(max-width:560px){.main-nav button{padding-top:10px;padding-bottom:10px}}
+
+
+/* Scenic full-app background: misty forest lake at sunset, behind every page. */
+html{min-height:100%;background:#111315}
+body{
+  min-height:100vh;
+  background-color:#111315!important;
+  background-image:
+    linear-gradient(180deg,rgba(12,14,16,.76) 0%,rgba(12,14,16,.62) 42%,rgba(12,14,16,.82) 100%),
+    url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2400&q=88')!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-attachment:fixed!important;
+  background-repeat:no-repeat!important;
+}
+.app-shell{background:transparent!important}
+.topbar{background:rgba(20,22,24,.88)!important;backdrop-filter:blur(12px)}
+.dashboard-section,.stat-card,.outing-row,.record-card,.setting-card,
+.coming-panel,.empty-state,.outing-modal,.report-modal{
+  background:linear-gradient(145deg,rgba(38,40,43,.91),rgba(20,22,24,.94))!important;
+  backdrop-filter:blur(10px);
+}
+.category-tile{box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.outing-line,.recent-line{background:rgba(20,22,24,.46)}
+@media(max-width:700px){
+  body{background-attachment:scroll!important;background-position:center top!important}
+}
