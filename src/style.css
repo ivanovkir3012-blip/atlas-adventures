@@ -512,3 +512,14 @@ input,select,textarea{background:#191b1e;color:#f1ead9;border-color:#a98a48}
 .coming-panel,.empty-state{background:#202225;color:#ddd2b8;border-color:#a98a48}
 .app-footer{border-color:#a98a48;color:#e6c873}
 @media(max-width:620px){.topbar{background:#17191b}.stat-symbol{width:34px;height:34px;flex-basis:34px;font-size:20px}}
+
+
+/* Text-only navigation and category cards: remove decorative icons. */
+.brand-mark{display:none!important}
+.main-nav button:before{display:none!important;content:none!important}
+.main-nav button{padding-top:10px;padding-bottom:10px}
+.category-tile:after{display:none!important;content:none!important}
+.category-tile .tile-arrow{display:none!important}
+.category-tile strong,.category-tile small{margin-left:0!important}
+.category-tile{align-items:center;text-align:center;justify-content:flex-end}
+@media(max-width:560px){.main-nav button{padding-top:10px;padding-bottom:10px}}
