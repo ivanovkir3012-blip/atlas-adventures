@@ -973,7 +973,7 @@ input,select,textarea{
 .atlas-map-pin{width:30px;height:42px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
 
 
-/* Full-bleed artwork above the value; keep the number in its own strip below. */
+/* Fixed-height stat cards: crop baked-in captions out of the artwork and place values in a separate footer. */
 .stat-grid-home .stat-art-card{
   position:relative!important;
   display:flex!important;
@@ -981,12 +981,16 @@ input,select,textarea{
   align-items:stretch!important;
   justify-content:flex-start!important;
   gap:0!important;
+  height:164px!important;
+  min-height:164px!important;
+  max-height:164px!important;
   min-width:0!important;
   overflow:hidden!important;
   isolation:isolate!important;
   padding:0!important;
   background:transparent!important;
-  border:1px solid rgba(220,190,126,.48)!important;
+  border:1px solid rgba(220,190,126,.58)!important;
+  border-radius:12px!important;
 }
 .stat-grid-home .stat-art-card .stat-art-full{
   position:relative!important;
@@ -994,12 +998,14 @@ input,select,textarea{
   z-index:0!important;
   display:block!important;
   width:100%!important;
-  height:calc(100% - 42px)!important;
+  height:auto!important;
   min-width:0!important;
-  flex:1 1 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  flex:1 1 0!important;
   object-fit:cover!important;
-  object-position:center!important;
-  transform:scale(1.1)!important;
+  object-position:center 12%!important;
+  transform:none!important;
   transform-origin:center!important;
   border:0!important;
   border-radius:0!important;
@@ -1008,25 +1014,41 @@ input,select,textarea{
 }
 .stat-grid-home .stat-art-card strong{
   position:relative!important;
+  inset:auto!important;
   z-index:1!important;
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
   align-self:stretch!important;
-  flex:0 0 42px!important;
-  min-height:42px!important;
+  flex:0 0 38px!important;
+  height:38px!important;
+  min-height:38px!important;
   margin:0!important;
-  padding:3px 8px!important;
+  padding:2px 8px!important;
   border-radius:0!important;
-  border-top:1px solid rgba(220,190,126,.42)!important;
-  background:rgba(5,13,10,.88)!important;
+  border:0!important;
+  border-top:1px solid rgba(220,190,126,.5)!important;
+  background:rgba(5,13,10,.94)!important;
   color:#fff0c6!important;
-  font:700 24px Georgia,serif!important;
-  line-height:1.15!important;
+  font:700 23px Georgia,serif!important;
+  line-height:1.1!important;
   text-align:center!important;
   text-shadow:0 1px 4px rgba(0,0,0,.95)!important;
 }
 @media(max-width:620px){
-  .stat-grid-home .stat-art-card .stat-art-full{height:calc(100% - 36px)!important}
-  .stat-grid-home .stat-art-card strong{flex-basis:36px!important;min-height:36px!important;font-size:21px!important}
+  .stat-grid-home .stat-art-card{
+    height:132px!important;
+    min-height:132px!important;
+    max-height:132px!important;
+    border-radius:10px!important;
+  }
+  .stat-grid-home .stat-art-card .stat-art-full{
+    object-position:center 8%!important;
+  }
+  .stat-grid-home .stat-art-card strong{
+    flex-basis:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    font-size:21px!important;
+  }
 }
