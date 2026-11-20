@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 type Page = 'Главная' | 'Выезды' | 'Карта' | 'Статистика' | 'Рекорды' | 'Настройки';
@@ -33,7 +33,7 @@ function createMapMarkerElement(color:string) {
   el.appendChild(svg);
   return el;
 }
-const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', pikeWeight: '', pikePhotoId: '', breamWeight: '', breamPhotoId: '', perchWeight: '', perchPhotoId: '', catfishWeight: '', catfishPhotoId: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
+const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', pikeWeight: '', pikePhotoId: '', breamWeight: '', breamPhotoId: '', perchWeight: '', perchPhotoId: '', catfishWeight: '', catfishPhotoId: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', spent: '', daysOutdoors: '', duration: '' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
@@ -194,9 +194,10 @@ export default function App() {
     return [
       { label: 'Всего выездов', value: periodRows.length, symbol: '▦' },
       { label: 'Дней на природе', value: days, symbol: '☼' },
-      { label: 'Добыто гусей', value: geese, symbol: '➤' },
-      { label: 'Добыто уток', value: ducks, symbol: '➤' },
-      { label: 'Пройденное расстояние', value: periodRows.reduce((sum, row) => sum + Number(row.details?.distance ?? 0), 0).toLocaleString('ru-RU') + ' км', symbol: '⌁' },
+      { label: 'Гусей', value: geese, symbol: '➤' },
+      { label: 'Уток', value: ducks, symbol: '➤' },
+      { label: 'Всего проехал', value: periodRows.reduce((sum, row) => sum + Number(row.details?.distance ?? 0), 0).toLocaleString('ru-RU') + ' км', symbol: '⌁' },
+      { label: 'Потрачено', value: periodRows.reduce((sum, row) => sum + Number(row.details?.spent ?? 0), 0).toLocaleString('ru-RU') + ' BYN', symbol: '₽' },
     ];
   }, [periodRows]);
   const categoryStats = useMemo(() => cats.map(cat => {
@@ -280,7 +281,7 @@ export default function App() {
     const details: Record<string, string | number | boolean | string[]> = {};
     for (const key of Object.keys(emptyDetails)) {
       const value = form.get(key);
-      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','daysOutdoors','pikeWeight','breamWeight','perchWeight','catfishWeight'].includes(key) ? Number(value) : String(value);
+      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','spent','daysOutdoors','pikeWeight','breamWeight','perchWeight','catfishWeight'].includes(key) ? Number(value) : String(value);
     }
     const timeline: Outing['timeline'] = [];
     const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
@@ -319,6 +320,23 @@ export default function App() {
     else if (newlySaved.length) row.coverMediaId = newlySaved[0];
     await put(row);
     setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
+  }
+
+  async function removeReportMedia(item: MediaItem) {
+    if (!report || !confirm('Удалить это фото или видео из отчёта?')) return;
+    await deleteMedia(item.id);
+    const updated: Outing = { ...report, mediaIds: report.mediaIds.filter(id => id !== item.id), details: { ...report.details } };
+    if (updated.coverMediaId === item.id) {
+      const remaining = (await getMediaForOuting(report.id)).filter(mediaItem => mediaItem.id !== item.id);
+      updated.coverMediaId = remaining.find(mediaItem => mediaItem.type === 'image')?.id;
+    }
+    for (const key of ['pikePhotoId','breamPhotoId','perchPhotoId','catfishPhotoId']) {
+      if (updated.details[key] === item.id) delete updated.details[key];
+    }
+    await put(updated);
+    setReport(updated);
+    setReportMedia(current => current.filter(mediaItem => mediaItem.id !== item.id));
+    await refresh();
   }
 
   async function toggleFavorite(row: Outing) { await put({ ...row, favorite: !row.favorite }); await refresh(); setReport({ ...row, favorite: !row.favorite }); }
@@ -362,7 +380,7 @@ export default function App() {
     <section className="report-modal">
       <div className="modal-head"><div><small>{report.category.toUpperCase()} · {report.date}</small><h2>{report.title}</h2><p className="report-place">{report.place || 'Место не указано'}</p></div><button className="close-button" onClick={() => setReport(null)}>×</button></div>
       <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
-      {reportMedia.length > 0 && <div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}</div> : null)}</div>}
+      {reportMedia.length > 0 && <div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}<button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button></div> : null)}</div>}
       {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
       {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
       {Object.entries(report.details).filter(([k,v]) => !k.endsWith('PhotoId') && String(v).trim() !== '').length > 0 && <div className="report-block"><h3>Детали выезда</h3><div className="detail-list">{Object.entries(report.details).filter(([k,v]) => !k.endsWith('PhotoId') && String(v).trim() !== '').map(([k,v]) => <div className="detail-row" key={k}><b>{{geese:'Добыто гусей',ducks:'Добыто уток',otherGame:'Другая дичь',catchWeight:'Вес улова',fishSpecies:'Виды рыбы',fishQuantities:'Количество рыбы',lures:'Приманки',pikeWeight:'Вес щуки, кг',breamWeight:'Вес леща, кг',perchWeight:'Вес окуня, кг',catfishWeight:'Вес сома, кг',nights:'Ночёвок',conditions:'Условия',route:'Маршрут',visitedPlaces:'Посещённые места',distance:'Расстояние',daysOutdoors:'Дней на природе',duration:'Продолжительность'}[k] || k}:</b><span>{String(v)}</span></div>)}</div></div>}
@@ -383,7 +401,7 @@ export default function App() {
         <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
         <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? pickedCoordinates?.lat ?? ''} placeholder="53.9006" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? pickedCoordinates?.lng ?? ''} placeholder="27.5590" /></label></div>
         <small className="muted-note">Координаты можно получить на карте и вставить сюда. Если координаты не указаны, выезд сохранится без метки.</small>
-        <label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label>
+        <div className="form-pair"><label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label><label>Потрачено, BYN<input name="spent" type="number" min="0" step="0.01" defaultValue={edit?.details.spent as number ?? ''} placeholder="Например, 85.50" /></label></div>
         <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
         <label>Погода и условия<input name="weather" defaultValue={edit?.weather ?? ''} placeholder="Температура, ветер, осадки, состояние воды..." /></label>
         <div className="form-pair"><label>Дней на природе<input name="daysOutdoors" type="number" min="0" step="1" defaultValue={edit?.details.daysOutdoors as number ?? 1} /></label></div>
@@ -422,7 +440,7 @@ export default function App() {
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           {statsPeriodControls}
-          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Закатный лагерь у озера.png','Дней на природе':'Золотой закат в лесном лагере.png','Гусей':'Гуси над туманным озером на закате.png','Уток':'Взлёт крякв на закате.png','Всего проехал':'Золотой маршрут сквозь леса и озёра.png','Потрачено':'Походный натюрморт на закате.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong><small>{stat.label}</small></div>)}</div>
         </section>
         <section className="dashboard-section photo-story-section"><div className="section-title"><div><h2>Фотоистория</h2><p>Моменты, к которым хочется возвращаться</p></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderPhotoStory([...rows].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0,3))}</section>
 
