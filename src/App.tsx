@@ -262,10 +262,10 @@ export default function App() {
       <button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button>
       <button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button>
     </div>
-    <div className="stats-selectors">
+    {statsPeriod !== 'all' && <div className="stats-selectors">
       <label>Год графиков<select value={statsYear} onChange={e=>setStatsYear(Number(e.target.value))}>{availableYears.map(year=><option key={year} value={year}>{year}</option>)}</select></label>
       {statsPeriod === 'month' && <label>Месяц<select value={statsMonth} onChange={e=>setStatsMonth(Number(e.target.value))}>{Array.from({length:12},(_,month)=><option key={month} value={month}>{new Date(2000,month,1).toLocaleDateString('ru-RU',{month:'long'})}</option>)}</select></label>}
-    </div>
+    </div>}
   </div>;
 
   const filtered = rows.filter(row =>
