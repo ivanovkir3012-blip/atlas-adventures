@@ -752,3 +752,11 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
 .map-picked .gold-button,.map-picked .outline-button{white-space:nowrap}
 .leaflet-popup-content img{display:block;max-width:100%}
 @media(max-width:560px){.map-picked{align-items:stretch;flex-direction:column}.map-picked span{min-width:0}}
+
+
+/* Clear illustrated pin markers for saved outings and searched locations. */
+.atlas-map-pin-wrap{background:transparent!important;border:0!important}
+.atlas-map-pin{display:block;width:34px;height:44px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.leaflet-control-layers{border:1px solid #a98a48!important;border-radius:8px!important;box-shadow:0 2px 12px #0005!important}
+.leaflet-control-layers-expanded{background:#222629!important;color:#f1ead9!important;padding:8px 10px!important}
+.leaflet-control-layers-toggle{filter:sepia(.5) saturate(.8)}
