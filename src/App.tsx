@@ -84,7 +84,8 @@ export default function App() {
       (map as any).atlasPinIcon=makePin('#d7b65d');
       const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
       visible.forEach(row=>{const index=cats.indexOf(row.category);const pin=w.L.marker([row.coordinates!.lat,row.coordinates!.lng],{icon:makePin(colors[index]||'#d7b65d')}).addTo(map);const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');pin.bindPopup((photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace);pin.on('click',()=>setReport(row));});
-      map.on('click',(event:any)=>{const lat=Number(event.latlng.lat.toFixed(6));const lng=Number(event.latlng.lng.toFixed(6));setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');w.L.popup().setLatLng(event.latlng).setContent('Выбранная точка<br>'+lat+', '+lng).openOn(map);});
+      let pickedPin:any=null;
+      map.on('click',(event:any)=>{const lat=Number(event.latlng.lat.toFixed(6));const lng=Number(event.latlng.lng.toFixed(6));setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');if(pickedPin)map.removeLayer(pickedPin);pickedPin=w.L.marker([lat,lng],{icon:makePin('#f0c34a')}).addTo(map);pickedPin.bindPopup('Выбранная точка<br>'+lat+', '+lng).openPopup();});
       if(visible.length){const group=w.L.featureGroup(visible.map(row=>w.L.marker([row.coordinates!.lat,row.coordinates!.lng])));map.fitBounds(group.getBounds().pad(.18),{maxZoom:11});}
       setTimeout(()=>map.invalidateSize(),100);
     };
