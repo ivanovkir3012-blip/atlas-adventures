@@ -1128,3 +1128,15 @@ input,select,textarea{
  .record-stat-card{padding:10px}
  .record-stat-card strong{font-size:21px}
 }
+
+
+/* User-approved: restore frosted-glass surface only for My Adventures statistics. */
+.dashboard-section.dashboard-stats-section{
+  background:rgba(17,22,28,.46)!important;
+  background-color:rgba(17,22,28,.46)!important;
+  background-image:linear-gradient(145deg,rgba(29,35,41,.50),rgba(12,17,22,.42))!important;
+  border:1.2px solid rgba(238,202,125,.88)!important;
+  box-shadow:0 8px 26px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.07)!important;
+  backdrop-filter:blur(9px) saturate(120%)!important;
+  -webkit-backdrop-filter:blur(9px) saturate(120%)!important;
+}
