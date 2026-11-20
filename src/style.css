@@ -1,3 +1,10 @@
+/* ATLAS ADVENTURES — CANONICAL DEFAULT DESIGN
+   Primary appearance: graphite/anthracite surfaces, antique-gold accents,
+   scenic photography only in the home hero, and clean illustrated map pins.
+   Keep this as the default visual baseline; do not replace it with prior
+   light, sunset, or forest-green theme experiments further down this file.
+*/
+
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
 :root{font-family:Manrope,Arial,sans-serif;color:#eee9da;background:#0b1d16;font-synthesis:none;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}
