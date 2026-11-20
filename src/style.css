@@ -973,7 +973,7 @@ input,select,textarea{
 .atlas-map-pin{width:30px;height:42px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
 
 
-/* Preserve the full artwork proportions; put the value below on a transparent strip. */
+/* Crop the decorative cream frame inside the artwork; keep the green field and place green values below. */
 .stat-grid-home .stat-art-card{
   position:relative!important;
   display:flex!important;
@@ -1005,7 +1005,7 @@ input,select,textarea{
   flex:0 0 auto!important;
   object-fit:contain!important;
   object-position:center!important;
-  transform:none!important;
+  transform:scale(1.16)!important;
   transform-origin:center!important;
   border:0!important;
   border-radius:0!important;
@@ -1027,16 +1027,17 @@ input,select,textarea{
   padding:2px 8px!important;
   border-radius:0!important;
   border:0!important;
-  border-top:1px solid rgba(220,190,126,.35)!important;
-  background:transparent!important;
-  color:#fff0c6!important;
+  border-top:1px solid rgba(119,176,112,.28)!important;
+  background:rgba(8,35,22,.18)!important;
+  color:#8fd18b!important;
   font:700 23px Georgia,serif!important;
   line-height:1.1!important;
   text-align:center!important;
-  text-shadow:0 1px 4px rgba(0,0,0,.95)!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.9)!important;
 }
 @media(max-width:620px){
   .stat-grid-home .stat-art-card{border-radius:10px!important}
+  .stat-grid-home .stat-art-card .stat-art-full{transform:scale(1.16)!important}
   .stat-grid-home .stat-art-card strong{
     flex-basis:34px!important;
     height:34px!important;
