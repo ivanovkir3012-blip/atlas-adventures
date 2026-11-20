@@ -222,7 +222,7 @@ export default function App() {
   }), [rows, yearlyStats]);
   const categoryTotal = categoryStats.reduce((sum,item)=>sum+item.outings,0);
   const categoryGradient = (() => { let cursor=0; const colors=['#c7a45a','#6f9d91','#6d86a8','#9b806d']; return categoryStats.map((item,index)=>{ const start=cursor; cursor += categoryTotal ? item.outings/categoryTotal*100 : 0; return `${colors[index]} ${start}% ${cursor}%`; }).join(', '); })();
-  const trophyRecords = useMemo(() => {
+  const trophyRecords = useMemo<Array<{key:string;title:string;row?:Outing;weight?:number;photoId?:string;count?:number}>>(() => {
     const species = [
       { key:'pike', title:'Самая большая щука', weightKey:'pikeWeight', photoKey:'pikePhotoId' },
       { key:'bream', title:'Самый большой лещ', weightKey:'breamWeight', photoKey:'breamPhotoId' },
