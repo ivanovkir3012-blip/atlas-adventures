@@ -250,7 +250,7 @@ export default function App() {
     </form>
   </div>;
 
-  return <div className="app-shell">
+  return <div className="app-shell" style={{'--atlas-background-image': `url("${heroImage}")`} as React.CSSProperties}>
     <header className="topbar"><button className="brand" onClick={() => setPage('Главная')} aria-label="На главную"><span className="brand-mark">♠</span><span className="brand-name">Атлас<br/>приключений</span></button><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
     <main className="page-content">
       {page === 'Главная' && <>
