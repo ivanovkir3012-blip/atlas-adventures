@@ -1242,12 +1242,10 @@ input,select,textarea{
   font-size:13px;
   line-height:1.35;
 }
-.atlas-map-marker{width:36px;height:46px;cursor:pointer;transform:none!important;}
-.atlas-map-marker svg{transform:none!important;}
 
 
 /* MapLibre positions the marker wrapper with its own translate transform.
    Keep the wrapper transform untouched; only size the custom needle. */
-.atlas-map-marker{width:18px;height:34px;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,.95));}
+.atlas-map-marker{width:18px;height:34px;display:block;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,.95));}
 .atlas-map-marker svg{display:block;width:18px;height:34px;}
 .atlas-map-marker-picked{z-index:5;}
