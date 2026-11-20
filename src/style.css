@@ -1015,17 +1015,6 @@ input,select,textarea{
   background:#052817!important;
   box-shadow:none!important;
 }
-/* Paint over only the cream inset frame printed inside the green artwork. */
-.stat-grid-home .stat-art-viewport::after{
-  content:""!important;
-  position:absolute!important;
-  z-index:2!important;
-  pointer-events:none!important;
-  inset:3.5%!important;
-  border:8px solid #052817!important;
-  border-radius:28px!important;
-  box-shadow:none!important;
-}
 .stat-grid-home .stat-art-card strong{
   display:flex!important;
   align-items:center!important;
