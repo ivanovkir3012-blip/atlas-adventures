@@ -1210,3 +1210,8 @@ input,select,textarea{
   .stats-kpi-grid .stats-art-kpi .stat-art-viewport{aspect-ratio:1.12 / 1!important}
   .stats-kpi-grid .stats-art-kpi strong{font-size:21px!important}
 }
+
+
+/* Slim bronze-edged map pins */
+.atlas-map-marker{width:30px;height:34px;cursor:pointer;}
+.atlas-map-marker-picked{z-index:5;}
