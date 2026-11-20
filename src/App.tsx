@@ -64,39 +64,47 @@ export default function App() {
     let cancelled = false;
     const init = async () => {
       const w = window as any;
-      if (!w.L) {
-        if (!document.querySelector('link[data-leaflet]')) {
-          const link=document.createElement('link');link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';link.dataset.leaflet='1';document.head.appendChild(link);
-        }
-        await new Promise<void>((resolve,reject)=>{
-          const existing=document.querySelector('script[data-leaflet]') as HTMLScriptElement|null;
-          if(existing){if(w.L)resolve();else existing.addEventListener('load',()=>resolve(),{once:true});return;}
-          const script=document.createElement('script');script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.dataset.leaflet='1';script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
-        });
+      const loadScript = (src:string, marker:string) => new Promise<void>((resolve,reject)=>{
+        if(document.querySelector('script['+marker+']')){const existing=document.querySelector('script['+marker+']') as HTMLScriptElement;if((w as any).maplibregl&&marker==='data-maplibre')resolve();else existing.addEventListener('load',()=>resolve(),{once:true});return;}
+        const script=document.createElement('script');script.src=src;script.setAttribute(marker,'1');script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
+      });
+      if(!w.L){
+        if(!document.querySelector('link[data-leaflet]')){const link=document.createElement('link');link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';link.dataset.leaflet='1';document.head.appendChild(link);}
+        await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','data-leaflet');
       }
-      if(cancelled||!mapElement.current||!w.L)return;
+      if(!w.maplibregl){
+        if(!document.querySelector('link[data-maplibre-css]')){const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css';css.dataset.maplibreCss='1';document.head.appendChild(css);}
+        await loadScript('https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js','data-maplibre');
+      }
+      if(cancelled||!mapElement.current||!w.L||!w.maplibregl)return;
       if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}
-      const map=w.L.map(mapElement.current).setView([53.9,27.56],6);mapInstance.current=map;
+      const map=w.L.map(mapElement.current,{zoomControl:true}).setView([53.9,27.56],6);mapInstance.current=map;
       const satellite=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',maxZoom:19});
-      const labels=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{attribution:'Place labels &copy; Esri',maxZoom:19,opacity:1});
-      const roads=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{attribution:'Roads &copy; Esri, HERE, Garmin and OpenStreetMap contributors',maxZoom:19,opacity:1});
-      const water=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}',{attribution:'Water and geographic reference &copy; Esri',maxZoom:19,opacity:1});
       const street=w.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19});
       const topo=w.L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap',maxZoom:17});
-      const hybrid=w.L.layerGroup([satellite,labels,roads,water]);
-      hybrid.addTo(map);
-      w.L.control.layers({'Спутник + подробные подписи (Hybrid)':hybrid,'Схема':street,'Топографическая':topo},null,{collapsed:true}).addTo(map);
+      satellite.addTo(map);
+      w.L.control.layers({'Спутник + подписи OSM (Hybrid)':satellite,'Схема OpenStreetMap':street,'Топографическая':topo},null,{collapsed:true}).addTo(map);
+      const overlay=document.createElement('div');overlay.className='atlas-map-label-overlay';overlay.style.cssText='position:absolute;inset:0;z-index:420;pointer-events:none;overflow:hidden;';mapElement.current.appendChild(overlay);
+      const styleResponse=await fetch('https://tiles.openfreemap.org/styles/liberty');
+      if(!styleResponse.ok)throw new Error('OpenFreeMap style unavailable');
+      const styleJson=await styleResponse.json();
+      styleJson.layers=(styleJson.layers||[]).filter((layer:any)=>layer.type==='symbol'||layer.type==='line');
+      const labelMap=new w.maplibregl.Map({container:overlay,style:styleJson,center:[27.56,53.9],zoom:6,interactive:false,attributionControl:false,canvasContextAttributes:{alpha:true},preserveDrawingBuffer:false});
+      (map as any).atlasLabelMap=labelMap;
+      const syncOverlay=()=>{const center=map.getCenter();labelMap.jumpTo({center:[center.lng,center.lat],zoom:map.getZoom()});};
+      map.on('move zoom',syncOverlay);
+      labelMap.on('load',()=>{if(cancelled)return;syncOverlay();labelMap.resize();});
       const makePin=()=>w.L.divIcon({className:'atlas-map-pin-wrap',iconSize:[30,42],iconAnchor:[15,40],popupAnchor:[0,-36],html:'<svg class="atlas-map-pin" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7.3 1 1 7.3 1 15c0 10 14 26 14 26s14-16 14-26C29 7.3 22.7 1 15 1Z" fill="#4285F4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="15" r="5.2" fill="#fff" stroke="#1967D2" stroke-width="1.2"/></svg>'});
-      (map as any).atlasPinIcon=makePin('#d7b65d');
+      (map as any).atlasPinIcon=makePin();
       const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
-      visible.forEach(row=>{const index=cats.indexOf(row.category);const pin=w.L.marker([row.coordinates!.lat,row.coordinates!.lng],{icon:makePin()}).addTo(map);const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');pin.bindPopup((photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace);pin.on('click',()=>setReport(row));});
+      visible.forEach(row=>{const pin=w.L.marker([row.coordinates!.lat,row.coordinates!.lng],{icon:makePin()}).addTo(map);const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');pin.bindPopup((photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace);pin.on('click',()=>setReport(row));});
       let pickedPin:any=null;
       map.on('click',(event:any)=>{const lat=Number(event.latlng.lat.toFixed(6));const lng=Number(event.latlng.lng.toFixed(6));setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');if(pickedPin)map.removeLayer(pickedPin);pickedPin=w.L.marker([lat,lng],{icon:makePin()}).addTo(map);pickedPin.bindPopup('Выбранная точка<br>'+lat+', '+lng).openPopup();});
       if(visible.length){const group=w.L.featureGroup(visible.map(row=>w.L.marker([row.coordinates!.lat,row.coordinates!.lng])));map.fitBounds(group.getBounds().pad(.18),{maxZoom:11});}
-      setTimeout(()=>map.invalidateSize(),100);
+      setTimeout(()=>{map.invalidateSize();labelMap.resize();syncOverlay();},180);
     };
     init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
-    return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
+    return ()=>{cancelled=true;if(mapInstance.current){const labelMap=(mapInstance.current as any).atlasLabelMap;if(labelMap)labelMap.remove();mapInstance.current.remove();mapInstance.current=null;}};
   },[page,rows,mapFilter,coverUrls]);
 
   useEffect(() => {
