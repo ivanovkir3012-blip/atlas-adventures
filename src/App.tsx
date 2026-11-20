@@ -342,7 +342,7 @@ export default function App() {
             <div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
         </section>
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год · выезды</span></div>
-          <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100)}%`}} /></div><small>{item.label}</small></div>)}</div>
+          <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${item.outings?Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100):0}%`}} /></div><small>{item.label}</small></div>)}</div>
         </section>
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Добыча по месяцам</h2><span>Охота · {statsYear} год</span></div>
           <div className="hunting-legend"><span><i className="goose-dot"/>Гуси</span><span><i className="duck-dot"/>Утки</span></div>
