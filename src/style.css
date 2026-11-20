@@ -1306,3 +1306,6 @@ input,select,textarea{
 .fish-record-input input,.fish-record-input select{width:100%;min-width:0;padding:8px;border:1px solid rgba(220,190,126,.3);border-radius:6px;background:rgba(5,20,15,.5);color:#eee9da;font-size:11px}
 @media(max-width:800px){.records-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.records-count-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.records-page{padding-left:0;padding-right:0}.records-group-heading h2{font-size:20px}.records-group-heading span{font-size:9px}.records-grid{gap:9px}.record-fish-photo,.record-fish-placeholder{height:122px}.record-card-copy{padding:11px}.record-card-copy>strong,.record-count-card>strong{font-size:23px}.record-count-card{padding:14px;min-height:122px}.fish-record-input{grid-template-columns:48px minmax(75px,.7fr) minmax(110px,1.3fr);gap:6px;padding:7px}.fish-record-input input,.fish-record-input select{font-size:10px;padding:7px}}
+
+/* Center the main category titles on the records page. */
+.records-group-heading{justify-content:center;text-align:center}
