@@ -1008,7 +1008,7 @@ input,select,textarea{
   min-height:0!important;
   object-fit:contain!important;
   object-position:center!important;
-  transform:none!important;
+  transform:scale(1.08)!important;
   transform-origin:center!important;
   border:0!important;
   border-radius:0!important;
@@ -1035,6 +1035,6 @@ input,select,textarea{
 }
 @media(max-width:620px){
   .stat-grid-home .stat-art-viewport{aspect-ratio:1.08 / 1!important}
-  .stat-grid-home .stat-art-card .stat-art-full{transform:none!important;object-fit:contain!important}
+  .stat-grid-home .stat-art-card .stat-art-full{transform:scale(1.08)!important;object-fit:contain!important}
   .stat-grid-home .stat-art-card strong{flex-basis:34px!important;min-height:34px!important;font-size:21px!important}
 }
