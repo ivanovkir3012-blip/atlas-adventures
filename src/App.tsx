@@ -80,8 +80,10 @@ export default function App() {
       const satellite=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',maxZoom:19});
       const labels=w.L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{attribution:'Labels &copy; Esri',maxZoom:19,opacity:1});
       const street=w.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19});
-      satellite.addTo(map);labels.addTo(map);
-      w.L.control.layers({'Гибрид':w.L.layerGroup([satellite,labels]),'Схема':street},null,{collapsed:true}).addTo(map);
+      const topo=w.L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap',maxZoom:17});
+      const hybrid=w.L.layerGroup([satellite,labels]);
+      hybrid.addTo(map);
+      w.L.control.layers({'Спутник + подписи (Hybrid)':hybrid,'Схема':street,'Топографическая':topo},null,{collapsed:true}).addTo(map);
       const makePin=()=>w.L.divIcon({className:'atlas-map-pin-wrap',iconSize:[30,42],iconAnchor:[15,40],popupAnchor:[0,-36],html:'<svg class="atlas-map-pin" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7.3 1 1 7.3 1 15c0 10 14 26 14 26s14-16 14-26C29 7.3 22.7 1 15 1Z" fill="#4285F4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="15" r="5.2" fill="#fff" stroke="#1967D2" stroke-width="1.2"/></svg>'});
       (map as any).atlasPinIcon=makePin('#d7b65d');
       const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
