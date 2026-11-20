@@ -457,9 +457,7 @@ export default function App() {
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
       </section>}
       {page === 'Рекорды' && <section className="section-page records-page">
-        <span className="eyebrow">ЛИЧНЫЕ ДОСТИЖЕНИЯ</span><h1>Рекорды</h1>
-        <p className="records-intro">Лучшие результаты из сохранённых выездов. Рекорд обновляется автоматически, когда появляется результат лучше предыдущего.</p>
-        <div className="records-group"><div className="records-group-heading"><h2>Рыбалка</h2><span>Трофейный вес</span></div><div className="records-grid">
+        <div className="records-group"><div className="records-group-heading"><h2>Рыбалка</h2></div><div className="records-grid">
           {trophyRecords.slice(0,4).map(item=><article className="record-card record-fish-card" key={item.key}>
             {item.row && item.photoId && recordPhotoUrls[item.photoId] ? <img className="record-fish-photo" src={recordPhotoUrls[item.photoId]} alt={item.title}/> : <div className="record-fish-placeholder"><span>✧</span><small>Фото трофея не выбрано</small></div>}
             <div className="record-card-copy"><small>{item.title}</small><strong>{item.row ? item.weight.toLocaleString('ru-RU',{maximumFractionDigits:2})+' кг' : '—'}</strong>
@@ -467,10 +465,10 @@ export default function App() {
             </div>
           </article>)}
         </div></div>
-        <div className="records-group"><div className="records-group-heading"><h2>Охота</h2><span>За один выезд</span></div><div className="records-grid records-count-grid">
+        <div className="records-group"><div className="records-group-heading"><h2>Охота</h2></div><div className="records-grid records-count-grid">
           {trophyRecords.slice(4,6).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
         </div></div>
-        <div className="records-group"><div className="records-group-heading"><h2>Кемпинг</h2><span>Ночёвки за один выезд</span></div><div className="records-grid records-count-grid">
+        <div className="records-group"><div className="records-group-heading"><h2>Путешествия</h2></div><div className="records-grid records-count-grid">
           {trophyRecords.slice(6,7).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
         </div></div>
       </section>}
