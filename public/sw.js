@@ -1,1 +1,24 @@
-const C='atlas-shell-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(['/','/index.html','/manifest.webmanifest']))));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.method==='GET')e.respondWith(caches.match(e.request).then(x=>x||fetch(e.request).then(r=>{caches.open(C).then(c=>c.put(e.request,r.clone()));return r})))});
+const C='atlas-shell-v2';
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(C).then(cache=>cache.addAll(['/','/index.html','/manifest.webmanifest'])));
+  self.skipWaiting();
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil(
+    caches.keys()
+      .then(keys=>Promise.all(keys.filter(key=>key.startsWith('atlas-shell-')&&key!==C).map(key=>caches.delete(key))))
+      .then(()=>self.clients.claim())
+  );
+});
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  event.respondWith(
+    caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{
+      if(response.ok&&new URL(event.request.url).origin===self.location.origin){
+        const copy=response.clone();
+        caches.open(C).then(cache=>cache.put(event.request,copy));
+      }
+      return response;
+    }))
+  );
+});
