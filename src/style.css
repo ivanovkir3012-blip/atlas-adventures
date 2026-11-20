@@ -996,7 +996,7 @@ input,select,textarea{
   aspect-ratio:1.08 / 1!important;
   overflow:hidden!important;
   flex:0 0 auto!important;
-  background:#052817!important;
+    background:transparent!important;
 }
 .stat-grid-home .stat-art-card .stat-art-full{
   position:absolute!important;
@@ -1012,7 +1012,7 @@ input,select,textarea{
   transform-origin:center!important;
   border:0!important;
   border-radius:0!important;
-  background:#052817!important;
+    background:transparent!important;
   box-shadow:none!important;
 }
 .stat-grid-home .stat-art-card strong{
