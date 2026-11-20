@@ -1350,3 +1350,21 @@ input,select,textarea{
 .report-media-delete{position:absolute;right:7px;top:7px;padding:7px 10px;border:1px solid rgba(238,202,125,.8);border-radius:6px;background:rgba(12,20,16,.88);color:#f3dca5;font-size:10px;font-weight:700}
 .report-media-delete:hover{background:#6c3026;color:#fff}
 @media(max-width:700px){.stat-grid-home{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid-home .stat-art-viewport{aspect-ratio:1.18/1}}
+
+
+/* User-confirmed: transparent backgrounds on all six home KPI image cards.
+   Preserve bronze borders, artwork, labels and typography. */
+.dashboard-stats-section .stat-grid-home .stat-art-card,
+.dashboard-stats-section .stat-grid-home .stat-art-viewport,
+.dashboard-stats-section .stat-grid-home .stat-art-full{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+}
+.dashboard-stats-section .stat-grid-home .stat-art-card{
+  border:1px solid rgba(220,190,126,.7)!important;
+  border-radius:12px!important;
+}
+.dashboard-stats-section .stat-grid-home .stat-art-viewport{
+  overflow:hidden!important;
+}
