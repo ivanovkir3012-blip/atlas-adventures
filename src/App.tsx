@@ -32,6 +32,7 @@ export default function App() {
   const [mapQuery, setMapQuery] = useState('');
   const [mapFilter, setMapFilter] = useState('Все');
   const [mapMessage, setMapMessage] = useState('');
+  const [pickedCoordinates, setPickedCoordinates] = useState<{lat:number;lng:number}|null>(null);
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const refresh = () => all().then(setRows);
@@ -77,7 +78,8 @@ export default function App() {
       w.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
       const colors=['#d7b65d','#65a9d2','#75ad79','#b18bd0'];
       const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
-      visible.forEach(row=>{const index=cats.indexOf(row.category);w.L.circleMarker([row.coordinates!.lat,row.coordinates!.lng],{radius:9,color:'#17191b',weight:2,fillColor:colors[index]||'#d7b65d',fillOpacity:.95}).addTo(map).bindPopup('<strong>'+String(row.title||'Выезд').replace(/[&<>"]/g,'')+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+String(row.place||'Место не указано').replace(/[&<>"]/g,''));});
+      visible.forEach(row=>{const index=cats.indexOf(row.category);const pin=w.L.circleMarker([row.coordinates!.lat,row.coordinates!.lng],{radius:9,color:'#17191b',weight:2,fillColor:colors[index]||'#d7b65d',fillOpacity:.95}).addTo(map);pin.bindPopup('<strong>'+String(row.title||'Выезд').replace(/[&<>\"]/g,'')+'</strong><br>'+String(row.category).replace(/[&<>\"]/g,'')+' · '+String(row.date)+'<br>'+String(row.place||'Место не указано').replace(/[&<>\"]/g,''));pin.on('click',()=>setReport(row));});
+      map.on('click',(event:any)=>{const lat=Number(event.latlng.lat.toFixed(6));const lng=Number(event.latlng.lng.toFixed(6));setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');w.L.popup().setLatLng(event.latlng).setContent('Выбранная точка<br>'+lat+', '+lng).openOn(map);});
       if(visible.length){const group=w.L.featureGroup(visible.map(row=>w.L.marker([row.coordinates!.lat,row.coordinates!.lng])));map.fitBounds(group.getBounds().pad(.18),{maxZoom:11});}
       setTimeout(()=>map.invalidateSize(),100);
     };
@@ -215,7 +217,7 @@ export default function App() {
         <label>Название выезда<input name="title" required defaultValue={edit?.title ?? ''} placeholder="Например, Осенний выезд на озеро" /></label>
         <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? (category === 'Все' ? 'Охота' : category)}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0,10)} /></label></div>
         <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
-        <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? ''} placeholder="53.9006" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? ''} placeholder="27.5590" /></label></div>
+        <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? pickedCoordinates?.lat ?? ''} placeholder="53.9006" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? pickedCoordinates?.lng ?? ''} placeholder="27.5590" /></label></div>
         <small className="muted-note">Координаты можно получить на карте и вставить сюда. Если координаты не указаны, выезд сохранится без метки.</small>
         <label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label>
         <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
