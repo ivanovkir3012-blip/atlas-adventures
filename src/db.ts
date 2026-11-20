@@ -184,6 +184,14 @@ export async function saveMedia(item: MediaItem): Promise<void> {
   database.close();
 }
 
+export async function deleteMedia(id: string): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(MEDIA, 'readwrite');
+  tx.objectStore(MEDIA).delete(id);
+  await transactionDone(tx);
+  database.close();
+}
+
 export async function getMediaForOuting(outingId: string): Promise<MediaItem[]> {
   const database = await openDb();
   const tx = database.transaction(MEDIA, 'readonly');
