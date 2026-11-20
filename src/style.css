@@ -1249,3 +1249,27 @@ input,select,textarea{
 .atlas-map-marker{width:18px;height:34px;display:block;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,.95));}
 .atlas-map-marker svg{display:block;width:18px;height:34px;}
 .atlas-map-marker-picked{z-index:5;}
+
+
+/* Selected map coordinate popup — graphite and antique-gold Atlas theme. */
+.maplibregl-popup.atlas-picked-popup .maplibregl-popup-content,
+.maplibregl-popup-content:has(.atlas-map-picked-popup){
+  padding:13px 16px!important;
+  border:1px solid rgba(220,190,126,.9)!important;
+  border-radius:10px!important;
+  background:rgba(17,22,28,.96)!important;
+  color:#f3ead5!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.06)!important;
+  font-family:Manrope,Arial,sans-serif!important;
+  font-size:12px!important;
+  line-height:1.5!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+.atlas-map-picked-popup{display:flex;flex-direction:column;gap:5px;min-width:190px;}
+.atlas-map-picked-popup span{color:#e8d3a0;font-size:11px;font-weight:700;letter-spacing:.2px;}
+.atlas-map-picked-popup strong{color:#f0d18a;font-size:13px;font-weight:800;letter-spacing:.25px;}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:rgba(17,22,28,.96)!important;}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:rgba(17,22,28,.96)!important;}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip{border-right-color:rgba(17,22,28,.96)!important;}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip{border-left-color:rgba(17,22,28,.96)!important;}
