@@ -82,7 +82,17 @@ export default function App() {
       map.on('load',()=>{
         if(cancelled)return;
         map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
-        map.addLayer({id:'atlas-satellite-layer',type:'raster',source:'atlas-satellite',paint:{'raster-opacity':1}},(map.getStyle().layers||[]).find((layer:any)=>layer.type!=='background')?.id);
+        map.addSource('atlas-street',{type:'raster',tiles:['https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'&copy; OpenStreetMap contributors'});
+        map.addSource('atlas-topo',{type:'raster',tiles:['https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM | OpenTopoMap'});
+        const firstVector=(map.getStyle().layers||[]).find((layer:any)=>layer.type!=='background')?.id;
+        map.addLayer({id:'atlas-satellite-layer',type:'raster',source:'atlas-satellite',layout:{visibility:'visible'},paint:{'raster-opacity':1}},firstVector);
+        map.addLayer({id:'atlas-street-layer',type:'raster',source:'atlas-street',layout:{visibility:'none'}},firstVector);
+        map.addLayer({id:'atlas-topo-layer',type:'raster',source:'atlas-topo',layout:{visibility:'none'}},firstVector);
+        const layerControl=document.createElement('div');layerControl.className='maplibregl-ctrl maplibregl-ctrl-group atlas-map-layer-switcher';
+        const choices=[['hybrid','Спутник + подписи'],['street','Схема'],['topo','Топографическая']];
+        choices.forEach(([key,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.title=label;button.className=key==='hybrid'?'active':'';button.addEventListener('click',()=>{['hybrid','street','topo'].forEach(mode=>{const id=mode==='hybrid'?'atlas-satellite-layer':mode==='street'?'atlas-street-layer':'atlas-topo-layer';map.setLayoutProperty(id,'visibility',mode===key?'visible':'none');});Array.from(layerControl.querySelectorAll('button')).forEach((node:any)=>node.classList.toggle('active',node===button));});layerControl.appendChild(button);});
+        const layerControlPlugin={onAdd:()=>layerControl,onRemove:()=>layerControl.remove()};
+        map.addControl(layerControlPlugin,'top-left');
         const layers=(map.getStyle().layers||[]);
         layers.forEach((layer:any)=>{
           if(layer.id==='atlas-satellite-layer')return;
@@ -91,7 +101,7 @@ export default function App() {
           const id=String(layer.id).toLowerCase();
           if(id.includes('poi')||id.includes('housenumber')||id.includes('transit')||id.includes('airport'))map.setLayoutProperty(layer.id,'visibility','none');
         });
-        const markerIcon=(color:string)=>{const el=document.createElement('div');el.className='atlas-map-marker';el.style.cssText='width:25px;height:25px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color+';border:2px solid #fff;box-shadow:0 2px 8px #0008;';const dot=document.createElement('span');dot.style.cssText='display:block;width:7px;height:7px;border-radius:50%;background:#fff;margin:7px auto;';el.appendChild(dot);return el;};
+        const markerIcon=(color:string)=>{const el=document.createElement('div');el.className='atlas-map-marker';const shape=document.createElement('div');shape.style.cssText='width:25px;height:25px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color+';border:2px solid #fff;box-shadow:0 2px 8px #0008;display:grid;place-items:center;';const dot=document.createElement('span');dot.style.cssText='display:block;width:7px;height:7px;border-radius:50%;background:#fff;';shape.appendChild(dot);el.appendChild(shape);return el;};
         const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
         visible.forEach(row=>{
           const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
