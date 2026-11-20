@@ -1215,3 +1215,32 @@ input,select,textarea{
 /* Slim bronze-edged map pins */
 .atlas-map-marker{width:30px;height:34px;cursor:pointer;}
 .atlas-map-marker-picked{z-index:5;}
+
+
+/* Clean text-only KPI cards on the Statistics page */
+.stats-kpi-grid .stats-plain-kpi{
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:9px;
+  padding:18px 20px;
+  background:rgba(8,24,18,.72);
+  border:1px solid rgba(215,182,93,.48);
+  border-radius:15px;
+  box-shadow:0 5px 18px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.05);
+}
+.stats-kpi-grid .stats-plain-kpi strong{
+  color:#f0d18a;
+  font-size:clamp(24px,3vw,32px);
+  line-height:1.1;
+  font-weight:700;
+}
+.stats-kpi-grid .stats-plain-kpi small{
+  color:#d8cfbd;
+  font-size:13px;
+  line-height:1.35;
+}
+.atlas-map-marker{width:36px;height:46px;cursor:pointer;transform:none!important;}
+.atlas-map-marker svg{transform:none!important;}
