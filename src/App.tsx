@@ -15,14 +15,20 @@ const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 function createMapMarkerElement(color:string) {
   const el=document.createElement('div');
   el.className='atlas-map-marker';
-  el.style.cssText='width:22px;height:30px;display:grid;place-items:center;filter:drop-shadow(0 2px 3px #0008);';
-  const pin=document.createElement('div');
-  pin.style.cssText='position:relative;width:14px;height:22px;box-sizing:border-box;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:rgba(10,24,18,.9);border:1.5px solid '+color+';box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);';
-  const inner=document.createElement('span');
-  inner.style.cssText='position:absolute;inset:3px;border:1px solid rgba(255,239,196,.78);border-radius:50% 50% 50% 0;';
-  const point=document.createElement('i');
-  point.style.cssText='position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px;border-radius:50%;background:'+color+';';
-  pin.append(inner,point);el.appendChild(pin);return el;
+  el.style.cssText='width:38px;height:46px;display:flex;align-items:flex-start;justify-content:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.95));cursor:pointer;';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width','38');svg.setAttribute('height','46');svg.setAttribute('viewBox','0 0 38 46');
+  svg.style.cssText='display:block;overflow:visible;';
+  const path='M19 2 C10.2 2 3 9.2 3 18 C3 29 19 43 19 43 C19 43 35 29 35 18 C35 9.2 27.8 2 19 2 Z';
+  const outline=document.createElementNS('http://www.w3.org/2000/svg','path');
+  outline.setAttribute('d',path);outline.setAttribute('fill',color);outline.setAttribute('stroke','#101713');outline.setAttribute('stroke-width','4.5');outline.setAttribute('stroke-linejoin','round');
+  svg.appendChild(outline);
+  const rim=document.createElementNS('http://www.w3.org/2000/svg','path');
+  rim.setAttribute('d',path);rim.setAttribute('fill','none');rim.setAttribute('stroke','#fff3d2');rim.setAttribute('stroke-width','1.35');rim.setAttribute('stroke-linejoin','round');
+  svg.appendChild(rim);
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx','19');dot.setAttribute('cy','18');dot.setAttribute('r','4.2');dot.setAttribute('fill','#fff');dot.setAttribute('stroke','#172019');dot.setAttribute('stroke-width','1.4');
+  svg.appendChild(dot);el.appendChild(svg);return el;
 }
 const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
