@@ -1309,3 +1309,31 @@ input,select,textarea{
 
 /* Center the main category titles on the records page. */
 .records-group-heading{justify-content:center;text-align:center}
+
+
+/* Home photo story — cinematic outing memories. */
+.photo-story-section .section-title p{margin:5px 0 0;color:#c9c6b7;font-size:11px;letter-spacing:.1px}
+.photo-story-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:13px;min-width:0}
+.photo-story-side{display:grid;grid-template-rows:repeat(2,minmax(145px,1fr));gap:13px;min-width:0}
+.photo-story-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:7px;width:100%;min-width:0;min-height:0;padding:19px;text-align:left;overflow:hidden;background-color:#10251b;background-size:cover;background-position:center;border:1px solid rgba(220,190,126,.58);border-radius:13px;box-shadow:0 8px 24px rgba(0,0,0,.2);color:#f4eddd;transition:transform .2s ease,border-color .2s ease}
+.photo-story-card:hover{transform:translateY(-2px);border-color:rgba(240,210,143,.95)}
+.photo-story-featured{min-height:340px}
+.photo-story-meta{color:#f0d99e;font-size:10px;font-weight:700;letter-spacing:.35px;text-shadow:0 1px 4px #000}
+.photo-story-meta i{font-style:normal;padding:0 3px;color:#e7c77c}
+.photo-story-card strong{max-width:100%;color:#fff1cf;font:700 clamp(19px,2.3vw,27px) 'Playfair Display',Georgia,serif;line-height:1.15;text-shadow:0 2px 7px rgba(0,0,0,.7);overflow-wrap:anywhere}
+.photo-story-side .photo-story-card strong{font-size:clamp(16px,1.7vw,21px)}
+.photo-story-card small{color:#e3dfd1;font-size:10px;text-shadow:0 1px 4px #000}
+.photo-story-card em{margin-top:3px;color:#f0d18a;font-size:10px;font-style:normal;font-weight:700}
+.photo-story-empty{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:24px;border:1px solid rgba(220,190,126,.5);border-radius:13px;background:rgba(5,22,16,.28);backdrop-filter:blur(10px)}
+.photo-story-empty>span{color:#e0c27b;font-size:28px}
+.photo-story-empty>div{display:flex;flex:1 1 200px;flex-direction:column;gap:5px}
+.photo-story-empty b{color:#f0dfb6;font:700 17px 'Playfair Display',Georgia,serif}
+.photo-story-empty small{color:#c9c6b7;font-size:11px;line-height:1.45}
+@media(max-width:650px){
+ .photo-story-grid{grid-template-columns:1fr;gap:9px}
+ .photo-story-featured{min-height:245px}
+ .photo-story-side{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:155px;gap:9px}
+ .photo-story-card{padding:12px}
+ .photo-story-side .photo-story-card strong{font-size:16px}
+ .photo-story-meta{font-size:9px}
+}
