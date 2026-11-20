@@ -950,3 +950,9 @@ input,select,textarea{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+
+/* Match the "Мои приключения в цифрах" frame translucency to the "Охота" category frame. */
+.dashboard-section:has(.section-title h2:first-child){
+  border-color:rgba(220,190,126,.78)!important;
+}
