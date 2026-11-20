@@ -15,12 +15,14 @@ const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 function createMapMarkerElement(color:string) {
   const el=document.createElement('div');
   el.className='atlas-map-marker';
-  el.style.cssText='width:30px;height:34px;display:grid;place-items:start center;filter:drop-shadow(0 2px 3px #0008);';
+  el.style.cssText='width:22px;height:30px;display:grid;place-items:center;filter:drop-shadow(0 2px 3px #0008);';
   const pin=document.createElement('div');
-  pin.style.cssText='width:15px;height:25px;margin-top:1px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:'+color+';border:1.5px solid #d8b777;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);display:grid;place-items:center;';
-  const point=document.createElement('span');
-  point.style.cssText='width:4px;height:4px;border-radius:50%;background:#fff4d7;transform:rotate(45deg);';
-  pin.appendChild(point);el.appendChild(pin);return el;
+  pin.style.cssText='position:relative;width:14px;height:22px;box-sizing:border-box;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:rgba(10,24,18,.9);border:1.5px solid '+color+';box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);';
+  const inner=document.createElement('span');
+  inner.style.cssText='position:absolute;inset:3px;border:1px solid rgba(255,239,196,.78);border-radius:50% 50% 50% 0;';
+  const point=document.createElement('i');
+  point.style.cssText='position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px;border-radius:50%;background:'+color+';';
+  pin.append(inner,point);el.appendChild(pin);return el;
 }
 const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
