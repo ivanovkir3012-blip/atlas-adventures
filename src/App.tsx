@@ -33,7 +33,7 @@ function createMapMarkerElement(color:string) {
   el.appendChild(svg);
   return el;
 }
-const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
+const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', pikeWeight: '', pikePhotoId: '', breamWeight: '', breamPhotoId: '', perchWeight: '', perchPhotoId: '', catfishWeight: '', catfishPhotoId: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
@@ -44,6 +44,7 @@ export default function App() {
   const [reportMedia, setReportMedia] = useState<MediaItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
+  const [recordPhotoUrls, setRecordPhotoUrls] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<File[]>([]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
@@ -153,6 +154,18 @@ export default function App() {
   },[page,rows,mapFilter,coverUrls]);
 
   useEffect(() => {
+    let active = true;
+    const urls: Record<string, string> = {};
+    Promise.all(rows.map(async row => {
+      for (const key of ['pikePhotoId','breamPhotoId','perchPhotoId','catfishPhotoId']) {
+        const id = String(row.details?.[key] || ''); if (!id) continue;
+        const item = (await getMediaForOuting(row.id)).find(mediaItem => mediaItem.id === id && mediaItem.type === 'image');
+        if (item?.blob) urls[id] = URL.createObjectURL(item.blob);
+      }
+    })).then(() => { if (active) setRecordPhotoUrls(urls); else Object.values(urls).forEach(URL.revokeObjectURL); });
+    return () => { active = false; Object.values(urls).forEach(URL.revokeObjectURL); };
+  }, [rows]);
+  useEffect(() => {
     if (!report) { setReportMedia([]); return; }
     getMediaForOuting(report.id).then(setReportMedia);
   }, [report]);
@@ -209,6 +222,24 @@ export default function App() {
   }), [rows, yearlyStats]);
   const categoryTotal = categoryStats.reduce((sum,item)=>sum+item.outings,0);
   const categoryGradient = (() => { let cursor=0; const colors=['#c7a45a','#6f9d91','#6d86a8','#9b806d']; return categoryStats.map((item,index)=>{ const start=cursor; cursor += categoryTotal ? item.outings/categoryTotal*100 : 0; return `${colors[index]} ${start}% ${cursor}%`; }).join(', '); })();
+  const trophyRecords = useMemo(() => {
+    const species = [
+      { key:'pike', title:'Самая большая щука', weightKey:'pikeWeight', photoKey:'pikePhotoId' },
+      { key:'bream', title:'Самый большой лещ', weightKey:'breamWeight', photoKey:'breamPhotoId' },
+      { key:'perch', title:'Самый большой окунь', weightKey:'perchWeight', photoKey:'perchPhotoId' },
+      { key:'catfish', title:'Самый большой сом', weightKey:'catfishWeight', photoKey:'catfishPhotoId' },
+    ];
+    const best = species.map(item => {
+      const winner = rows.filter(row => row.category === 'Рыбалка').map(row => ({ row, weight:Number(row.details?.[item.weightKey] || 0), photoId:String(row.details?.[item.photoKey] || '') })).filter(entry => entry.weight > 0).sort((a,b) => b.weight-a.weight)[0];
+      return { ...item, ...winner };
+    });
+    const hunt = (key:'geese'|'ducks',title:string) => {
+      const winner = rows.filter(row => row.category === 'Охота').map(row => ({row,count:Number(row.details?.[key] || 0)})).filter(entry => entry.count > 0).sort((a,b)=>b.count-a.count)[0];
+      return {key,title,...winner};
+    };
+    const camping = rows.filter(row => row.category === 'Кемпинг').map(row => ({row,count:Number(row.details?.nights || 0)})).filter(entry => entry.count > 0).sort((a,b)=>b.count-a.count)[0];
+    return [...best, hunt('geese','Добыто гусей за выезд'), hunt('ducks','Добыто уток за выезд'), {key:'nights',title:'Больше всего ночёвок',...camping}];
+  }, [rows]);
   const recordStats = useMemo(() => {
     const bestDays = [...rows].map(row=>({...row, metric:Number(row.details?.daysOutdoors ?? 1)})).filter(row=>row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
     const bestDistance = [...rows].map(row=>({...row, metric:Number(row.details?.distance ?? 0)})).filter(row=>row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
@@ -249,7 +280,7 @@ export default function App() {
     const details: Record<string, string | number | boolean | string[]> = {};
     for (const key of Object.keys(emptyDetails)) {
       const value = form.get(key);
-      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','daysOutdoors'].includes(key) ? Number(value) : String(value);
+      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','daysOutdoors','pikeWeight','breamWeight','perchWeight','catfishWeight'].includes(key) ? Number(value) : String(value);
     }
     const timeline: Outing['timeline'] = [];
     const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
@@ -276,6 +307,8 @@ export default function App() {
       row.mediaIds.push(item.id);
       newlySaved.push(item.id);
     }
+    for (const key of ['pikePhotoId','breamPhotoId','perchPhotoId','catfishPhotoId']) { const choice=String(form.get(key)||''); if(choice.startsWith('new:')) { const selectedId=newlySaved[Number(choice.slice(4))]; if(selectedId) details[key]=selectedId; else delete details[key]; } else if(choice) details[key]=choice; else delete details[key]; }
+    row.details = details;
     const coverChoice = String(form.get('coverChoice') || '');
     if (coverChoice.startsWith('new:')) {
       const selectedIndex = Number(coverChoice.slice(4));
@@ -347,7 +380,10 @@ export default function App() {
         <div className="category-fields" data-category={edit?.category ?? 'Охота'}>
           <label>Категория выезда<select name="categoryDetail" defaultValue={edit?.category ?? 'Охота'} onChange={e => { const panel = e.currentTarget.closest('form')?.querySelector('.category-fields'); panel?.setAttribute('data-category', e.currentTarget.value); (e.currentTarget.form?.elements.namedItem('category') as HTMLSelectElement).value = e.currentTarget.value; }}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label>
           <div className="category-field-group" data-for="Охота"><div className="form-pair"><label>Добыто гусей<input name="geese" type="number" min="0" defaultValue={edit?.details.geese as number ?? ''} /></label><label>Добыто уток<input name="ducks" type="number" min="0" defaultValue={edit?.details.ducks as number ?? ''} /></label></div><label>Другая добыча / наблюдения<input name="otherGame" defaultValue={edit?.details.otherGame as string ?? ''} /></label></div>
-          <div className="category-field-group" data-for="Рыбалка"><label>Общий вес улова, кг<input name="catchWeight" type="number" min="0" step="0.01" defaultValue={edit?.details.catchWeight as number ?? ''} /></label><label>Виды рыб<input name="fishSpecies" defaultValue={edit?.details.fishSpecies as string ?? ''} placeholder="Щука, окунь, лещ..." /></label><label>Количество по видам<input name="fishQuantities" defaultValue={edit?.details.fishQuantities as string ?? ''} /></label><label>Приманки и снасти<input name="lures" defaultValue={edit?.details.lures as string ?? ''} /></label></div>
+          <div className="category-field-group" data-for="Рыбалка"><label>Общий вес улова, кг<input name="catchWeight" type="number" min="0" step="0.01" defaultValue={edit?.details.catchWeight as number ?? ''} /></label><label>Виды рыб<input name="fishSpecies" defaultValue={edit?.details.fishSpecies as string ?? ''} placeholder="Щука, окунь, лещ..." /></label><label>Количество по видам<input name="fishQuantities" defaultValue={edit?.details.fishQuantities as string ?? ''} /></label><label>Приманки и снасти<input name="lures" defaultValue={edit?.details.lures as string ?? ''} /></label>
+            <div className="fish-record-inputs"><h4>Трофейные рыбы для личных рекордов</h4><p>Укажи вес каждой рыбы и выбери её фотографию из файлов этого выезда.</p>
+              {([{key:'pike',label:'Щука'},{key:'bream',label:'Лещ'},{key:'perch',label:'Окунь'},{key:'catfish',label:'Сом'}] as const).map(fish=><div className="fish-record-input" key={fish.key}><b>{fish.label}</b><label>Вес, кг<input name={fish.key+'Weight'} type="number" min="0" step="0.01" defaultValue={edit?.details[fish.key+'Weight'] as number ?? ''} placeholder="0,00"/></label><label>Фото<select name={fish.key+'PhotoId'} defaultValue={String(edit?.details[fish.key+'PhotoId'] || '')}><option value="">Не выбрано</option>{media.filter(item=>item.type==='image').map(item=><option value={item.id} key={item.id}>{item.name}</option>)}{files.map((file,index)=>file.type.startsWith('image/')?<option value={'new:'+index} key={'new-fish-'+index}>{file.name} (новое)</option>:null)}</select></label></div>)}
+            </div></div>
           <div className="category-field-group" data-for="Кемпинг"><label>Количество ночёвок<input name="nights" type="number" min="0" defaultValue={edit?.details.nights as number ?? ''} /></label><label>Условия стоянки<input name="conditions" defaultValue={edit?.details.conditions as string ?? ''} placeholder="Погода, место лагеря, доступность воды..." /></label></div>
           <div className="category-field-group" data-for="Путешествия"><label>Маршрут<input name="route" defaultValue={edit?.details.route as string ?? ''} /></label><label>Посещённые места<input name="visitedPlaces" defaultValue={edit?.details.visitedPlaces as string ?? ''} /></label><label>Продолжительность<input name="duration" defaultValue={edit?.details.duration as string ?? ''} placeholder="Например, 3 дня" /></label></div>
         </div>
@@ -419,6 +455,24 @@ export default function App() {
           <div className="record-stats-grid">{recordStats.map(item=><article className="record-stat-card" key={item.title}><small>{item.title}</small><strong>{item.value}</strong><span>{item.detail}</span></article>)}</div>
         </section>
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
+      </section>}
+      {page === 'Рекорды' && <section className="section-page records-page">
+        <span className="eyebrow">ЛИЧНЫЕ ДОСТИЖЕНИЯ</span><h1>Рекорды</h1>
+        <p className="records-intro">Лучшие результаты из сохранённых выездов. Рекорд обновляется автоматически, когда появляется результат лучше предыдущего.</p>
+        <div className="records-group"><div className="records-group-heading"><h2>Рыбалка</h2><span>Трофейный вес</span></div><div className="records-grid">
+          {trophyRecords.slice(0,4).map(item=><article className="record-card record-fish-card" key={item.key}>
+            {item.row && item.photoId && recordPhotoUrls[item.photoId] ? <img className="record-fish-photo" src={recordPhotoUrls[item.photoId]} alt={item.title}/> : <div className="record-fish-placeholder"><span>✧</span><small>Фото трофея не выбрано</small></div>}
+            <div className="record-card-copy"><small>{item.title}</small><strong>{item.row ? item.weight.toLocaleString('ru-RU',{maximumFractionDigits:2})+' кг' : '—'}</strong>
+              {item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}
+            </div>
+          </article>)}
+        </div></div>
+        <div className="records-group"><div className="records-group-heading"><h2>Охота</h2><span>За один выезд</span></div><div className="records-grid records-count-grid">
+          {trophyRecords.slice(4,6).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
+        </div></div>
+        <div className="records-group"><div className="records-group-heading"><h2>Кемпинг</h2><span>Ночёвки за один выезд</span></div><div className="records-grid records-count-grid">
+          {trophyRecords.slice(6,7).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
+        </div></div>
       </section>}
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
