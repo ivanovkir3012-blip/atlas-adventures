@@ -335,6 +335,18 @@ export default function App() {
     </button>)}</div>;
   }
 
+  function renderPhotoStory(items: Outing[]) {
+    if (!items.length) return <div className="photo-story-empty"><span>✧</span><div><b>Здесь будут жить твои воспоминания</b><small>Добавь выезд с фотографией — и он появится в фотоистории.</small></div><button className="outline-button" onClick={openNew}>Добавить выезд</button></div>;
+    const [featured, ...rest] = items;
+    const card = (row: Outing, large = false) => <button type="button" className={large ? 'photo-story-card photo-story-featured' : 'photo-story-card'} key={row.id} onClick={() => setReport(row)} style={{backgroundImage:`linear-gradient(0deg,rgba(3,15,11,.94) 0%,rgba(3,15,11,.08) 75%),url("${coverUrls[row.id] || pics[row.category]}")`}}>
+      <span className="photo-story-meta">{row.category} <i>·</i> {row.date}</span>
+      <strong>{row.title || 'Выезд без названия'}</strong>
+      <small>⌖ {row.place || 'Место не указано'}</small>
+      <em>Открыть историю ↗</em>
+    </button>;
+    return <div className="photo-story-grid">{card(featured, true)}<div className="photo-story-side">{rest.slice(0,2).map(row=>card(row))}</div></div>;
+  }
+
   function renderRows(items: Outing[]) {
     if (!items.length) return <div className="empty-state"><div className="empty-landscape">✧</div><h3>Твои приключения начнутся здесь</h3><p>Сохраняй поездки, встречи с природой и важные моменты.</p><button className="gold-button" onClick={openNew}>＋ Добавить первый выезд</button></div>;
     return <div className="outing-list">{items.map(row => <article className="outing-row" key={row.id}>
@@ -412,7 +424,7 @@ export default function App() {
           {statsPeriodControls}
           <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong></div>)}</div>
         </section>
-        <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent([...rows].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4))}</section>
+        <section className="dashboard-section photo-story-section"><div className="section-title"><div><h2>Фотоистория</h2><p>Моменты, к которым хочется возвращаться</p></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderPhotoStory([...rows].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0,3))}</section>
 
       </>}
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
