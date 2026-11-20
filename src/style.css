@@ -1368,3 +1368,47 @@ input,select,textarea{
 .dashboard-stats-section .stat-grid-home .stat-art-viewport{
   overflow:hidden!important;
 }
+
+
+/* Hard reset for home KPI artwork cards: no inherited green card bands. */
+.dashboard-stats-section .stat-grid-home .stat-art-card{
+  display:block!important;
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:1px solid rgba(220,190,126,.7)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+.dashboard-stats-section .stat-grid-home .stat-art-viewport{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:1.18/1!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  line-height:0!important;
+}
+.dashboard-stats-section .stat-grid-home .stat-art-full{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  object-fit:cover!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+}
