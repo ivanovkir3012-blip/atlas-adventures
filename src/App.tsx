@@ -29,6 +29,8 @@ export default function App() {
   const [online, setOnline] = useState(navigator.onLine);
   
   const [statsPeriod, setStatsPeriod] = useState<'all' | 'year' | 'month'>('all');
+  const [statsYear, setStatsYear] = useState(new Date().getFullYear());
+  const [statsMonth, setStatsMonth] = useState(new Date().getMonth());
   const [mapQuery, setMapQuery] = useState('');
   const [mapFilter, setMapFilter] = useState('Все');
   const [mapMessage, setMapMessage] = useState('');
@@ -103,14 +105,19 @@ export default function App() {
     getMediaForOuting(edit.id).then(setMedia);
   }, [edit]);
 
+  const availableYears = useMemo(() => {
+    const years = rows.map(row => Number(row.date.slice(0, 4))).filter(year => Number.isFinite(year) && year > 1900);
+    return Array.from(new Set([...years, new Date().getFullYear()])).sort((a, b) => b - a);
+  }, [rows]);
+  const periodRows = useMemo(() => rows.filter(row => {
+    if (statsPeriod === 'all') return true;
+    const date = new Date(`${row.date}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return false;
+    return statsPeriod === 'year'
+      ? date.getFullYear() === statsYear
+      : date.getFullYear() === statsYear && date.getMonth() === statsMonth;
+  }), [rows, statsPeriod, statsYear, statsMonth]);
   const stats = useMemo(() => {
-    const now = new Date();
-    const periodRows = rows.filter(row => {
-      if (statsPeriod === 'all') return true;
-      const date = new Date(`${row.date}T12:00:00`);
-      return statsPeriod === 'year' ? date.getFullYear() === now.getFullYear()
-        : date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
-    });
     const days = periodRows.reduce((sum, row) => sum + Number(row.details?.daysOutdoors ?? 1), 0);
     const geese = periodRows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
     const ducks = periodRows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
@@ -121,7 +128,31 @@ export default function App() {
       { label: 'Добыто уток', value: ducks, symbol: '➤' },
       { label: 'Пройденное расстояние', value: periodRows.reduce((sum, row) => sum + Number(row.details?.distance ?? 0), 0).toLocaleString('ru-RU') + ' км', symbol: '⌁' },
     ];
-  }, [rows, statsPeriod]);
+  }, [periodRows]);
+  const categoryStats = useMemo(() => cats.map(cat => {
+    const items = periodRows.filter(row => row.category === cat);
+    return { category: cat, outings: items.length, days: items.reduce((sum, row) => sum + Number(row.details?.daysOutdoors ?? 1), 0) };
+  }), [periodRows]);
+  const monthlyStats = useMemo(() => Array.from({length:12}, (_, month) => ({
+    month,
+    label: new Date(statsYear, month, 1).toLocaleDateString('ru-RU', {month:'short'}),
+    outings: rows.filter(row => { const d = new Date(`${row.date}T12:00:00`); return !Number.isNaN(d.getTime()) && d.getFullYear() === statsYear && d.getMonth() === month; }).length
+  })), [rows, statsYear]);
+  const yearlyStats = useMemo(() => availableYears.slice(0,5).sort((a,b)=>a-b).map(year => {
+    const items = rows.filter(row => new Date(`${row.date}T12:00:00`).getFullYear() === year);
+    return { year, outings: items.length, days: items.reduce((sum,row)=>sum+Number(row.details?.daysOutdoors ?? 1),0) };
+  }), [rows, availableYears]);
+  const statsPeriodControls = <div className="stats-controls">
+    <div className="stats-period" role="group" aria-label="Период статистики">
+      <button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button>
+      <button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button>
+      <button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button>
+    </div>
+    {statsPeriod !== 'all' && <div className="stats-selectors">
+      <label>Год<select value={statsYear} onChange={e=>setStatsYear(Number(e.target.value))}>{availableYears.map(year=><option key={year} value={year}>{year}</option>)}</select></label>
+      {statsPeriod === 'month' && <label>Месяц<select value={statsMonth} onChange={e=>setStatsMonth(Number(e.target.value))}>{Array.from({length:12},(_,month)=><option key={month} value={month}>{new Date(2000,month,1).toLocaleDateString('ru-RU',{month:'long'})}</option>)}</select></label>}
+    </div>}
+  </div>;
 
   const filtered = rows.filter(row =>
     (category === 'Все' || row.category === category) &&
@@ -260,7 +291,7 @@ export default function App() {
         <section className="category-grid">{cats.map((cat,index) => <button key={cat} className={`category-tile category-${index}`} style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.92),rgba(4,18,13,.02) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><strong>{cat}</strong><small>Выездов: {rows.filter(row=>row.category===cat).length}</small><span className="tile-arrow">›</span></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
-          <div className="stats-period" role="group" aria-label="Период статистики"><button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button><button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button><button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button></div>
+          {statsPeriodControls}
           <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`/images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent([...rows].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4))}</section>
@@ -277,7 +308,21 @@ export default function App() {
         <p className="muted-note">На карте отображаются выезды с сохранёнными координатами. Чтобы добавить точку, укажи широту и долготу в полевом журнале. Поиск требует интернета; сохранённые точки доступны офлайн.</p>
         <div className="map-legend"><span>● Охота</span><span>● Рыбалка</span><span>● Кемпинг</span><span>● Путешествия</span></div>
       </section>}
-      {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
+      {page === 'Статистика' && <section className="section-page stats-page">
+        <span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1>
+        {statsPeriodControls}
+        <div className="stat-grid stats-kpi-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год</span></div>
+          <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${Math.max(4, item.outings / Math.max(1,...monthlyStats.map(x=>x.outings))*100)}%`}} /></div><small>{item.label}</small></div>)}</div>
+        </section>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>По категориям</h2><span>За выбранный период</span></div>
+          <div className="category-stats-grid">{categoryStats.map(item=><article className="category-stat-card" key={item.category}><h3>{item.category}</h3><strong>{item.outings}</strong><small>выездов</small><p>{item.days} дней на природе</p></article>)}</div>
+        </section>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Сравнение по годам</h2><span>Последние годы с записями</span></div>
+          {yearlyStats.length ? <div className="year-stats-list">{yearlyStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>{item.outings} выездов</span><span>{item.days} дней на природе</span></div>)}</div> : <p className="stats-empty">Пока нет сохранённых выездов.</p>}
+        </section>
+        {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
+      </section>}
       {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name,description])=><div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
