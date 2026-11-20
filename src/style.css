@@ -971,3 +971,37 @@ input,select,textarea{
 .detail-row b{color:#e5c879;font-size:11px;font-weight:800}
 .detail-row span{color:#f1ead9;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
 .atlas-map-pin{width:30px;height:42px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+
+
+/* Let the "Всего выездов" artwork cover its entire statistic card. */
+.stat-grid-home .stat-total-card{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  padding:12px!important;
+}
+.stat-grid-home .stat-total-card .stat-art-total{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  flex:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border:0!important;
+  border-radius:inherit!important;
+  z-index:-1;
+}
+.stat-grid-home .stat-total-card strong{
+  position:relative!important;
+  z-index:1!important;
+  padding:4px 9px!important;
+  border-radius:6px!important;
+  background:rgba(8,15,13,.58)!important;
+  color:#fff0c6!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.9)!important;
+}
