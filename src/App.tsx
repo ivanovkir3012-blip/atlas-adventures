@@ -142,16 +142,41 @@ export default function App() {
     const items = rows.filter(row => new Date(`${row.date}T12:00:00`).getFullYear() === year);
     return { year, outings: items.length, days: items.reduce((sum,row)=>sum+Number(row.details?.daysOutdoors ?? 1),0) };
   }), [rows, availableYears]);
+  const huntingMonthlyStats = useMemo(() => Array.from({length:12}, (_, month) => {
+    const items = rows.filter(row => row.category === 'Охота' && (() => { const d = new Date(`${row.date}T12:00:00`); return !Number.isNaN(d.getTime()) && d.getFullYear() === statsYear && d.getMonth() === month; })());
+    return { month, label: new Date(statsYear, month, 1).toLocaleDateString('ru-RU', {month:'short'}), geese: items.reduce((sum,row)=>sum+Number(row.details?.geese ?? 0),0), ducks: items.reduce((sum,row)=>sum+Number(row.details?.ducks ?? 0),0) };
+  }), [rows, statsYear]);
+  const yearlyHuntingStats = useMemo(() => yearlyStats.map(item => {
+    const hunting = rows.filter(row => row.category === 'Охота' && new Date(`${row.date}T12:00:00`).getFullYear() === item.year);
+    return { year:item.year, geese:hunting.reduce((sum,row)=>sum+Number(row.details?.geese ?? 0),0), ducks:hunting.reduce((sum,row)=>sum+Number(row.details?.ducks ?? 0),0) };
+  }), [rows, yearlyStats]);
+  const categoryTotal = categoryStats.reduce((sum,item)=>sum+item.outings,0);
+  const categoryGradient = (() => { let cursor=0; const colors=['#c7a45a','#6f9d91','#6d86a8','#9b806d']; return categoryStats.map((item,index)=>{ const start=cursor; cursor += categoryTotal ? item.outings/categoryTotal*100 : 0; return `${colors[index]} ${start}% ${cursor}%`; }).join(', '); })();
+  const recordStats = useMemo(() => {
+    const bestDays = [...rows].map(row=>({...row, metric:Number(row.details?.daysOutdoors ?? 1)})).filter(row=>row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
+    const bestDistance = [...rows].map(row=>({...row, metric:Number(row.details?.distance ?? 0)})).filter(row=>row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
+    const bestGeese = [...rows].map(row=>({...row, metric:Number(row.details?.geese ?? 0)})).filter(row=>row.category==='Охота'&&row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
+    const bestDucks = [...rows].map(row=>({...row, metric:Number(row.details?.ducks ?? 0)})).filter(row=>row.category==='Охота'&&row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
+    const bestCatch = [...rows].map(row=>({...row, metric:Number(row.details?.catchWeight ?? 0)})).filter(row=>row.category==='Рыбалка'&&row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
+    return [
+      {title:'Самый долгий выезд',value:bestDays?`${bestDays.metric} дн.`:'—',detail:bestDays?.title||'Пока нет данных'},
+      {title:'Самый длинный маршрут',value:bestDistance?`${bestDistance.metric} км`:'—',detail:bestDistance?.title||'Пока нет данных'},
+      {title:'Больше всего гусей',value:bestGeese?String(bestGeese.metric):'—',detail:bestGeese?.title||'Пока нет данных'},
+      {title:'Больше всего уток',value:bestDucks?String(bestDucks.metric):'—',detail:bestDucks?.title||'Пока нет данных'},
+      {title:'Лучший улов',value:bestCatch?`${bestCatch.metric} кг`:'—',detail:bestCatch?.title||'Пока нет данных'},
+      {title:'Точки на карте',value:String(rows.filter(row=>row.coordinates).length),detail:'Выезды с сохранёнными координатами'},
+    ];
+  }, [rows]);
   const statsPeriodControls = <div className="stats-controls">
     <div className="stats-period" role="group" aria-label="Период статистики">
       <button className={statsPeriod==='all'?'active':''} onClick={()=>setStatsPeriod('all')}>Всё время</button>
       <button className={statsPeriod==='year'?'active':''} onClick={()=>setStatsPeriod('year')}>Год</button>
       <button className={statsPeriod==='month'?'active':''} onClick={()=>setStatsPeriod('month')}>Месяц</button>
     </div>
-    {statsPeriod !== 'all' && <div className="stats-selectors">
-      <label>Год<select value={statsYear} onChange={e=>setStatsYear(Number(e.target.value))}>{availableYears.map(year=><option key={year} value={year}>{year}</option>)}</select></label>
+    <div className="stats-selectors">
+      <label>Год графиков<select value={statsYear} onChange={e=>setStatsYear(Number(e.target.value))}>{availableYears.map(year=><option key={year} value={year}>{year}</option>)}</select></label>
       {statsPeriod === 'month' && <label>Месяц<select value={statsMonth} onChange={e=>setStatsMonth(Number(e.target.value))}>{Array.from({length:12},(_,month)=><option key={month} value={month}>{new Date(2000,month,1).toLocaleDateString('ru-RU',{month:'long'})}</option>)}</select></label>}
-    </div>}
+    </div>
   </div>;
 
   const filtered = rows.filter(row =>
@@ -312,18 +337,29 @@ export default function App() {
         <span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1>
         {statsPeriodControls}
         <div className="stat-grid stats-kpi-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год</span></div>
-          <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${Math.max(4, item.outings / Math.max(1,...monthlyStats.map(x=>x.outings))*100)}%`}} /></div><small>{item.label}</small></div>)}</div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Распределение по категориям</h2><span>За выбранный период</span></div>
+          <div className="category-chart-layout"><div className="category-donut" style={{background:categoryTotal?`conic-gradient(${categoryGradient})`:'conic-gradient(#555 0 100%)'}}><div><strong>{categoryTotal}</strong><small>выездов</small></div></div>
+            <div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>По категориям</h2><span>За выбранный период</span></div>
-          <div className="category-stats-grid">{categoryStats.map(item=><article className="category-stat-card" key={item.category}><h3>{item.category}</h3><strong>{item.outings}</strong><small>выездов</small><p>{item.days} дней на природе</p></article>)}</div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год · выезды</span></div>
+          <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100)}%`}} /></div><small>{item.label}</small></div>)}</div>
+        </section>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Добыча по месяцам</h2><span>Охота · {statsYear} год</span></div>
+          <div className="hunting-legend"><span><i className="goose-dot"/>Гуси</span><span><i className="duck-dot"/>Утки</span></div>
+          <div className="hunting-chart">{huntingMonthlyStats.map(item=>{const max=Math.max(1,...huntingMonthlyStats.map(x=>x.geese+x.ducks));return <div className="hunting-column" key={item.month}><strong>{item.geese+item.ducks||''}</strong><div className="hunting-bar-track"><i className="goose-bar" style={{height:`${item.geese/max*100}%`}}/><i className="duck-bar" style={{height:`${item.ducks/max*100}%`}}/></div><small>{item.label}</small></div>})}</div>
+          <div className="hunting-total-row"><span>Всего гусей: <b>{huntingMonthlyStats.reduce((sum,item)=>sum+item.geese,0)}</b></span><span>Всего уток: <b>{huntingMonthlyStats.reduce((sum,item)=>sum+item.ducks,0)}</b></span></div>
         </section>
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Сравнение по годам</h2><span>Последние годы с записями</span></div>
           {yearlyStats.length ? <div className="year-stats-list">{yearlyStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>{item.outings} выездов</span><span>{item.days} дней на природе</span></div>)}</div> : <p className="stats-empty">Пока нет сохранённых выездов.</p>}
         </section>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Охотничья статистика по годам</h2><span>Гуси и утки</span></div>
+          {yearlyHuntingStats.length?<div className="year-stats-list">{yearlyHuntingStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>Гуси: {item.geese}</span><span>Утки: {item.ducks}</span></div>)}</div>:<p className="stats-empty">Пока нет охотничьих записей.</p>}
+        </section>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Личные рекорды</h2><span>По сохранённым выездам</span></div>
+          <div className="record-stats-grid">{recordStats.map(item=><article className="record-stat-card" key={item.title}><small>{item.title}</small><strong>{item.value}</strong><span>{item.detail}</span></article>)}</div>
+        </section>
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
       </section>}
-      {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name,description])=><div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
     </main>
     
