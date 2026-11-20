@@ -192,10 +192,10 @@ export default function App() {
     const geese = periodRows.reduce((sum, row) => sum + Number(row.details?.geese ?? 0), 0);
     const ducks = periodRows.reduce((sum, row) => sum + Number(row.details?.ducks ?? 0), 0);
     return [
-      { label: 'Всего выездов', value: periodRows.length, symbol: '▦' },
-      { label: 'Дней на природе', value: days, symbol: '☼' },
       { label: 'Гусей', value: geese, symbol: '➤' },
       { label: 'Уток', value: ducks, symbol: '➤' },
+      { label: 'Всего выездов', value: periodRows.length, symbol: '▦' },
+      { label: 'Дней на природе', value: days, symbol: '☼' },
       { label: 'Всего проехал', value: periodRows.reduce((sum, row) => sum + Number(row.details?.distance ?? 0), 0).toLocaleString('ru-RU') + ' км', symbol: '⌁' },
       { label: 'Потрачено', value: periodRows.reduce((sum, row) => sum + Number(row.details?.spent ?? 0), 0).toLocaleString('ru-RU') + ' BYN', symbol: '₽' },
     ];
