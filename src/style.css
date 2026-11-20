@@ -731,3 +731,18 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
  .recent-line .recent-copy b{font-size:13px}
  .recent-line .recent-place{font-size:11px}
 }
+
+/* Interactive adventure map */
+.map-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin:18px 0 12px}
+.map-toolbar input{min-width:0;padding:12px 14px;border:1px solid #a98a48;border-radius:7px}
+.map-count{align-self:center;color:#e2c77f;font-size:12px}
+.map-filters{margin:10px 0 14px}
+.map-message{font-size:12px;color:#e2c77f;line-height:1.5}
+.adventure-map{height:min(68vh,680px);min-height:360px;border:1px solid #a98a48;border-radius:12px;overflow:hidden;background:#202528;z-index:0}
+.map-loading{display:grid;place-items:center;height:100%;color:#e2c77f}
+.map-legend{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0;color:#d8cfbd;font-size:11px}
+.map-legend span:nth-child(1){color:#d7b65d}.map-legend span:nth-child(2){color:#65a9d2}.map-legend span:nth-child(3){color:#75ad79}.map-legend span:nth-child(4){color:#b18bd0}
+.leaflet-container{font:12px Manrope,Arial,sans-serif}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#222629;color:#f1ead9}
+.leaflet-popup-content{line-height:1.6}
+@media(max-width:560px){.map-toolbar{grid-template-columns:1fr}.map-toolbar .gold-button{width:100%}.adventure-map{height:58vh;min-height:330px}.map-legend{gap:9px}}
