@@ -924,3 +924,20 @@ input,select,textarea{
   .dashboard-hero .hero-copy{padding:22px 10px!important}
   .dashboard-hero .hero-copy h1{font-size:clamp(34px,9vw,48px)!important}
 }
+
+
+/* Requested cleanup: minimal top navigation, transparent stat artwork, no footer slogan. */
+.topbar{
+  border:0!important;
+  border-bottom:1px solid rgba(207,174,108,.28)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.topbar .brand{display:none!important}
+.stat-grid-home .stat-art{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+.app-footer{display:none!important}
