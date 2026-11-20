@@ -952,13 +952,13 @@ input,select,textarea{
 }
 
 
-/* The statistics section stays fully transparent like the photo-backed "Охота" card: no filled panel. */
+/* Transparent adventure statistics section with a clearer, softly illuminated gold outline. */
 .dashboard-section.dashboard-stats-section{
   background:transparent!important;
   background-color:transparent!important;
   background-image:none!important;
-  border:1px solid rgba(220,190,126,.78)!important;
-  box-shadow:none!important;
+  border:1.2px solid rgba(238,202,125,.96)!important;
+  box-shadow:0 0 0 1px rgba(238,202,125,.12),0 0 12px rgba(220,174,83,.16)!important;
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
