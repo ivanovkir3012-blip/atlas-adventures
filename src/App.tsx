@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { all, put, softDelete, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
-type Page = 'Главная' | 'Выезды' | 'Статистика' | 'Рекорды' | 'Настройки';
-const pages: Page[] = ['Главная', 'Выезды', 'Статистика', 'Рекорды', 'Настройки'];
+type Page = 'Главная' | 'Выезды' | 'Карта' | 'Статистика' | 'Рекорды' | 'Настройки';
+const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
   'Охота': '/images/IMG_20260316_165954_416.jpg',
   'Рыбалка': '/images/IMG_20241003_153019.jpg',
@@ -29,6 +29,11 @@ export default function App() {
   const [online, setOnline] = useState(navigator.onLine);
   
   const [statsPeriod, setStatsPeriod] = useState<'all' | 'year' | 'month'>('all');
+  const [mapQuery, setMapQuery] = useState('');
+  const [mapFilter, setMapFilter] = useState('Все');
+  const [mapMessage, setMapMessage] = useState('');
+  const mapElement = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<any>(null);
   const refresh = () => all().then(setRows);
 
   useEffect(() => {
@@ -50,6 +55,35 @@ export default function App() {
     })).then(() => { if (active) setCoverUrls(urls); else Object.values(urls).forEach(URL.revokeObjectURL); });
     return () => { active = false; Object.values(urls).forEach(URL.revokeObjectURL); };
   }, [rows]);
+
+  useEffect(() => {
+    if (page !== 'Карта' || !mapElement.current) return;
+    let cancelled = false;
+    const init = async () => {
+      const w = window as any;
+      if (!w.L) {
+        if (!document.querySelector('link[data-leaflet]')) {
+          const link=document.createElement('link');link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';link.dataset.leaflet='1';document.head.appendChild(link);
+        }
+        await new Promise<void>((resolve,reject)=>{
+          const existing=document.querySelector('script[data-leaflet]') as HTMLScriptElement|null;
+          if(existing){if(w.L)resolve();else existing.addEventListener('load',()=>resolve(),{once:true});return;}
+          const script=document.createElement('script');script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.dataset.leaflet='1';script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
+        });
+      }
+      if(cancelled||!mapElement.current||!w.L)return;
+      if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}
+      const map=w.L.map(mapElement.current).setView([53.9,27.56],6);mapInstance.current=map;
+      w.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
+      const colors=['#d7b65d','#65a9d2','#75ad79','#b18bd0'];
+      const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
+      visible.forEach(row=>{const index=cats.indexOf(row.category);w.L.circleMarker([row.coordinates!.lat,row.coordinates!.lng],{radius:9,color:'#17191b',weight:2,fillColor:colors[index]||'#d7b65d',fillOpacity:.95}).addTo(map).bindPopup('<strong>'+String(row.title||'Выезд').replace(/[&<>"]/g,'')+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+String(row.place||'Место не указано').replace(/[&<>"]/g,''));});
+      if(visible.length){const group=w.L.featureGroup(visible.map(row=>w.L.marker([row.coordinates!.lat,row.coordinates!.lng])));map.fitBounds(group.getBounds().pad(.18),{maxZoom:11});}
+      setTimeout(()=>map.invalidateSize(),100);
+    };
+    init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
+    return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
+  },[page,rows,mapFilter]);
 
   useEffect(() => {
     if (!report) { setReportMedia([]); return; }
@@ -103,6 +137,7 @@ export default function App() {
       createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
       date: String(form.get('date')), time: '',
       place: String(form.get('place') || ''),
+      coordinates: form.get('lat') && form.get('lng') ? { lat: Number(form.get('lat')), lng: Number(form.get('lng')) } : edit?.coordinates,
       participants, weather: String(form.get('weather') || ''), timeline,
       note: String(form.get('note') || ''), impressions: '', conclusion: '',
       mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
@@ -180,6 +215,8 @@ export default function App() {
         <label>Название выезда<input name="title" required defaultValue={edit?.title ?? ''} placeholder="Например, Осенний выезд на озеро" /></label>
         <div className="form-pair"><label>Категория<select name="category" defaultValue={edit?.category ?? (category === 'Все' ? 'Охота' : category)}>{cats.map(cat => <option key={cat}>{cat}</option>)}</select></label><label>Дата<input name="date" type="date" required defaultValue={edit?.date ?? new Date().toISOString().slice(0,10)} /></label></div>
         <label>Место<input name="place" defaultValue={edit?.place ?? ''} placeholder="Название места или населённого пункта" /></label>
+        <div className="form-pair"><label>Широта<input name="lat" type="number" step="any" defaultValue={edit?.coordinates?.lat ?? ''} placeholder="53.9006" /></label><label>Долгота<input name="lng" type="number" step="any" defaultValue={edit?.coordinates?.lng ?? ''} placeholder="27.5590" /></label></div>
+        <small className="muted-note">Координаты можно получить на карте и вставить сюда. Если координаты не указаны, выезд сохранится без метки.</small>
         <label>Пройденное расстояние, км<input name="distance" type="number" min="0" step="0.1" defaultValue={edit?.details.distance as number ?? ''} placeholder="Например, 12.5" /></label>
         <label>Участники (через запятую)<input name="participants" defaultValue={edit?.participants.join(', ') ?? ''} placeholder="Имена участников" /></label>
         <label>Погода и условия<input name="weather" defaultValue={edit?.weather ?? ''} placeholder="Температура, ветер, осадки, состояние воды..." /></label>
@@ -222,6 +259,15 @@ export default function App() {
 
       </>}
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
+      {page === 'Карта' && <section className="section-page map-page">
+        <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length} точек</span></div>
+        <div className="map-toolbar"><input value={mapQuery} onChange={e=>setMapQuery(e.target.value)} placeholder="Найти озеро, населённый пункт или место"/><button className="gold-button" onClick={async()=>{if(!mapQuery.trim())return;setMapMessage('Ищем место…');try{const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(mapQuery));if(!response.ok)throw new Error();const result=await response.json();if(!result.length){setMapMessage('Место не найдено. Уточни запрос.');return;}const map=mapInstance.current;if(map){map.setView([Number(result[0].lat),Number(result[0].lon)],13);(window as any).L.marker([Number(result[0].lat),Number(result[0].lon)]).addTo(map).bindPopup(result[0].display_name).openPopup();}setMapMessage('Место найдено: '+result[0].display_name);}catch{setMapMessage('Поиск доступен при подключении к интернету.');}}}>Найти</button></div>
+        <div className="category-filters map-filters"><button className={mapFilter==='Все'?'active':''} onClick={()=>setMapFilter('Все')}>Все</button>{cats.map(cat=><button key={cat} className={mapFilter===cat?'active':''} onClick={()=>setMapFilter(cat)}>{cat}</button>)}</div>
+        {mapMessage && <p className="map-message">{mapMessage}</p>}
+        <div className="adventure-map" ref={mapElement}><div className="map-loading">Загружаем карту…</div></div>
+        <p className="muted-note">На карте отображаются выезды с сохранёнными координатами. Чтобы добавить точку, укажи широту и долготу в полевом журнале. Поиск требует интернета; сохранённые точки доступны офлайн.</p>
+        <div className="map-legend"><span>● Охота</span><span>● Рыбалка</span><span>● Кемпинг</span><span>● Путешествия</span></div>
+      </section>}
       {page === 'Статистика' && <section className="section-page"><span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1><div className="stat-grid">{stats.map(stat=><div className="stat-card" key={stat.label}><span className="stat-symbol">{stat.symbol}</span><div><strong>{stat.value}</strong><small>{stat.label}</small></div></div>)}</div><div className="coming-panel">Графики активности, распределение по категориям и сравнение по годам будут подключены на этапе статистики.</div></section>}
       {page === 'Рекорды' && <section className="section-page"><span className="eyebrow">ЛУЧШИЕ РЕЗУЛЬТАТЫ</span><h1>Рекорды</h1><div className="record-grid">{[['Охота','Лучший результат за один выезд'],['Рыбалка','Максимальный вес улова'],['Кемпинг','Самое продолжительное пребывание'],['Путешествия','Самый длинный маршрут']].map(([name,description])=><div className="record-card" key={name}><span>✧</span><h2>{name}</h2><p>{description}</p><small>Пока нет данных</small></div>)}</div></section>}
       {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
