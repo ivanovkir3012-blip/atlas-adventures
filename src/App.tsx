@@ -85,7 +85,9 @@ export default function App() {
       satellite.addTo(map);
       w.L.control.layers({'Спутник + подписи OSM (Hybrid)':satellite,'Схема OpenStreetMap':street,'Топографическая':topo},null,{collapsed:true}).addTo(map);
       const overlay=document.createElement('div');overlay.className='atlas-map-label-overlay';overlay.style.cssText='position:absolute;inset:0;z-index:420;pointer-events:none;overflow:hidden;';mapElement.current.appendChild(overlay);
+      map.attributionControl.addAttribution('Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · <a href="https://openfreemap.org/">OpenFreeMap</a>');
       const styleResponse=await fetch('https://tiles.openfreemap.org/styles/liberty');
+      if(cancelled)return;
       if(!styleResponse.ok)throw new Error('OpenFreeMap style unavailable');
       const styleJson=await styleResponse.json();
       styleJson.layers=(styleJson.layers||[]).filter((layer:any)=>layer.type==='symbol'||layer.type==='line');
