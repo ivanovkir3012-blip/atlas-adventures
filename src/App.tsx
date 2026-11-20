@@ -5,12 +5,12 @@ const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путе
 type Page = 'Главная' | 'Выезды' | 'Карта' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
-  'Охота': '/images/IMG_20260316_165954_416.jpg',
-  'Рыбалка': '/images/IMG_20241003_153019.jpg',
-  'Кемпинг': '/images/IMG_20251023_084247.jpg',
+  'Охота': `${import.meta.env.BASE_URL}images/IMG_20260316_165954_416.jpg`,
+  'Рыбалка': `${import.meta.env.BASE_URL}images/IMG_20241003_153019.jpg`,
+  'Кемпинг': `${import.meta.env.BASE_URL}images/IMG_20251023_084247.jpg`,
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
-const assetBase = window.location.pathname.includes('/atlas-adventures/') ? '/atlas-adventures/' : '/';
+const assetBase = import.meta.env.BASE_URL;
 const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
@@ -317,7 +317,7 @@ export default function App() {
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           {statsPeriodControls}
-          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`/images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Всего выездов_ горы и лес.png','Дней на природе':'Дни на природе у костра.png','Добыто гусей':'Эмблема с летящим гусем.png','Добыто уток':'Эмблема с летящей уткой и надписью.png','Пройденное расстояние':'Пройденное расстояние_ горный маршрут.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong></div>)}</div>
         </section>
         <section className="dashboard-section recent-section"><div className="section-title"><div><h2>◷ Последние выезды</h2></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderRecent([...rows].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,4))}</section>
 
