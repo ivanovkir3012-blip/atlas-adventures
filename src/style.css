@@ -973,7 +973,7 @@ input,select,textarea{
 .atlas-map-pin{width:30px;height:42px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
 
 
-/* Fixed-height stat cards: crop baked-in captions out of the artwork and place values in a separate footer. */
+/* Preserve the full artwork proportions; put the value below on a transparent strip. */
 .stat-grid-home .stat-art-card{
   position:relative!important;
   display:flex!important;
@@ -981,9 +981,9 @@ input,select,textarea{
   align-items:stretch!important;
   justify-content:flex-start!important;
   gap:0!important;
-  height:164px!important;
-  min-height:164px!important;
-  max-height:164px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
   min-width:0!important;
   overflow:hidden!important;
   isolation:isolate!important;
@@ -1002,9 +1002,9 @@ input,select,textarea{
   min-width:0!important;
   min-height:0!important;
   max-height:none!important;
-  flex:1 1 0!important;
-  object-fit:cover!important;
-  object-position:center 12%!important;
+  flex:0 0 auto!important;
+  object-fit:contain!important;
+  object-position:center!important;
   transform:none!important;
   transform-origin:center!important;
   border:0!important;
@@ -1027,8 +1027,8 @@ input,select,textarea{
   padding:2px 8px!important;
   border-radius:0!important;
   border:0!important;
-  border-top:1px solid rgba(220,190,126,.5)!important;
-  background:rgba(5,13,10,.94)!important;
+  border-top:1px solid rgba(220,190,126,.35)!important;
+  background:transparent!important;
   color:#fff0c6!important;
   font:700 23px Georgia,serif!important;
   line-height:1.1!important;
@@ -1036,15 +1036,7 @@ input,select,textarea{
   text-shadow:0 1px 4px rgba(0,0,0,.95)!important;
 }
 @media(max-width:620px){
-  .stat-grid-home .stat-art-card{
-    height:132px!important;
-    min-height:132px!important;
-    max-height:132px!important;
-    border-radius:10px!important;
-  }
-  .stat-grid-home .stat-art-card .stat-art-full{
-    object-position:center 8%!important;
-  }
+  .stat-grid-home .stat-art-card{border-radius:10px!important}
   .stat-grid-home .stat-art-card strong{
     flex-basis:34px!important;
     height:34px!important;
