@@ -65,48 +65,60 @@ export default function App() {
     const init = async () => {
       const w = window as any;
       const loadScript = (src:string, marker:string) => new Promise<void>((resolve,reject)=>{
-        if(document.querySelector('script['+marker+']')){const existing=document.querySelector('script['+marker+']') as HTMLScriptElement;if((w as any).maplibregl&&marker==='data-maplibre')resolve();else existing.addEventListener('load',()=>resolve(),{once:true});return;}
+        const existing=document.querySelector('script['+marker+']') as HTMLScriptElement|null;
+        if(existing){if((w as any).maplibregl&&marker==='data-maplibre'){resolve();return;}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(),{once:true});return;}
         const script=document.createElement('script');script.src=src;script.setAttribute(marker,'1');script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
       });
-      if(!w.L){
-        if(!document.querySelector('link[data-leaflet]')){const link=document.createElement('link');link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';link.dataset.leaflet='1';document.head.appendChild(link);}
-        await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','data-leaflet');
-      }
       if(!w.maplibregl){
         if(!document.querySelector('link[data-maplibre-css]')){const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css';css.dataset.maplibreCss='1';document.head.appendChild(css);}
         await loadScript('https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js','data-maplibre');
       }
-      if(cancelled||!mapElement.current||!w.L||!w.maplibregl)return;
+      if(cancelled||!mapElement.current||!w.maplibregl)return;
       if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}
-      const map=w.L.map(mapElement.current,{zoomControl:true}).setView([53.9,27.56],6);mapInstance.current=map;
-      const satellite=w.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',maxZoom:19});
-      const street=w.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19});
-      const topo=w.L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap',maxZoom:17});
-      satellite.addTo(map);
-      w.L.control.layers({'Спутник + подписи OSM (Hybrid)':satellite,'Схема OpenStreetMap':street,'Топографическая':topo},null,{collapsed:true}).addTo(map);
-      const overlay=document.createElement('div');overlay.className='atlas-map-label-overlay';overlay.style.cssText='position:absolute;inset:0;z-index:420;pointer-events:none;overflow:hidden;';mapElement.current.appendChild(overlay);
-      map.attributionControl.addAttribution('Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · <a href="https://openfreemap.org/">OpenFreeMap</a>');
-      const styleResponse=await fetch('https://tiles.openfreemap.org/styles/liberty');
-      if(cancelled)return;
-      if(!styleResponse.ok)throw new Error('OpenFreeMap style unavailable');
-      const styleJson=await styleResponse.json();
-      styleJson.layers=(styleJson.layers||[]).filter((layer:any)=>layer.type==='symbol'||layer.type==='line');
-      const labelMap=new w.maplibregl.Map({container:overlay,style:styleJson,center:[27.56,53.9],zoom:6,interactive:false,attributionControl:false,canvasContextAttributes:{alpha:true},preserveDrawingBuffer:false});
-      (map as any).atlasLabelMap=labelMap;
-      const syncOverlay=()=>{const center=map.getCenter();labelMap.jumpTo({center:[center.lng,center.lat],zoom:map.getZoom()});};
-      map.on('move zoom',syncOverlay);
-      labelMap.on('load',()=>{if(cancelled)return;syncOverlay();labelMap.resize();});
-      const makePin=()=>w.L.divIcon({className:'atlas-map-pin-wrap',iconSize:[30,42],iconAnchor:[15,40],popupAnchor:[0,-36],html:'<svg class="atlas-map-pin" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7.3 1 1 7.3 1 15c0 10 14 26 14 26s14-16 14-26C29 7.3 22.7 1 15 1Z" fill="#4285F4" stroke="#fff" stroke-width="1.5"/><circle cx="15" cy="15" r="5.2" fill="#fff" stroke="#1967D2" stroke-width="1.2"/></svg>'});
-      (map as any).atlasPinIcon=makePin();
-      const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
-      visible.forEach(row=>{const pin=w.L.marker([row.coordinates!.lat,row.coordinates!.lng],{icon:makePin()}).addTo(map);const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');pin.bindPopup((photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace);pin.on('click',()=>setReport(row));});
-      let pickedPin:any=null;
-      map.on('click',(event:any)=>{const lat=Number(event.latlng.lat.toFixed(6));const lng=Number(event.latlng.lng.toFixed(6));setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');if(pickedPin)map.removeLayer(pickedPin);pickedPin=w.L.marker([lat,lng],{icon:makePin()}).addTo(map);pickedPin.bindPopup('Выбранная точка<br>'+lat+', '+lng).openPopup();});
-      if(visible.length){const group=w.L.featureGroup(visible.map(row=>w.L.marker([row.coordinates!.lat,row.coordinates!.lng])));map.fitBounds(group.getBounds().pad(.18),{maxZoom:11});}
-      setTimeout(()=>{map.invalidateSize();labelMap.resize();syncOverlay();},180);
+      const map=new w.maplibregl.Map({container:mapElement.current,center:[27.56,53.9],zoom:6,style:'https://tiles.openfreemap.org/styles/liberty',attributionControl:true,renderWorldCopies:false});
+      mapInstance.current=map;
+      map.addControl(new w.maplibregl.NavigationControl({showCompass:true,showZoom:true}),'top-right');
+      map.addControl(new w.maplibregl.ScaleControl({maxWidth:120,unit:'metric'}),'bottom-left');
+      map.on('load',()=>{
+        if(cancelled)return;
+        map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
+        map.addLayer({id:'atlas-satellite-layer',type:'raster',source:'atlas-satellite',paint:{'raster-opacity':1}},(map.getStyle().layers||[]).find((layer:any)=>layer.type!=='background')?.id);
+        const layers=(map.getStyle().layers||[]);
+        layers.forEach((layer:any)=>{
+          if(layer.id==='atlas-satellite-layer')return;
+          if(layer.type==='background'){map.setLayoutProperty(layer.id,'visibility','none');return;}
+          if(layer.type!=='symbol'){map.setLayoutProperty(layer.id,'visibility','none');return;}
+          const id=String(layer.id).toLowerCase();
+          if(id.includes('poi')||id.includes('housenumber')||id.includes('transit')||id.includes('airport'))map.setLayoutProperty(layer.id,'visibility','none');
+        });
+        const markerIcon=(color:string)=>{const el=document.createElement('div');el.className='atlas-map-marker';el.style.cssText='width:25px;height:25px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+color+';border:2px solid #fff;box-shadow:0 2px 8px #0008;';const dot=document.createElement('span');dot.style.cssText='display:block;width:7px;height:7px;border-radius:50%;background:#fff;margin:7px auto;';el.appendChild(dot);return el;};
+        const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
+        visible.forEach(row=>{
+          const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
+          const marker=new w.maplibregl.Marker({element:markerIcon(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
+          const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');
+          const popup=document.createElement('div');popup.className='atlas-map-popup';popup.innerHTML=(photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace;
+          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+          marker.getElement().addEventListener('click',()=>setReport(row));
+        });
+        map.on('click',(event:any)=>{
+          const target=event.originalEvent?.target as HTMLElement;
+          if(target?.closest('.maplibregl-marker,.maplibregl-popup,.maplibregl-ctrl'))return;
+          const lat=Number(event.lngLat.lat.toFixed(6));const lng=Number(event.lngLat.lng.toFixed(6));
+          setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');
+          const el=markerIcon('#d7b65d');
+          const marker=new w.maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
+          const popup=document.createElement('div');popup.textContent='Выбранная точка: '+lat+', '+lng;
+          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).togglePopup();
+          if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();
+          (map as any).atlasPickedMarker=marker;
+        });
+        if(visible.length){const bounds=new w.maplibregl.LngLatBounds();visible.forEach(row=>bounds.extend([row.coordinates!.lng,row.coordinates!.lat]));map.fitBounds(bounds,{padding:60,maxZoom:11,duration:0});}
+      });
+      map.on('error',(event:any)=>{if(event?.error)setMapMessage('Ошибка загрузки карты или картографических данных. Проверь подключение к интернету.');});
     };
     init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
-    return ()=>{cancelled=true;if(mapInstance.current){const labelMap=(mapInstance.current as any).atlasLabelMap;if(labelMap)labelMap.remove();mapInstance.current.remove();mapInstance.current=null;}};
+    return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
   },[page,rows,mapFilter,coverUrls]);
 
   useEffect(() => {
@@ -339,7 +351,7 @@ export default function App() {
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
       {page === 'Карта' && <section className="section-page map-page">
         <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length} точек</span></div>
-        <div className="map-toolbar"><input value={mapQuery} onChange={e=>setMapQuery(e.target.value)} placeholder="Найти озеро, населённый пункт или место"/><button className="gold-button" onClick={async()=>{if(!mapQuery.trim())return;setMapMessage('Ищем место…');try{const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(mapQuery));if(!response.ok)throw new Error();const result=await response.json();if(!result.length){setMapMessage('Место не найдено. Уточни запрос.');return;}const map=mapInstance.current;const lat=Number(result[0].lat),lng=Number(result[0].lon);setPickedCoordinates({lat,lng});if(map){map.setView([lat,lng],13);(window as any).L.marker([lat,lng],{icon:(map as any).atlasPinIcon||(window as any).L.divIcon({className:'atlas-map-pin-wrap',iconSize:[34,44],iconAnchor:[17,42],popupAnchor:[0,-39],html:'<svg class="atlas-map-pin" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg"><path d="M18 2C9.2 2 2 9.2 2 18c0 11.5 16 26 16 26s16-14.5 16-26C34 9.2 26.8 2 18 2Z" fill="#d7b65d" stroke="#17191b" stroke-width="2"/><circle cx="18" cy="18" r="6.5" fill="#fff8e8" stroke="#17191b" stroke-width="1.5"/></svg>'})}).addTo(map).bindPopup(result[0].display_name).openPopup();}setMapMessage('Место найдено и выбрано. Нажми «Создать выезд в этой точке», чтобы сохранить его.');}catch{setMapMessage('Поиск доступен при подключении к интернету.');}}}>Найти</button></div>
+        <div className="map-toolbar"><input value={mapQuery} onChange={e=>setMapQuery(e.target.value)} placeholder="Найти озеро, населённый пункт или место"/><button className="gold-button" onClick={async()=>{if(!mapQuery.trim())return;setMapMessage('Ищем место…');try{const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(mapQuery));if(!response.ok)throw new Error();const result=await response.json();if(!result.length){setMapMessage('Место не найдено. Уточни запрос.');return;}const map=mapInstance.current;const lat=Number(result[0].lat),lng=Number(result[0].lon);setPickedCoordinates({lat,lng});if(map){map.flyTo({center:[lng,lat],zoom:13,essential:true});const marker=document.createElement('div');marker.className='atlas-map-marker atlas-map-marker-picked';marker.style.cssText='width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#d7b65d;border:2px solid #fff;box-shadow:0 2px 8px #0008;';const popup=document.createElement('div');popup.textContent=result[0].display_name;const pin=new (window as any).maplibregl.Marker({element:marker,anchor:'bottom'}).setLngLat([lng,lat]).setPopup(new (window as any).maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);if((map as any).atlasSearchMarker)(map as any).atlasSearchMarker.remove();(map as any).atlasSearchMarker=pin;pin.togglePopup();}setMapMessage('Место найдено и выбрано. Нажми «Создать выезд в этой точке», чтобы сохранить его.');}catch{setMapMessage('Поиск доступен при подключении к интернету.');}}}>Найти</button></div>
         <div className="category-filters map-filters"><button className={mapFilter==='Все'?'active':''} onClick={()=>setMapFilter('Все')}>Все</button>{cats.map(cat=><button key={cat} className={mapFilter===cat?'active':''} onClick={()=>setMapFilter(cat)}>{cat}</button>)}</div>
         {mapMessage && <p className="map-message">{mapMessage}</p>}
         {pickedCoordinates && <div className="map-picked"><span>Выбрано: {pickedCoordinates.lat.toFixed(6)}, {pickedCoordinates.lng.toFixed(6)}</span><button className="gold-button" onClick={()=>{setEdit(null);setFiles([]);setModal(true);}}>Создать выезд в этой точке</button><button className="outline-button" onClick={()=>setPickedCoordinates(null)}>Сбросить точку</button></div>}
