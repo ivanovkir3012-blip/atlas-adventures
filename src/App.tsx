@@ -15,20 +15,19 @@ const heroImage = `${assetBase}atlas-lake-bg.jpg`;
 function createMapMarkerElement(color:string) {
   const el=document.createElement('div');
   el.className='atlas-map-marker';
-  el.style.cssText='width:36px;height:46px;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.95));cursor:pointer;';
+  el.style.cssText='width:18px;height:34px;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,.95));cursor:pointer;';
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('width','36');svg.setAttribute('height','46');svg.setAttribute('viewBox','0 0 36 46');
-  svg.style.cssText='display:block;width:36px;height:46px;overflow:visible;transform:none;';
-  const path='M18 2 C9.2 2 2.5 8.8 2.5 17.3 C2.5 27.2 18 43.5 18 43.5 C18 43.5 33.5 27.2 33.5 17.3 C33.5 8.8 26.8 2 18 2 Z';
-  const outline=document.createElementNS('http://www.w3.org/2000/svg','path');
-  outline.setAttribute('d',path);outline.setAttribute('fill',color);outline.setAttribute('stroke','#101713');outline.setAttribute('stroke-width','4.5');outline.setAttribute('stroke-linejoin','round');
-  svg.appendChild(outline);
-  const rim=document.createElementNS('http://www.w3.org/2000/svg','path');
-  rim.setAttribute('d',path);rim.setAttribute('fill','none');rim.setAttribute('stroke','#fff3d2');rim.setAttribute('stroke-width','1.4');rim.setAttribute('stroke-linejoin','round');
-  svg.appendChild(rim);
-  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-  dot.setAttribute('cx','18');dot.setAttribute('cy','17.3');dot.setAttribute('r','4.2');dot.setAttribute('fill','#fff');dot.setAttribute('stroke','#172019');dot.setAttribute('stroke-width','1.4');
-  svg.appendChild(dot);el.appendChild(svg);return el;
+  svg.setAttribute('width','18');svg.setAttribute('height','34');svg.setAttribute('viewBox','0 0 18 34');
+  svg.style.cssText='display:block;width:18px;height:34px;overflow:visible;';
+  const shaft=document.createElementNS('http://www.w3.org/2000/svg','path');
+  shaft.setAttribute('d','M9 2 C5.8 2 4 4.1 4 7.1 C4 13 6.7 22 9 31 C11.3 22 14 13 14 7.1 C14 4.1 12.2 2 9 2 Z');
+  shaft.setAttribute('fill',color);
+  shaft.setAttribute('stroke','#101713');
+  shaft.setAttribute('stroke-width','1.6');
+  shaft.setAttribute('stroke-linejoin','round');
+  svg.appendChild(shaft);
+  el.appendChild(svg);
+  return el;
 }
 const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fishSpecies: '', fishQuantities: '', lures: '', nights: '', conditions: '', route: '', visitedPlaces: '', distance: '', daysOutdoors: '', duration: '' };
 
@@ -390,7 +389,7 @@ export default function App() {
       {page === 'Статистика' && <section className="section-page stats-page">
         <span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1>
         {statsPeriodControls}
-        <div className="stat-grid stats-kpi-grid">{stats.map(stat=><div className="stat-card stats-plain-kpi" key={stat.label}><strong>{stat.value}</strong><small>{stat.label}</small></div>)}</div>
+        
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Распределение по категориям</h2><span>За выбранный период</span></div>
           <div className="category-chart-layout"><div className="category-donut" style={{background:categoryTotal?`conic-gradient(${categoryGradient})`:'conic-gradient(#555 0 100%)'}}><div><strong>{categoryTotal}</strong><small>выездов</small></div></div>
             <div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
