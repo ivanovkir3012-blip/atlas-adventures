@@ -952,11 +952,11 @@ input,select,textarea{
 }
 
 
-/* Match the "Мои приключения в цифрах" section translucency to the "Охота" category card. */
-.dashboard-section:has(.section-title h2:first-child){
+/* Match the statistics section background to the translucent "Охота" card. */
+.dashboard-section.dashboard-stats-section{
   background:rgba(12,17,22,.25)!important;
   background-color:rgba(12,17,22,.25)!important;
-  border-color:rgba(220,190,126,.78)!important;
+  border:1px solid rgba(220,190,126,.78)!important;
   backdrop-filter:blur(7px) saturate(115%)!important;
   -webkit-backdrop-filter:blur(7px) saturate(115%)!important;
 }
