@@ -746,3 +746,9 @@ input,select,textarea{background:#191b1e!important;color:#f1ead9!important;borde
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#222629;color:#f1ead9}
 .leaflet-popup-content{line-height:1.6}
 @media(max-width:560px){.map-toolbar{grid-template-columns:1fr}.map-toolbar .gold-button{width:100%}.adventure-map{height:58vh;min-height:330px}.map-legend{gap:9px}}
+
+.map-picked{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;margin:10px 0 14px;border:1px solid #a98a48;border-radius:9px;background:#242629;color:#e9d9b4;font-size:12px}
+.map-picked span{flex:1;min-width:180px}
+.map-picked .gold-button,.map-picked .outline-button{white-space:nowrap}
+.leaflet-popup-content img{display:block;max-width:100%}
+@media(max-width:560px){.map-picked{align-items:stretch;flex-direction:column}.map-picked span{min-width:0}}
