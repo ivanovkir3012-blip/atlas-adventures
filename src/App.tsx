@@ -139,8 +139,8 @@ export default function App() {
           setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');
           const el=markerIcon('#d7b65d');
           const marker=new w.maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
-          const popup=document.createElement('div');popup.textContent='Выбранная точка: '+lat+', '+lng;
-          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).togglePopup();
+          const popup=document.createElement('div');popup.className='atlas-map-popup atlas-map-picked-popup';popup.innerHTML='<span>Выбранная точка</span><strong>'+lat.toFixed(6)+', '+lng.toFixed(6)+'</strong>';
+          marker.setPopup(new w.maplibregl.Popup({offset:22,closeButton:false,closeOnClick:false}).setDOMContent(popup)).togglePopup();
           if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();
           (map as any).atlasPickedMarker=marker;
         });
