@@ -1515,3 +1515,18 @@ input,select,textarea{
   .category-emblem-art{aspect-ratio:1.08 / 1!important}
   .category-emblem-art img{transform:scale(1.16)!important}
 }
+
+
+/* Restore the bronze frame only around the category artwork viewport. */
+.category-emblem-art{
+  border:1px solid rgba(220,190,126,.7)!important;
+  border-radius:12px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.category-emblem-tile{
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
