@@ -1567,3 +1567,17 @@ input,select,textarea{
   box-sizing:border-box!important;
   pointer-events:none!important;
 }
+
+
+/* Clear hierarchy for the expanded outing report. */
+.report-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin:14px 0 18px}
+.report-overview>div{display:flex;flex-direction:column;gap:5px;min-width:0;padding:11px 12px;border:1px solid rgba(220,190,126,.28);border-radius:9px;background:rgba(255,255,255,.035)}
+.report-overview span{color:#c4bba8;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.report-overview strong{color:#f1dfb6;font-size:13px;overflow-wrap:anywhere}
+.report-timeline{display:flex;flex-direction:column;gap:0;margin-top:10px}
+.report-timeline-item{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid rgba(220,190,126,.16)}
+.report-timeline-item:last-child{border-bottom:0}
+.report-timeline-item time{color:#e7c77e;font-size:12px;font-weight:800}
+.report-timeline-item strong{color:#f1ead9;font-size:13px}
+.report-timeline-item p{margin:4px 0 0;color:#c4bba8;font-size:12px;line-height:1.5}
+@media(max-width:560px){.report-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.report-overview>div{padding:9px}.report-timeline-item{grid-template-columns:44px minmax(0,1fr)}}
