@@ -1470,3 +1470,12 @@ input,select,textarea{
   .category-emblem-art{padding:70px 0 18px!important}
   .category-emblem-art img{width:112%!important;margin-left:-6%!important}
 }
+
+
+/* Category cards: remove only the outer frame; keep artwork and trip count. */
+.category-emblem-tile{
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
