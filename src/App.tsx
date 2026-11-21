@@ -491,8 +491,8 @@ export default function App() {
     };
     const file = assets[kind] || assets.other;
     const imageUrl = file.startsWith('../')
-      ? `${assetBase}${encodeURIComponent(file.slice(3))}`
-      : `${assetBase}images/${encodeURIComponent(file)}`;
+      ? `${assetBase}${encodeURI(file.slice(3))}`
+      : `${assetBase}images/${encodeURI(file)}`;
     return <img src={imageUrl} alt="" aria-hidden="true" onError={event => { const image = event.currentTarget; image.style.display = 'none'; }} />;
   };
   const reportDetails = report?.details ?? {};
