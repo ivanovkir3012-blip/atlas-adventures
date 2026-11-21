@@ -299,7 +299,7 @@ export default function App() {
         createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
         date: String(form.get('date')), time: '',
         place: String(form.get('place') || '').trim(),
-        coordinates: form.get('lat') !== '' && form.get('lng') !== '' ? { lat: Number(form.get('lat')), lng: Number(form.get('lng')) } : edit?.coordinates,
+        coordinates: form.get('lat') && form.get('lng') ? { lat: Number(form.get('lat')), lng: Number(form.get('lng')) } : edit?.coordinates,
         participants, weather: String(form.get('weather') || ''), timeline,
         note: String(form.get('note') || ''), impressions: edit?.impressions ?? '', conclusion: edit?.conclusion ?? '',
         mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
