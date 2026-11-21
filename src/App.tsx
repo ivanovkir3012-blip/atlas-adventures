@@ -430,26 +430,50 @@ export default function App() {
   }
 
 
-  const reportView = report && <div className="modal-shade" onClick={e => { if (e.target === e.currentTarget) setReport(null); }}>
-    <section className="report-modal">
-      <div className="modal-head"><div><small>{report.category.toUpperCase()} · {report.date}</small><h2>{report.title}</h2><p className="report-place">{report.place || 'Место не указано'}</p></div><button className="close-button" onClick={() => setReport(null)}>×</button></div>
-      <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
-      {reportMedia.length > 0 && <div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}<button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button></div> : null)}</div>}
-      <div className="report-overview">
-        <div><span>Дата</span><strong>{report.date}{report.time ? ` · ${report.time}` : ''}</strong></div>
-        <div><span>Категория</span><strong>{report.category}</strong></div>
-        {report.coordinates && <div><span>Координаты</span><strong>{report.coordinates.lat.toFixed(5)}, {report.coordinates.lng.toFixed(5)}</strong></div>}
+  const reportDetails = report?.details ?? {};
+  const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
+  const reportResultItems = report ? (
+    report.category === 'Охота' ? [
+      ['Гуси', reportDetails.geese], ['Утки', reportDetails.ducks], ['Другая добыча / наблюдения', reportDetails.otherGame]
+    ] : report.category === 'Рыбалка' ? [
+      ['Вес улова, кг', reportDetails.catchWeight], ['Виды рыб', reportDetails.fishSpecies],
+      ['Количество по видам', reportDetails.fishQuantities], ['Приманки и снасти', reportDetails.lures],
+      ['Щука, кг', reportDetails.pikeWeight], ['Лещ, кг', reportDetails.breamWeight],
+      ['Окунь, кг', reportDetails.perchWeight], ['Сом, кг', reportDetails.catfishWeight]
+    ] : report.category === 'Кемпинг' ? [
+      ['Ночёвок', reportDetails.nights], ['Условия стоянки', reportDetails.conditions]
+    ] : [
+      ['Маршрут', reportDetails.route], ['Посещённые места', reportDetails.visitedPlaces],
+      ['Продолжительность', reportDetails.duration]
+    ]
+  ).filter(([,value]) => value !== undefined && String(value).trim() !== '') : [];
+  const reportView = report && <div className="modal-shade report-shade" onClick={e => { if (e.target === e.currentTarget) setReport(null); }}>
+    <section className="report-modal report-modal-premium">
+      <div className="report-hero" style={{backgroundImage:`linear-gradient(0deg,rgba(5,15,11,.96) 0%,rgba(5,15,11,.42) 55%,rgba(5,15,11,.12) 100%),url("${reportCover}")`}}>
+        <div className="report-hero-top"><span>{report.category} <i>·</i> {report.date}</span><button className="close-button" onClick={() => setReport(null)} aria-label="Закрыть">×</button></div>
+        <div className="report-hero-copy"><span className="report-kicker">АТЛАС ПРИКЛЮЧЕНИЙ</span><h2>{report.title || 'Выезд без названия'}</h2><p>⌖ {report.place || 'Место не указано'}</p></div>
       </div>
-      {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
-      {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
-      {report.timeline?.length > 0 && <div className="report-block"><h3>Ход приключения</h3><div className="report-timeline">{report.timeline.map((entry,index)=><div className="report-timeline-item" key={entry.id || index}><time>{entry.time || '—'}</time><div><strong>{entry.title}</strong>{entry.description && <p>{entry.description}</p>}</div></div>)}</div></div>}
-      {Object.entries(report.details).filter(([k,v]) => !k.endsWith('PhotoId') && String(v).trim() !== '').length > 0 && <div className="report-block"><h3>Детали выезда</h3><div className="detail-list">{Object.entries(report.details).filter(([k,v]) => !k.endsWith('PhotoId') && String(v).trim() !== '').map(([k,v]) => <div className="detail-row" key={k}><b>{{geese:'Добыто гусей',ducks:'Добыто уток',otherGame:'Другая дичь',catchWeight:'Вес улова',fishSpecies:'Виды рыбы',fishQuantities:'Количество рыбы',lures:'Приманки',pikeWeight:'Вес щуки, кг',breamWeight:'Вес леща, кг',perchWeight:'Вес окуня, кг',catfishWeight:'Вес сома, кг',nights:'Ночёвок',conditions:'Условия',route:'Маршрут',visitedPlaces:'Посещённые места',distance:'Расстояние',spent:'Потрачено, BYN',daysOutdoors:'Дней на природе',duration:'Продолжительность'}[k] || k}:</b><span>{String(v)}</span></div>)}</div></div>}
-      
-      {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
-      {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
-      {report.conclusion && <div className="report-block"><h3>Итоги выезда</h3><p>{report.conclusion}</p></div>}
-      
-      {reportMedia.length === 0 && <p className="muted-note">К этому выезду пока не добавлены фото и видео.</p>}
+      <div className="report-content">
+        <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
+        <div className="report-overview">
+          <div><span>Дата</span><strong>{report.date}{report.time ? ` · ${report.time}` : ''}</strong></div>
+          <div><span>Категория</span><strong>{report.category}</strong></div>
+          {reportDetails.daysOutdoors !== undefined && String(reportDetails.daysOutdoors).trim() !== '' && <div><span>Дней на природе</span><strong>{String(reportDetails.daysOutdoors)}</strong></div>}
+          {reportDetails.distance !== undefined && String(reportDetails.distance).trim() !== '' && <div><span>Расстояние</span><strong>{String(reportDetails.distance)} км</strong></div>}
+          {reportDetails.spent !== undefined && String(reportDetails.spent).trim() !== '' && <div><span>Расходы</span><strong>{String(reportDetails.spent)} BYN</strong></div>}
+        </div>
+        {reportResultItems.length > 0 && <section className="report-results"><div className="report-section-heading"><span>РЕЗУЛЬТАТ ВЫЕЗДА</span><h3>{report.category === 'Охота' ? 'Итоги охоты' : report.category === 'Рыбалка' ? 'Результаты рыбалки' : report.category === 'Кемпинг' ? 'Итоги кемпинга' : 'Итоги путешествия'}</h3></div><div className="report-result-grid">{reportResultItems.map(([label,value])=><div className="report-result-item" key={String(label)}><small>{label}</small><strong>{String(value)}</strong></div>)}</div></section>}
+        {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
+        {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
+        {report.coordinates && <section className="report-map-block"><div className="report-section-heading"><span>ГЕОГРАФИЯ</span><h3>Место на карте</h3></div><iframe title="Место выезда на карте" loading="lazy" src={`https://www.google.com/maps?q=${report.coordinates.lat},${report.coordinates.lng}&z=12&output=embed`} referrerPolicy="no-referrer-when-downgrade"/><a href={`https://www.google.com/maps?q=${report.coordinates.lat},${report.coordinates.lng}`} target="_blank" rel="noreferrer">Открыть большую карту ↗</a></section>}
+        {report.timeline?.length > 0 && <div className="report-block"><h3>Ход приключения</h3><div className="report-timeline">{report.timeline.map((entry,index)=><div className="report-timeline-item" key={entry.id || index}><time>{entry.time || '—'}</time><div><strong>{entry.title}</strong>{entry.description && <p>{entry.description}</p>}</div></div>)}</div></div>}
+        {reportMedia.length > 0 && <section className="report-gallery-section"><div className="report-section-heading"><span>СОХРАНЁННЫЕ МОМЕНТЫ</span><h3>Фото и видео <small>{reportMedia.length}</small></h3></div><div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}<button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button></div> : null)}</div></section>}
+        {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
+        {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
+        {report.conclusion && <div className="report-block"><h3>Итоги выезда</h3><p>{report.conclusion}</p></div>}
+        {reportMedia.length === 0 && <p className="muted-note">К этому выезду пока не добавлены фото и видео.</p>}
+        {report.coordinates && <p className="report-coordinates">Координаты: {report.coordinates.lat.toFixed(6)}, {report.coordinates.lng.toFixed(6)}</p>}
+      </div>
     </section>
   </div>;
 
