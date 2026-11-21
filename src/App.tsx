@@ -471,33 +471,26 @@ export default function App() {
 
 
   const reportIcon = (kind: string) => {
-    const common = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true as const };
-    if (kind === 'calendar') return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>;
-    if (kind === 'category') return <svg {...common}><path d="M12 3 20 7v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10"/></svg>;
-    if (kind === 'days') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>;
-    if (kind === 'distance') return <svg {...common}><path d="M4 18c4-8 6-10 9-7s4 4 7-5"/><path d="M15 6h5v5"/></svg>;
-    if (kind === 'money') return <svg {...common}><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 9h.01M18 15h.01"/></svg>;
-    if (kind === 'fish') return <svg {...common}><path d="M3 12c3-5 10-7 15-2l3 2-3 2c-5 5-12 3-15-2Z"/><path d="m3 12-2-3v6l2-3ZM14 10h.01"/></svg>;
-    if (kind === 'camp') return <svg {...common}><path d="m3 19 9-14 9 14H3Z"/><path d="m9 19 3-5 3 5M12 5V2"/></svg>;
-    if (kind === 'route') return <svg {...common}><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-3a3 3 0 0 1 3-3"/></svg>;
-    if (kind === 'goose') return <svg viewBox="0 0 48 48" aria-hidden="true">
-      <path d="M6 34c5-7 12-11 21-10 3 .3 5 1.5 7 3 2 1.5 4 1.6 7 .3-2 6-8 10-17 10H11c-2 0-4-1-5-3Z" fill="#b9b8a4" stroke="#493e2b" strokeWidth="1.4"/>
-      <path d="M18 26c2-4 4-7 4-12 0-5 3-8 7-8 3 0 5 2 5 4l8 2-8 3c-1 3-4 4-7 2 0 5 2 8 6 11" fill="#c9c5ad" stroke="#493e2b" strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="m34 9 8 2-8 2Z" fill="#d58a32"/><circle cx="31" cy="9" r="1.2" fill="#25241d"/>
-      <path d="M14 36 12 42m8-5-1 5" stroke="#bd7935" strokeWidth="2.3" strokeLinecap="round"/>
-      <path d="M11 31c7 2 15 1 21-3" fill="none" stroke="#e3ddc7" strokeWidth="1.2"/>
-    </svg>;
-    if (kind === 'duck') return <svg viewBox="0 0 48 48" aria-hidden="true">
-      <path d="M5 33c5-7 14-10 24-7 4 1 7 3 10 1-1 7-8 11-18 11H10c-3 0-5-2-5-5Z" fill="#9b8b70" stroke="#493e2b" strokeWidth="1.4"/>
-      <path d="M16 28c1-4 3-7 7-9 3-2 5-5 5-9 0-3 2-5 5-5 3 0 5 2 5 5l7 2-7 3c-2 2-5 2-7 0-1 5 2 9 6 12" fill="#176b50" stroke="#493e2b" strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="m37 10 8 2-8 2Z" fill="#e3b63c"/><circle cx="34" cy="8" r="1.2" fill="#f5e9c9"/>
-      <path d="M20 26c4 0 8 1 12 4" fill="none" stroke="#f1e5d1" strokeWidth="2"/>
-      <path d="M12 35c7 2 15 1 21-2" fill="none" stroke="#d7c7a4" strokeWidth="1.1"/>
-      <path d="M15 37 13 42m8-4-1 4" stroke="#b87c35" strokeWidth="2" strokeLinecap="round"/>
-    </svg>;
-    if (kind === 'people') return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-1.5A5.5 5.5 0 0 1 9 13a5.5 5.5 0 0 1 5.5 5.5V20Z"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17 14a4.5 4.5 0 0 1 3.5 4.4V20"/></svg>;
-    if (kind === 'observation') return <svg {...common}><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>;
-    return <svg {...common}><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg>;
+    const assets: Record<string, string> = {
+      calendar: 'Рустикальный календарь среди сосен.png',
+      'category-hunt': 'Бронзовый медальон с перекрещенными ружьями.png',
+      'category-fish': 'Рельефная бронзовая эмблема рыбалки с щукой.png',
+      'category-camp': 'Бронзовая эмблема походного лагеря на закате.png',
+      'category-travel': 'Золотой маршрут сквозь леса и озёра.png',
+      days: 'Бронзовая эмблема походного лагеря на закате.png',
+      distance: 'Пройденное расстояние_ горный маршрут.png',
+      money: 'Кошелёк, монеты и закатный пейзаж.png',
+      fish: 'Рельефная бронзовая эмблема рыбалки с щукой.png',
+      camp: 'Бронзовая эмблема походного лагеря на закате.png',
+      route: 'Золотой маршрут сквозь леса и озёра.png',
+      goose: 'Бронзовый медальон с летящим гусем на закате.png',
+      duck: 'Кряква в полёте над сияющим болотом.png',
+      people: 'Бронзовая эмблема команды с природным гербом.png',
+      observation: 'Гуси над туманным озером на закате.png',
+      other: 'Бронзовый медальон с перекрещенными ружьями.png',
+    };
+    const file = assets[kind] || assets.other;
+    return <img src={`${assetBase}images/${encodeURIComponent(file)}`} alt="" aria-hidden="true" loading="lazy"/>;
   };
   const reportDetails = report?.details ?? {};
   const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
@@ -527,7 +520,7 @@ export default function App() {
         <section className="report-info-section">
           <div className="report-info-grid">
             <div className="report-info-card"><span className="report-icon">{reportIcon('calendar')}</span><div><small>Дата</small><strong>{report.date}{report.time ? ' · ' + report.time : ''}</strong></div></div>
-            <div className="report-info-card"><span className="report-icon">{reportIcon('category')}</span><div><small>Категория</small><strong>{report.category}</strong></div></div>
+            <div className="report-info-card"><span className="report-icon">{reportIcon(report.category === 'Охота' ? 'category-hunt' : report.category === 'Рыбалка' ? 'category-fish' : report.category === 'Кемпинг' ? 'category-camp' : 'category-travel')}</span><div><small>Категория</small><strong>{report.category}</strong></div></div>
             {reportDetails.daysOutdoors !== undefined && String(reportDetails.daysOutdoors).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('days')}</span><div><small>Дней на природе</small><strong>{String(reportDetails.daysOutdoors)}</strong></div></div>}
             {reportDetails.distance !== undefined && String(reportDetails.distance).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('distance')}</span><div><small>Расстояние</small><strong>{String(reportDetails.distance)} км</strong></div></div>}
             {reportDetails.spent !== undefined && String(reportDetails.spent).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('money')}</span><div><small>Расходы</small><strong>{String(reportDetails.spent)} BYN</strong></div></div>}
