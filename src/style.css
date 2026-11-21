@@ -1530,3 +1530,24 @@ input,select,textarea{
   outline:0!important;
   box-shadow:none!important;
 }
+
+
+/* Visible inset bronze frame overlay around artwork; independent of the scaled image. */
+.category-emblem-art{
+  position:relative!important;
+  isolation:isolate!important;
+  border:0!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+}
+.category-emblem-art::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:10!important;
+  border:2px solid rgba(220,190,126,.95)!important;
+  border-radius:12px!important;
+  box-sizing:border-box!important;
+  pointer-events:none!important;
+}
