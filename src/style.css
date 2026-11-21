@@ -1618,3 +1618,6 @@ input,select,textarea{
  .report-map-block iframe{height:205px}
  .report-content .report-actions button{font-size:10px;padding:8px}
 }
+
+.save-error{margin:14px 0;padding:12px 14px;border:1px solid rgba(220,105,82,.55);border-radius:9px;background:rgba(120,35,24,.18);color:#ffd1c7;font-size:12px;line-height:1.5}
+.modal-actions button:disabled{opacity:.55;cursor:wait}
