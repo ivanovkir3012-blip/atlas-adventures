@@ -1479,3 +1479,39 @@ input,select,textarea{
   outline:0!important;
   box-shadow:none!important;
 }
+
+
+/* Match category artwork positioning to the "Мои приключения в цифрах" cards. */
+.category-emblem-art{
+  position:relative!important;
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:1.08 / 1!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+}
+.category-emblem-art img{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  transform:scale(1.16)!important;
+  transform-origin:center!important;
+  margin:0!important;
+}
+@media(max-width:620px){
+  .category-emblem-art{aspect-ratio:1.08 / 1!important}
+  .category-emblem-art img{transform:scale(1.16)!important}
+}
