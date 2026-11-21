@@ -323,6 +323,60 @@ export default function App() {
     setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
   }
 
+  function exportOutingsCsv() {
+    const headers = [
+      'Дата','Время','Категория','Название','Место','Широта','Долгота','Участники','Погода',
+      'Гуси','Утки','Другая дичь','Вид рыбы','Количество рыбы','Вес улова, кг','Приманки (рыбалка)',
+      'Щука, кг','Лещ, кг','Окунь, кг','Сом, кг','Ночёвки','Условия','Маршрут','Посещённые места',
+      'Расстояние, км','Расходы, BYN','Дней на природе','Продолжительность',
+      'Хронология','Заметки','Впечатления','Итоги','Избранное','Количество фото и видео'
+    ];
+    const value = (row: Outing, key: string) => row.details?.[key] ?? '';
+    const csvCell = (input: unknown) => {
+      const text = Array.isArray(input) ? input.join(', ') : String(input ?? '');
+      return '"' + text.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
+    };
+    const data = rows.map(row => {
+      const details = row.details ?? {};
+      const timeline = (row.timeline ?? []).map(item =>
+        [item.time, item.title, item.description].filter(Boolean).join(' — ')
+      ).join(' | ');
+      return [
+        row.date,row.time ?? '',row.category,row.title,row.place,
+        row.coordinates?.lat ?? '',row.coordinates?.lng ?? '',
+        (row.participants ?? []).join(', '),row.weather ?? '',
+        row.category === 'Охота' ? value(row,'geese') : '',
+        row.category === 'Охота' ? value(row,'ducks') : '',
+        row.category === 'Охота' ? value(row,'otherGame') : '',
+        row.category === 'Рыбалка' ? value(row,'fishSpecies') : '',
+        row.category === 'Рыбалка' ? value(row,'fishQuantities') : '',
+        row.category === 'Рыбалка' ? value(row,'catchWeight') : '',
+        row.category === 'Рыбалка' ? value(row,'lures') : '',
+        row.category === 'Рыбалка' ? value(row,'pikeWeight') : '',
+        row.category === 'Рыбалка' ? value(row,'breamWeight') : '',
+        row.category === 'Рыбалка' ? value(row,'perchWeight') : '',
+        row.category === 'Рыбалка' ? value(row,'catfishWeight') : '',
+        row.category === 'Кемпинг' ? value(row,'nights') : '',
+        row.category === 'Кемпинг' ? value(row,'conditions') : '',
+        row.category === 'Путешествия' ? value(row,'route') : '',
+        row.category === 'Путешествия' ? value(row,'visitedPlaces') : '',
+        value(row,'distance'),value(row,'spent'),value(row,'daysOutdoors'),value(row,'duration'),
+        timeline,row.note,row.impressions ?? '',row.conclusion ?? '',
+        row.favorite ? 'Да' : 'Нет',(row.mediaIds ?? []).length
+      ];
+    });
+    const csv = [headers, ...data].map(line => line.map(csvCell).join(';')).join('\r\n');
+    const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'atlas-adventures-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function removeReportMedia(item: MediaItem) {
     if (!report || !confirm('Удалить это фото или видео из отчёта?')) return;
     await deleteMedia(item.id);
@@ -510,7 +564,7 @@ export default function App() {
           {trophyRecords.slice(6,7).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
         </div></div>
       </section>}
-      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов'],['Экспорт','PDF отчёты, годовая фотокнига и CSV']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}</div></section>}
+      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}<div className="setting-card"><h3>Экспорт данных</h3><p>Скачай список всех сохранённых выездов в формате CSV. Файл открывается в Excel и других табличных редакторах.</p><button className="gold-button" onClick={exportOutingsCsv} disabled={!rows.length}>↓ Экспортировать CSV</button><small>{rows.length ? rows.length + ' выездов · без фотографий и видео' : 'Пока нет выездов для экспорта'}</small></div></div></section>}
     </main>
     
     {reportView}{modal&&form}
