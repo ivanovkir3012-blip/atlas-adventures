@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
+const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
 type Page = 'Главная' | 'Выезды' | 'Карта' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
-  'Охота': `${import.meta.env.BASE_URL}images/IMG_20260316_165954_416.jpg`,
-  'Рыбалка': `${import.meta.env.BASE_URL}images/IMG_20241003_153019.jpg`,
-  'Кемпинг': `${import.meta.env.BASE_URL}images/IMG_20251023_084247.jpg`,
+  'Охота': `${import.meta.env.BASE_URL}images/Охотничий закат_ утки над болотом.png`,
+  'Рыбалка': `${import.meta.env.BASE_URL}images/Рыбалка на закате_ щука и снасти.png`,
+  'Кемпинг': `${import.meta.env.BASE_URL}images/Кемпинг у озера на закате.png`,
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const assetBase = import.meta.env.BASE_URL;
@@ -436,7 +437,7 @@ export default function App() {
         <section className="dashboard-hero">
           <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
         </section>
-        <section className="category-grid">{cats.map((cat,index) => <button key={cat} className={`category-tile category-${index}`} style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.92),rgba(4,18,13,.02) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><strong>{cat}</strong><small>Выездов: {rows.filter(row=>row.category===cat).length}</small><span className="tile-arrow">›</span></button>)}</section>
+        <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index}`} style={{backgroundImage:`linear-gradient(0deg,rgba(4,18,13,.92),rgba(4,18,13,.02) 80%),url(${pics[cat]})`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><strong>{cat}</strong><small>Выездов: {rows.filter(row=>row.category===cat).length}</small><span className="tile-arrow">›</span></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           {statsPeriodControls}
