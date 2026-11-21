@@ -513,7 +513,6 @@ export default function App() {
         {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
         {report.conclusion && <div className="report-block"><h3>Итоги выезда</h3><p>{report.conclusion}</p></div>}
         {reportMedia.length === 0 && <p className="muted-note">К этому выезду пока не добавлены фото и видео.</p>}
-        {report.coordinates && <p className="report-coordinates">Координаты: {report.coordinates.lat.toFixed(6)}, {report.coordinates.lng.toFixed(6)}</p>}
       </div>
     </section>
   </div>;
