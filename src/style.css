@@ -1551,3 +1551,19 @@ input,select,textarea{
   box-sizing:border-box!important;
   pointer-events:none!important;
 }
+
+
+/* Ensure the category artwork border is painted above the scaled image. */
+.category-emblem-art{position:relative!important;isolation:isolate!important;border:0!important;outline:0!important;}
+.category-emblem-art img{z-index:0!important;}
+.category-emblem-art::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:999!important;
+  border:2px solid #d9b875!important;
+  border-radius:12px!important;
+  box-sizing:border-box!important;
+  pointer-events:none!important;
+}
