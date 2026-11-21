@@ -521,7 +521,6 @@ export default function App() {
           </div>
         </section>
         {(reportResultItems.length > 0 || report.participants.length > 0) && <section className="report-results-section">
-          <div className="report-section-heading"><span>РЕЗУЛЬТАТ ВЫЕЗДА</span><h3>{report.category === 'Охота' ? 'Итоги охоты' : report.category === 'Рыбалка' ? 'Результаты рыбалки' : report.category === 'Кемпинг' ? 'Итоги кемпинга' : 'Итоги путешествия'}</h3></div>
           <div className="report-info-grid">
             {reportResultItems.map(([label,value])=><div className="report-info-card" key={String(label)}>
               <span className="report-icon">{reportIcon(String(label).startsWith('Гуси') ? 'goose' : String(label).startsWith('Утки') ? 'duck' : String(label).startsWith('Другая') ? 'observation' : report.category === 'Рыбалка' ? 'fish' : report.category === 'Кемпинг' ? 'camp' : report.category === 'Путешествия' ? 'route' : 'other')}</span>
