@@ -1391,3 +1391,65 @@ input,select,textarea{
 .category-emblem-art img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;}
 .category-emblem-tile small{position:static!important;display:block!important;flex:0 0 20px!important;width:100%!important;height:20px!important;margin:0!important;padding:2px 0 0!important;overflow:hidden!important;background:transparent!important;border:0!important;border-radius:0!important;color:#f1dfb6!important;font-size:11px!important;font-weight:800!important;line-height:16px!important;letter-spacing:0!important;text-align:center!important;text-shadow:0 1px 5px #000!important;white-space:nowrap!important;}
 @media(max-width:620px){.category-emblem-tile{aspect-ratio:1.18/1!important;padding:7px 8px 6px!important}.category-emblem-tile small{flex-basis:20px!important;height:20px!important}}
+
+
+/* Final category-card geometry: artwork fills the full width; equal transparent bands above and below. */
+.category-emblem-tile{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  aspect-ratio:auto!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+  border:1px solid rgba(220,190,126,.7)!important;
+  border-radius:12px!important;
+}
+.category-emblem-art{
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:18px 0!important;
+  margin:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+.category-emblem-art img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:initial!important;
+  object-position:center!important;
+  margin:0!important;
+}
+.category-emblem-tile small{
+  position:static!important;
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  height:26px!important;
+  margin:0!important;
+  padding:3px 0 5px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  color:#f1dfb6!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  line-height:18px!important;
+  text-align:center!important;
+  text-shadow:0 1px 5px #000!important;
+  white-space:nowrap!important;
+}
+@media(max-width:620px){
+  .category-emblem-art{padding:14px 0!important}
+  .category-emblem-tile small{height:24px!important;padding:2px 0 4px!important}
+}
