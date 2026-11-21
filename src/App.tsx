@@ -478,7 +478,7 @@ export default function App() {
       'category-camp': 'Бронзовая эмблема походного лагеря на закате.png',
       'category-travel': 'Золотой маршрут сквозь леса и озёра.png',
       days: 'Бронзовая эмблема походного лагеря на закате.png',
-      distance: 'Пройденное расстояние_ горный маршрут.png',
+      distance: '../Пройденное расстояние_ горный маршрут.png',
       money: 'Кошелёк, монеты и закатный пейзаж.png',
       fish: 'Рельефная бронзовая эмблема рыбалки с щукой.png',
       camp: 'Бронзовая эмблема походного лагеря на закате.png',
@@ -490,7 +490,10 @@ export default function App() {
       other: 'Бронзовый медальон с перекрещенными ружьями.png',
     };
     const file = assets[kind] || assets.other;
-    return <img src={`${assetBase}images/${encodeURIComponent(file)}`} alt="" aria-hidden="true" loading="lazy"/>;
+    const imageUrl = file.startsWith('../')
+      ? `${assetBase}${encodeURIComponent(file.slice(3))}`
+      : `${assetBase}images/${encodeURIComponent(file)}`;
+    return <img src={imageUrl} alt="" aria-hidden="true" loading="lazy"/>;
   };
   const reportDetails = report?.details ?? {};
   const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
