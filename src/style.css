@@ -1633,3 +1633,20 @@ input,select,textarea{
 .media-lightbox>video{width:min(96vw,1200px)}
 .media-lightbox-close{position:absolute;top:12px;right:16px;width:42px;height:42px;border:1px solid rgba(240,216,165,.65);border-radius:50%;background:rgba(18,29,23,.9);color:#f5e4b9;font-size:29px;line-height:1;cursor:pointer}
 .media-lightbox-caption{max-width:90vw;color:#e8d8b4;font-size:12px;text-align:center;overflow-wrap:anywhere}
+
+
+/* Unified bronze line-icon language for outing results and participants. */
+.report-result-grid{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.report-result-item{display:flex;flex-direction:row;align-items:center;gap:11px;min-height:76px;padding:12px;border:1px solid rgba(220,190,126,.18);background:rgba(255,255,255,.035)}
+.report-result-item>div{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+.report-result-item small{font-size:10px;line-height:1.35;color:#c7b994}
+.report-result-item strong{font-size:17px;color:#f4d98e}
+.report-icon,.report-heading-icon,.report-person-chip>i{display:inline-flex;flex:0 0 36px;width:36px;height:36px;align-items:center;justify-content:center;border:1px solid rgba(220,190,126,.42);border-radius:10px;background:rgba(220,190,126,.07);color:#e6c77f}
+.report-icon svg,.report-heading-icon svg,.report-person-chip svg{display:block;width:20px;height:20px}
+.report-section-heading h3{display:flex;align-items:center;gap:10px}
+.report-people-section{margin:22px 0;padding:17px;border:1px solid rgba(220,190,126,.3);border-radius:12px;background:rgba(5,22,16,.2)}
+.report-people-list{display:flex;flex-wrap:wrap;gap:9px}
+.report-person-chip{display:inline-flex;align-items:center;gap:9px;min-height:48px;padding:6px 13px 6px 7px;border:1px solid rgba(220,190,126,.2);border-radius:10px;background:rgba(255,255,255,.035);color:#eee5d0;font-size:12px}
+.report-person-chip>i{display:inline-flex;width:32px;height:32px;flex:0 0 32px;align-items:center;justify-content:center;border:1px solid rgba(220,190,126,.35);border-radius:9px;color:#e6c77f;font-style:normal}
+.report-person-chip svg{width:18px;height:18px}
+@media(max-width:620px){.report-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-result-item{gap:8px;padding:9px}.report-icon{width:32px;height:32px;flex-basis:32px}.report-result-item strong{font-size:15px}.report-people-section{padding:12px}}
