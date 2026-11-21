@@ -47,6 +47,8 @@ export default function App() {
   const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const [recordPhotoUrls, setRecordPhotoUrls] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<File[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
   const [online, setOnline] = useState(navigator.onLine);
@@ -276,51 +278,76 @@ export default function App() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const id = edit?.id || crypto.randomUUID();
-    const selectedCategory = form.get('category') as Cat;
-    const details: Record<string, string | number | boolean | string[]> = {};
-    for (const key of Object.keys(emptyDetails)) {
-      const value = form.get(key);
-      if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','spent','daysOutdoors','pikeWeight','breamWeight','perchWeight','catfishWeight'].includes(key) ? Number(value) : String(value);
-    }
-    const timeline: Outing['timeline'] = [];
-    const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
-    const row: Outing = {
-      id, title: String(form.get('title')), category: selectedCategory,
-      createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
-      date: String(form.get('date')), time: '',
-      place: String(form.get('place') || ''),
-      coordinates: form.get('lat') && form.get('lng') ? { lat: Number(form.get('lat')), lng: Number(form.get('lng')) } : edit?.coordinates,
-      participants, weather: String(form.get('weather') || ''), timeline,
-      note: String(form.get('note') || ''), impressions: '', conclusion: '',
-      mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
-      details,
-    };
-    const newlySaved: string[] = [];
-    for (const file of files) {
-      const item: MediaItem = {
-        id: crypto.randomUUID(), outingId: id, name: file.name,
-        type: file.type.startsWith('video/') ? 'video' : 'image',
-        mimeType: file.type, size: file.size, createdAt: new Date().toISOString(),
-        blob: file, uploadState: 'local',
+    if (isSaving) return;
+    const formElement = event.currentTarget;
+    if (!formElement.reportValidity()) return;
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      const form = new FormData(formElement);
+      const id = edit?.id || crypto.randomUUID();
+      const selectedCategory = form.get('category') as Cat;
+      const details: Record<string, string | number | boolean | string[]> = {};
+      for (const key of Object.keys(emptyDetails)) {
+        const value = form.get(key);
+        if (value !== null && String(value).trim() !== '') details[key] = ['geese','ducks','catchWeight','nights','distance','spent','daysOutdoors','pikeWeight','breamWeight','perchWeight','catfishWeight'].includes(key) ? Number(value) : String(value);
+      }
+      const timeline: Outing['timeline'] = [];
+      const participants = String(form.get('participants') || '').split(',').map(v => v.trim()).filter(Boolean);
+      const row: Outing = {
+        id, title: String(form.get('title')).trim(), category: selectedCategory,
+        createdAt: edit?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
+        date: String(form.get('date')), time: '',
+        place: String(form.get('place') || '').trim(),
+        coordinates: form.get('lat') !== '' && form.get('lng') !== '' ? { lat: Number(form.get('lat')), lng: Number(form.get('lng')) } : edit?.coordinates,
+        participants, weather: String(form.get('weather') || ''), timeline,
+        note: String(form.get('note') || ''), impressions: edit?.impressions ?? '', conclusion: edit?.conclusion ?? '',
+        mediaIds: [...(edit?.mediaIds ?? [])], favorite: edit?.favorite ?? false,
+        details,
       };
-      await saveMedia(item);
-      row.mediaIds.push(item.id);
-      newlySaved.push(item.id);
+      const newlySaved: string[] = [];
+      for (const file of files) {
+        const item: MediaItem = {
+          id: crypto.randomUUID(), outingId: id, name: file.name,
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          mimeType: file.type, size: file.size, createdAt: new Date().toISOString(),
+          blob: file, uploadState: 'local',
+        };
+        await saveMedia(item);
+        row.mediaIds.push(item.id);
+        newlySaved.push(item.id);
+      }
+      for (const key of ['pikePhotoId','breamPhotoId','perchPhotoId','catfishPhotoId']) {
+        const choice = String(form.get(key) || '');
+        if (choice.startsWith('new:')) {
+          const selectedId = newlySaved[Number(choice.slice(4))];
+          if (selectedId) details[key] = selectedId; else delete details[key];
+        } else if (choice) details[key] = choice;
+        else delete details[key];
+      }
+      row.details = details;
+      const coverChoice = String(form.get('coverChoice') || '');
+      if (coverChoice.startsWith('new:')) {
+        const selectedIndex = Number(coverChoice.slice(4));
+        const selectedId = newlySaved[selectedIndex];
+        if (selectedId) row.coverMediaId = selectedId;
+      } else if (coverChoice) row.coverMediaId = coverChoice;
+      else if (edit?.coverMediaId) row.coverMediaId = edit.coverMediaId;
+      else if (newlySaved.length) row.coverMediaId = newlySaved[0];
+      await put(row);
+      await refresh();
+      setFiles([]);
+      setModal(false);
+      setEdit(null);
+      setSaveError('');
+      setPage('Выезды');
+    } catch (error) {
+      console.error('Не удалось сохранить выезд:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      setSaveError('Не удалось сохранить выезд. Данные формы оставлены — попробуй ещё раз. ' + (message || 'Проверь свободное место в хранилище браузера.'));
+    } finally {
+      setIsSaving(false);
     }
-    for (const key of ['pikePhotoId','breamPhotoId','perchPhotoId','catfishPhotoId']) { const choice=String(form.get(key)||''); if(choice.startsWith('new:')) { const selectedId=newlySaved[Number(choice.slice(4))]; if(selectedId) details[key]=selectedId; else delete details[key]; } else if(choice) details[key]=choice; else delete details[key]; }
-    row.details = details;
-    const coverChoice = String(form.get('coverChoice') || '');
-    if (coverChoice.startsWith('new:')) {
-      const selectedIndex = Number(coverChoice.slice(4));
-      const selectedId = newlySaved[selectedIndex];
-      if (selectedId) row.coverMediaId = selectedId;
-    } else if (coverChoice) row.coverMediaId = coverChoice;
-    else if (edit?.coverMediaId) row.coverMediaId = edit.coverMediaId;
-    else if (newlySaved.length) row.coverMediaId = newlySaved[0];
-    await put(row);
-    setFiles([]); setModal(false); setEdit(null); await refresh(); setPage('Выезды');
   }
 
   function exportOutingsCsv() {
@@ -396,7 +423,7 @@ export default function App() {
   async function toggleFavorite(row: Outing) { await put({ ...row, favorite: !row.favorite }); await refresh(); setReport({ ...row, favorite: !row.favorite }); }
   async function removeOuting(row: Outing) { if (!confirm('Переместить выезд в корзину? Его можно восстановить в течение 30 дней.')) return; await softDelete(row.id); setReport(null); await refresh(); }
 
-  function openNew() { setEdit(null); setFiles([]); setModal(true); }
+  function openNew() { setEdit(null); setFiles([]); setSaveError(''); setModal(true); }
   function openEdit(row: Outing) { setEdit(row); setFiles([]); setModal(true); }
 
   function renderRecent(items: Outing[]) {
@@ -510,7 +537,8 @@ export default function App() {
         <div className="media-existing"><label>Главное фото выезда<select key={files.map(file => file.name).join('|')} name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.findIndex(file => file.type.startsWith('image/')) >= 0 ? `new:${files.findIndex(file => file.type.startsWith('image/'))}` : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
         <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
       </div>
-      <div className="modal-actions"><button type="button" className="outline-button" onClick={() => { setModal(false); setEdit(null); }}>Отмена</button><button className="gold-button">Сохранить выезд</button></div>
+      {saveError && <div className="save-error" role="alert">{saveError}</div>}
+      <div className="modal-actions"><button type="button" className="outline-button" disabled={isSaving} onClick={() => { setModal(false); setEdit(null); setSaveError(''); }}>Отмена</button><button className="gold-button" type="submit" disabled={isSaving}>{isSaving ? 'Сохраняем…' : 'Сохранить выезд'}</button></div>
     </form>
   </div>;
 
