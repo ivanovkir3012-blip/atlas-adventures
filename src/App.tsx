@@ -648,8 +648,8 @@ export default function App() {
         <div className="records-group"><div className="records-group-heading"><h2>Рыбалка</h2></div><div className="records-grid">
           {trophyRecords.slice(0,4).map(item=><article className="record-card record-fish-card" key={item.key}>
             {item.row && item.photoId && recordPhotoUrls[item.photoId] ? <img className="record-fish-photo" src={recordPhotoUrls[item.photoId]} alt={item.title}/> : <div className="record-fish-placeholder"><span>✧</span><small>Фото трофея не выбрано</small></div>}
-            <div className="record-card-copy"><small>{item.title}</small><strong>{item.row ? item.weight.toLocaleString('ru-RU',{maximumFractionDigits:2})+' кг' : '—'}</strong>
-              {item.row ? <button className="record-outing-link" onClick={()=>setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}
+            <div className="record-card-copy"><small>{item.title}</small><strong>{item.row ? Number(item.weight ?? 0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' кг' : '—'}</strong>
+              {item.row ? <button className="record-outing-link" onClick={()=>item.row && setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}
             </div>
           </article>)}
         </div></div>
