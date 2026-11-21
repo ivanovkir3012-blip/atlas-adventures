@@ -337,7 +337,6 @@ export default function App() {
       return '"' + text.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
     };
     const data = rows.map(row => {
-      const details = row.details ?? {};
       const timeline = (row.timeline ?? []).map(item =>
         [item.time, item.title, item.description].filter(Boolean).join(' — ')
       ).join(' | ');
@@ -366,7 +365,7 @@ export default function App() {
       ];
     });
     const csv = [headers, ...data].map(line => line.map(csvCell).join(';')).join('\r\n');
-    const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -374,7 +373,7 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   async function removeReportMedia(item: MediaItem) {
