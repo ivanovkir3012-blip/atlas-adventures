@@ -1731,3 +1731,12 @@ input,select,textarea{
 @media(max-width:620px){
  .report-info-card .report-icon,.report-result-item .report-icon{flex-basis:44px;width:44px;height:44px}
 }
+
+
+/* Report info tiles: keep the content and spacing, remove the large card panels. */
+.report-info-grid>.report-info-card,
+.report-results-section .report-info-card{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
