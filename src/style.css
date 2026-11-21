@@ -1453,3 +1453,20 @@ input,select,textarea{
   .category-emblem-art{padding:14px 0!important}
   .category-emblem-tile small{height:24px!important;padding:2px 0 4px!important}
 }
+
+
+/* Fine-tune category emblem framing from the mobile screenshot. */
+.category-emblem-art{
+  padding:70px 0 18px!important;
+  overflow:hidden!important;
+}
+.category-emblem-art img{
+  width:112%!important;
+  max-width:none!important;
+  margin-left:-6%!important;
+  height:auto!important;
+}
+@media(max-width:620px){
+  .category-emblem-art{padding:70px 0 18px!important}
+  .category-emblem-art img{width:112%!important;margin-left:-6%!important}
+}
