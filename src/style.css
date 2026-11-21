@@ -1713,3 +1713,21 @@ input,select,textarea{
 @media(max-width:620px){
  .report-info-card .report-icon,.report-result-item .report-icon{flex-basis:44px;width:44px;height:44px}
 }
+
+
+/* Icon artwork: round crops only, no badge frame or backing. */
+.report-info-card .report-icon,
+.report-result-item .report-icon,
+.report-heading-icon,
+.report-person-chip>i{
+  flex:0 0 52px;width:52px;height:52px;overflow:hidden;
+  border:0!important;border-radius:50%;background:transparent!important;
+  box-shadow:none!important;padding:0;
+}
+.report-info-card .report-icon img,
+.report-result-item .report-icon img{
+  display:block;width:100%;height:100%;object-fit:cover;border:0;border-radius:50%;
+}
+@media(max-width:620px){
+ .report-info-card .report-icon,.report-result-item .report-icon{flex-basis:44px;width:44px;height:44px}
+}
