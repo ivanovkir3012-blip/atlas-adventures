@@ -480,8 +480,21 @@ export default function App() {
     if (kind === 'fish') return <svg {...common}><path d="M3 12c3-5 10-7 15-2l3 2-3 2c-5 5-12 3-15-2Z"/><path d="m3 12-2-3v6l2-3ZM14 10h.01"/></svg>;
     if (kind === 'camp') return <svg {...common}><path d="m3 19 9-14 9 14H3Z"/><path d="m9 19 3-5 3 5M12 5V2"/></svg>;
     if (kind === 'route') return <svg {...common}><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-3a3 3 0 0 1 3-3"/></svg>;
-    if (kind === 'goose') return <svg {...common}><path d="M3 18c2.2-1.1 3.7-3.1 5.6-4.6 1.4-1.1 2.7-1.6 4.2-1.6h1.1c-.8-1.3-1.1-2.6-1.1-4.2V6.2c0-1.8 1.2-3.2 2.8-3.2 1.3 0 2.2.8 2.2 2l3.2.5-3.1 1.1c-.5 1.1-1.6 1.6-2.8 1.2v2.2c0 2.1 1.2 3.5 3.3 3.8 2 .3 3.2 1.2 3.2 2.6-1.8 2.1-4.8 3.2-8.8 3.2H4Z"/><path d="M7 16.2c2.1.4 4.5.2 6.4-.7M14.8 12.1c1.2.7 2.5 1 4 1"/></svg>;
-    if (kind === 'duck') return <svg {...common}><path d="M3 16.5c1.8-2.2 4.5-3.5 7.7-3.5 2.2 0 4.2.5 5.8 1.3 1.7.8 3.1.7 4.5-.3-1 3.4-4.2 5.6-8.9 5.6H6c-1.8 0-2.8-1-3-3.1Z"/><path d="M9.2 13.1c.2-2.1 1.2-3.5 2.9-4.3 1.2-.6 1.9-1.7 1.9-3.1 0-1.5 1.1-2.7 2.5-2.7 1.2 0 2.1.8 2.1 1.9l3 .7-3 1c-.4 1-1.4 1.5-2.6 1.1-.2 2.3.8 3.6 2.4 4.7"/><path d="M5 17.8c3.7.8 8.1.8 11.6-.2"/></svg>;
+    if (kind === 'goose') return <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M6 34c5-7 12-11 21-10 3 .3 5 1.5 7 3 2 1.5 4 1.6 7 .3-2 6-8 10-17 10H11c-2 0-4-1-5-3Z" fill="#b9b8a4" stroke="#493e2b" strokeWidth="1.4"/>
+      <path d="M18 26c2-4 4-7 4-12 0-5 3-8 7-8 3 0 5 2 5 4l8 2-8 3c-1 3-4 4-7 2 0 5 2 8 6 11" fill="#c9c5ad" stroke="#493e2b" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="m34 9 8 2-8 2Z" fill="#d58a32"/><circle cx="31" cy="9" r="1.2" fill="#25241d"/>
+      <path d="M14 36 12 42m8-5-1 5" stroke="#bd7935" strokeWidth="2.3" strokeLinecap="round"/>
+      <path d="M11 31c7 2 15 1 21-3" fill="none" stroke="#e3ddc7" strokeWidth="1.2"/>
+    </svg>;
+    if (kind === 'duck') return <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M5 33c5-7 14-10 24-7 4 1 7 3 10 1-1 7-8 11-18 11H10c-3 0-5-2-5-5Z" fill="#9b8b70" stroke="#493e2b" strokeWidth="1.4"/>
+      <path d="M16 28c1-4 3-7 7-9 3-2 5-5 5-9 0-3 2-5 5-5 3 0 5 2 5 5l7 2-7 3c-2 2-5 2-7 0-1 5 2 9 6 12" fill="#176b50" stroke="#493e2b" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="m37 10 8 2-8 2Z" fill="#e3b63c"/><circle cx="34" cy="8" r="1.2" fill="#f5e9c9"/>
+      <path d="M20 26c4 0 8 1 12 4" fill="none" stroke="#f1e5d1" strokeWidth="2"/>
+      <path d="M12 35c7 2 15 1 21-2" fill="none" stroke="#d7c7a4" strokeWidth="1.1"/>
+      <path d="M15 37 13 42m8-4-1 4" stroke="#b87c35" strokeWidth="2" strokeLinecap="round"/>
+    </svg>;
     if (kind === 'people') return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-1.5A5.5 5.5 0 0 1 9 13a5.5 5.5 0 0 1 5.5 5.5V20Z"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17 14a4.5 4.5 0 0 1 3.5 4.4V20"/></svg>;
     if (kind === 'observation') return <svg {...common}><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>;
     return <svg {...common}><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg>;
