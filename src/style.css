@@ -1671,3 +1671,26 @@ input,select,textarea{
  .report-info-card .report-icon svg{width:18px;height:18px}
  .report-info-card strong{font-size:12px}
 }
+
+
+/* Variant C: restrained full-colour nature emblems in bronze medallions. */
+.report-info-card .report-icon,
+.report-result-item .report-icon,
+.report-heading-icon,
+.report-person-chip>i{
+  flex:0 0 48px;width:48px;height:48px;border:2px solid #b98b43;border-radius:50%;
+  background:radial-gradient(circle at 32% 25%,rgba(117,103,68,.58),rgba(25,29,25,.98) 72%);
+  color:#e5c57d;box-shadow:inset 0 0 0 2px rgba(244,211,145,.12),0 2px 7px rgba(0,0,0,.32);
+}
+.report-info-card .report-icon svg,.report-result-item .report-icon svg{width:31px;height:31px;display:block}
+.report-info-card .report-icon:has(svg),.report-result-item .report-icon:has(svg){overflow:hidden}
+.report-info-card .report-icon svg:not([viewBox="0 0 48 48"]),
+.report-result-item .report-icon svg:not([viewBox="0 0 48 48"]){width:25px;height:25px}
+.report-info-card .report-icon svg[viewBox="0 0 48 48"],
+.report-result-item .report-icon svg[viewBox="0 0 48 48"]{width:34px;height:34px}
+.report-info-card .report-icon:has(svg[viewBox="0 0 48 48"]),
+.report-result-item .report-icon:has(svg[viewBox="0 0 48 48"]){background:radial-gradient(circle at 30% 25%,#756b4e,#20251e 75%)}
+@media(max-width:620px){
+ .report-info-card .report-icon,.report-result-item .report-icon{flex-basis:40px;width:40px;height:40px}
+ .report-info-card .report-icon svg[viewBox="0 0 48 48"],.report-result-item .report-icon svg[viewBox="0 0 48 48"]{width:30px;height:30px}
+}
