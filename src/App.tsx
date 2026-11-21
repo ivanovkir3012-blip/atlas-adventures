@@ -43,6 +43,8 @@ export default function App() {
   const [edit, setEdit] = useState<Outing | null>(null);
   const [report, setReport] = useState<Outing | null>(null);
   const [reportMedia, setReportMedia] = useState<MediaItem[]>([]);
+  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
   const [recordPhotoUrls, setRecordPhotoUrls] = useState<Record<string, string>>({});
@@ -172,6 +174,13 @@ export default function App() {
     if (!report) { setReportMedia([]); return; }
     getMediaForOuting(report.id).then(setReportMedia);
   }, [report]);
+
+  useEffect(() => {
+    if (!previewMedia?.blob) { setPreviewUrl(''); return; }
+    const url = URL.createObjectURL(previewMedia.blob);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [previewMedia]);
 
   useEffect(() => {
     if (!edit) { setMedia([]); return; }
@@ -492,9 +501,14 @@ export default function App() {
         {reportResultItems.length > 0 && <section className="report-results"><div className="report-section-heading"><span>РЕЗУЛЬТАТ ВЫЕЗДА</span><h3>{report.category === 'Охота' ? 'Итоги охоты' : report.category === 'Рыбалка' ? 'Результаты рыбалки' : report.category === 'Кемпинг' ? 'Итоги кемпинга' : 'Итоги путешествия'}</h3></div><div className="report-result-grid">{reportResultItems.map(([label,value])=><div className="report-result-item" key={String(label)}><small>{label}</small><strong>{String(value)}</strong></div>)}</div></section>}
         {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
         {report.participants.length > 0 && <div className="report-block"><h3>Участники</h3><p>{report.participants.join(', ')}</p></div>}
-        {report.coordinates && <section className="report-map-block"><div className="report-section-heading"><span>ГЕОГРАФИЯ</span><h3>Место на карте</h3></div><iframe title="Место выезда на карте" loading="lazy" src={`https://www.google.com/maps?q=${report.coordinates.lat},${report.coordinates.lng}&z=12&output=embed`} referrerPolicy="no-referrer-when-downgrade"/><a href={`https://www.google.com/maps?q=${report.coordinates.lat},${report.coordinates.lng}`} target="_blank" rel="noreferrer">Открыть большую карту ↗</a></section>}
         {report.timeline?.length > 0 && <div className="report-block"><h3>Ход приключения</h3><div className="report-timeline">{report.timeline.map((entry,index)=><div className="report-timeline-item" key={entry.id || index}><time>{entry.time || '—'}</time><div><strong>{entry.title}</strong>{entry.description && <p>{entry.description}</p>}</div></div>)}</div></div>}
-        {reportMedia.length > 0 && <section className="report-gallery-section"><div className="report-section-heading"><span>СОХРАНЁННЫЕ МОМЕНТЫ</span><h3>Фото и видео <small>{reportMedia.length}</small></h3></div><div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>{item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} controls />}<button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button></div> : null)}</div></section>}
+        {reportMedia.length > 0 && <section className="report-gallery-section"><div className="report-section-heading"><span>СОХРАНЁННЫЕ МОМЕНТЫ</span><h3>Фото и видео <small>{reportMedia.length}</small></h3></div><div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>
+          <button type="button" className="report-media-open" onClick={() => setPreviewMedia(item)} aria-label={'Открыть ' + (item.type === 'image' ? 'фото: ' : 'видео: ') + item.name}>
+            {item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} muted playsInline preload="metadata"/>}
+            <span>{item.type === 'image' ? 'Открыть фото ↗' : '▶ Открыть видео'}</span>
+          </button>
+          <button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button>
+        </div> : null)}</div></section>}
         {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
         {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
         {report.conclusion && <div className="report-block"><h3>Итоги выезда</h3><p>{report.conclusion}</p></div>}
@@ -619,5 +633,10 @@ export default function App() {
     </main>
     
     {reportView}{modal&&form}
+    {previewMedia && previewUrl && <div className="media-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр медиа" onClick={event => { if (event.target === event.currentTarget) setPreviewMedia(null); }}>
+      <button type="button" className="media-lightbox-close" onClick={() => setPreviewMedia(null)} aria-label="Закрыть просмотр">×</button>
+      {previewMedia.type === 'image' ? <img src={previewUrl} alt={previewMedia.name}/> : <video src={previewUrl} controls autoPlay playsInline/>}
+      <div className="media-lightbox-caption">{previewMedia.name}</div>
+    </div>}
   </div>;
 }
