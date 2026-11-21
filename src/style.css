@@ -1654,7 +1654,7 @@ input,select,textarea{
 
 /* Unified information cards: general details first, outing results second. */
 .report-info-section,.report-results-section{margin:14px 0 18px}
-.report-results-section{margin-top:22px;padding:17px;border:1px solid rgba(220,190,126,.3);border-radius:12px;background:rgba(5,22,16,.2)}
+.report-results-section{margin-top:14px;padding:0;border:0;border-radius:0;background:transparent}
 .report-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}
 .report-info-card{display:flex;align-items:center;gap:11px;min-width:0;min-height:76px;padding:11px 12px;border:1px solid rgba(220,190,126,.28);border-radius:9px;background:rgba(255,255,255,.035)}
 .report-info-card>div{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
@@ -1662,11 +1662,9 @@ input,select,textarea{
 .report-info-card strong{color:#f1dfb6;font-size:14px;line-height:1.35;overflow-wrap:anywhere}
 .report-info-card .report-icon{flex:0 0 36px;width:36px;height:36px}
 .report-info-card .report-icon svg{width:20px;height:20px}
-.report-results-section .report-section-heading{margin-bottom:13px}
-.report-results-section .report-section-heading h3{margin:5px 0 0}
 .report-participants-card strong{font-size:13px}
 @media(max-width:620px){
- .report-results-section{padding:12px;margin:16px 0}
+ .report-results-section{padding:0;margin:14px 0 18px}
  .report-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
  .report-info-card{min-height:68px;padding:9px;gap:8px}
  .report-info-card .report-icon{flex-basis:32px;width:32px;height:32px}
