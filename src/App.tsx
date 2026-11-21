@@ -472,6 +472,14 @@ export default function App() {
 
   const reportIcon = (kind: string) => {
     const common = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true as const };
+    if (kind === 'calendar') return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>;
+    if (kind === 'category') return <svg {...common}><path d="M12 3 20 7v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10"/></svg>;
+    if (kind === 'days') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>;
+    if (kind === 'distance') return <svg {...common}><path d="M4 18c4-8 6-10 9-7s4 4 7-5"/><path d="M15 6h5v5"/></svg>;
+    if (kind === 'money') return <svg {...common}><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 9h.01M18 15h.01"/></svg>;
+    if (kind === 'fish') return <svg {...common}><path d="M3 12c3-5 10-7 15-2l3 2-3 2c-5 5-12 3-15-2Z"/><path d="m3 12-2-3v6l2-3ZM14 10h.01"/></svg>;
+    if (kind === 'camp') return <svg {...common}><path d="m3 19 9-14 9 14H3Z"/><path d="m9 19 3-5 3 5M12 5V2"/></svg>;
+    if (kind === 'route') return <svg {...common}><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-3a3 3 0 0 1 3-3"/></svg>;
     if (kind === 'goose') return <svg {...common}><path d="M3 17c3-1 4-4 6-7 1-2 3-3 5-3 1 0 2 .5 2 1.5S15 10 14 10h-2l2 2c2 2 4 2 7 1-1 3-4 5-8 5H3Z"/><path d="M14 7c0-2 1-3 3-4M17 4l2 1"/></svg>;
     if (kind === 'duck') return <svg {...common}><path d="M3 16c2-1 3-4 6-6 3-2 7-1 9 2l3 1-3 2c-1 3-4 4-8 4H4"/><path d="M16 10c0-2 1-3 3-3M19 7l2 1"/></svg>;
     if (kind === 'people') return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-1.5A5.5 5.5 0 0 1 9 13a5.5 5.5 0 0 1 5.5 5.5V20Z"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17 14a4.5 4.5 0 0 1 3.5 4.4V20"/></svg>;
@@ -503,22 +511,29 @@ export default function App() {
       </div>
       <div className="report-content">
         <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
-        <div className="report-overview">
-          <div><span>Дата</span><strong>{report.date}{report.time ? ` · ${report.time}` : ''}</strong></div>
-          <div><span>Категория</span><strong>{report.category}</strong></div>
-          {reportDetails.daysOutdoors !== undefined && String(reportDetails.daysOutdoors).trim() !== '' && <div><span>Дней на природе</span><strong>{String(reportDetails.daysOutdoors)}</strong></div>}
-          {reportDetails.distance !== undefined && String(reportDetails.distance).trim() !== '' && <div><span>Расстояние</span><strong>{String(reportDetails.distance)} км</strong></div>}
-          {reportDetails.spent !== undefined && String(reportDetails.spent).trim() !== '' && <div><span>Расходы</span><strong>{String(reportDetails.spent)} BYN</strong></div>}
-        </div>
-        {reportResultItems.length > 0 && <section className="report-results"><div className="report-section-heading"><span>РЕЗУЛЬТАТ ВЫЕЗДА</span><h3>{report.category === 'Охота' ? 'Итоги охоты' : report.category === 'Рыбалка' ? 'Результаты рыбалки' : report.category === 'Кемпинг' ? 'Итоги кемпинга' : 'Итоги путешествия'}</h3></div><div className="report-result-grid">{reportResultItems.map(([label,value])=><div className="report-result-item" key={String(label)}>
-          <span className="report-icon">{reportIcon(String(label).startsWith('Гуси') ? 'goose' : String(label).startsWith('Утки') ? 'duck' : String(label).startsWith('Другая') ? 'observation' : 'other')}</span>
-          <div><small>{label}</small><strong>{String(value)}</strong></div>
-        </div>)}</div></section>}
-        {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
-        {report.participants.length > 0 && <section className="report-people-section">
-          <div className="report-section-heading"><span>КОМАНДА ВЫЕЗДА</span><h3><i className="report-heading-icon">{reportIcon('people')}</i> Участники <small>{report.participants.length}</small></h3></div>
-          <div className="report-people-list">{report.participants.map((person,index)=><span className="report-person-chip" key={person+'-'+index}><i>{reportIcon('people')}</i>{person}</span>)}</div>
+        <section className="report-info-section">
+          <div className="report-info-grid">
+            <div className="report-info-card"><span className="report-icon">{reportIcon('calendar')}</span><div><small>Дата</small><strong>{report.date}{report.time ? ' · ' + report.time : ''}</strong></div></div>
+            <div className="report-info-card"><span className="report-icon">{reportIcon('category')}</span><div><small>Категория</small><strong>{report.category}</strong></div></div>
+            {reportDetails.daysOutdoors !== undefined && String(reportDetails.daysOutdoors).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('days')}</span><div><small>Дней на природе</small><strong>{String(reportDetails.daysOutdoors)}</strong></div></div>}
+            {reportDetails.distance !== undefined && String(reportDetails.distance).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('distance')}</span><div><small>Расстояние</small><strong>{String(reportDetails.distance)} км</strong></div></div>}
+            {reportDetails.spent !== undefined && String(reportDetails.spent).trim() !== '' && <div className="report-info-card"><span className="report-icon">{reportIcon('money')}</span><div><small>Расходы</small><strong>{String(reportDetails.spent)} BYN</strong></div></div>}
+          </div>
+        </section>
+        {(reportResultItems.length > 0 || report.participants.length > 0) && <section className="report-results-section">
+          <div className="report-section-heading"><span>РЕЗУЛЬТАТ ВЫЕЗДА</span><h3>{report.category === 'Охота' ? 'Итоги охоты' : report.category === 'Рыбалка' ? 'Результаты рыбалки' : report.category === 'Кемпинг' ? 'Итоги кемпинга' : 'Итоги путешествия'}</h3></div>
+          <div className="report-info-grid">
+            {reportResultItems.map(([label,value])=><div className="report-info-card" key={String(label)}>
+              <span className="report-icon">{reportIcon(String(label).startsWith('Гуси') ? 'goose' : String(label).startsWith('Утки') ? 'duck' : String(label).startsWith('Другая') ? 'observation' : report.category === 'Рыбалка' ? 'fish' : report.category === 'Кемпинг' ? 'camp' : report.category === 'Путешествия' ? 'route' : 'other')}</span>
+              <div><small>{label}</small><strong>{String(value)}</strong></div>
+            </div>)}
+            {report.participants.length > 0 && <div className="report-info-card report-participants-card">
+              <span className="report-icon">{reportIcon('people')}</span>
+              <div><small>Участники · {report.participants.length}</small><strong>{report.participants.join(', ')}</strong></div>
+            </div>}
+          </div>
         </section>}
+        {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
         {report.timeline?.length > 0 && <div className="report-block"><h3>Ход приключения</h3><div className="report-timeline">{report.timeline.map((entry,index)=><div className="report-timeline-item" key={entry.id || index}><time>{entry.time || '—'}</time><div><strong>{entry.title}</strong>{entry.description && <p>{entry.description}</p>}</div></div>)}</div></div>}
         {reportMedia.length > 0 && <section className="report-gallery-section"><div className="report-section-heading"><span>СОХРАНЁННЫЕ МОМЕНТЫ</span><h3>Фото и видео <small>{reportMedia.length}</small></h3></div><div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>
           <button type="button" className="report-media-open" onClick={() => setPreviewMedia(item)} aria-label={'Открыть ' + (item.type === 'image' ? 'фото: ' : 'видео: ') + item.name}>
