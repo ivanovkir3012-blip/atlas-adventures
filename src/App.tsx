@@ -316,11 +316,15 @@ export default function App() {
       };
       const newlySaved: string[] = [];
       for (const file of files) {
+        // Rebuild the picker File as a plain Blob. Some Android/WebContainer
+        // file-provider objects fail IndexedDB structured cloning as InvalidBlob.
+        const bytes = await file.arrayBuffer();
+        const storedBlob = new Blob([bytes], { type: file.type || 'application/octet-stream' });
         const item: MediaItem = {
           id: crypto.randomUUID(), outingId: id, name: file.name,
           type: file.type.startsWith('video/') ? 'video' : 'image',
-          mimeType: file.type, size: file.size, createdAt: new Date().toISOString(),
-          blob: file, uploadState: 'local',
+          mimeType: file.type, size: storedBlob.size, createdAt: new Date().toISOString(),
+          blob: storedBlob, uploadState: 'local',
         };
         await saveMedia(item);
         row.mediaIds.push(item.id);
