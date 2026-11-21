@@ -1368,3 +1368,9 @@ input,select,textarea{
 .dashboard-stats-section .stat-grid-home .stat-art-viewport{
   overflow:hidden!important;
 }
+
+
+/* Home category emblems: three full-width cards with edge-to-edge artwork. */
+.category-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;}
+.category-tile{width:100%!important;min-width:0!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;}
+@media(max-width:620px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.category-tile{width:100%!important;background-size:cover!important;background-position:center center!important}}
