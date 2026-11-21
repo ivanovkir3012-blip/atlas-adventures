@@ -127,17 +127,28 @@ export async function getOuting(id: string): Promise<Outing | undefined> {
 export async function put(value: Outing | (Pick<Outing, 'id' | 'title' | 'category' | 'date' | 'place' | 'note'> & Partial<Outing>)): Promise<void> {
   const database = await openDb();
   const tx = database.transaction(OUTINGS, 'readwrite');
-  const previous = await requestResult(tx.objectStore(OUTINGS).get(value.id)) as Outing | undefined;
-  const now = new Date().toISOString();
-  const row = normalizeOuting({
-    ...previous,
-    ...value,
-    createdAt: previous?.createdAt ?? value.createdAt ?? now,
-    updatedAt: now,
-  } as Outing);
-  tx.objectStore(OUTINGS).put(row);
-  await transactionDone(tx);
-  database.close();
+  const store = tx.objectStore(OUTINGS);
+  const done = transactionDone(tx);
+  const request = store.get(value.id);
+  request.onsuccess = () => {
+    const previous = request.result as Outing | undefined;
+    const now = new Date().toISOString();
+    const row = normalizeOuting({
+      ...previous,
+      ...value,
+      createdAt: previous?.createdAt ?? value.createdAt ?? now,
+      updatedAt: now,
+    } as Outing);
+    store.put(row);
+  };
+  request.onerror = () => {
+    try { tx.abort(); } catch { /* transaction already finished */ }
+  };
+  try {
+    await done;
+  } finally {
+    database.close();
+  }
 }
 
 export async function softDelete(id: string): Promise<void> {
