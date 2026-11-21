@@ -493,7 +493,7 @@ export default function App() {
     const imageUrl = file.startsWith('../')
       ? `${assetBase}${encodeURIComponent(file.slice(3))}`
       : `${assetBase}images/${encodeURIComponent(file)}`;
-    return <img src={imageUrl} alt="" aria-hidden="true" loading="lazy"/>;
+    return <img src={imageUrl} alt="" aria-hidden="true" onError={event => { const image = event.currentTarget; image.style.display = 'none'; }} />;
   };
   const reportDetails = report?.details ?? {};
   const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
@@ -519,7 +519,7 @@ export default function App() {
         <div className="report-hero-copy"><span className="report-kicker">АТЛАС ПРИКЛЮЧЕНИЙ</span><h2>{report.title || 'Выезд без названия'}</h2><p>⌖ {report.place || 'Место не указано'}</p></div>
       </div>
       <div className="report-content">
-        <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>В корзину</button></div>
+        <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>Удалить</button></div>
         <section className="report-info-section">
           <div className="report-info-grid">
             <div className="report-info-card"><span className="report-icon">{reportIcon('calendar')}</span><div><small>Дата</small><strong>{report.date}{report.time ? ' · ' + report.time : ''}</strong></div></div>
