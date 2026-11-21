@@ -437,7 +437,7 @@ export default function App() {
         <section className="dashboard-hero">
           <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
         </section>
-        <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index} category-emblem-tile`} style={{backgroundImage:`url("${encodeURI(pics[cat])}")`}} onClick={()=>{setCategory(cat);setPage('Выезды')}}><small>Выездов: {rows.filter(row=>row.category===cat).length}</small></button>)}</section>
+        <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index} category-emblem-tile`} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="category-emblem-art"><img src={pics[cat]} alt="" /></span><small>{rows.filter(row=>row.category===cat).length} выездов</small></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
           {statsPeriodControls}
