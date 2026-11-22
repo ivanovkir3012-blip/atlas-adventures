@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
-type Page = 'Главная' | 'Выезды' | 'Карта' | 'Статистика' | 'Рекорды' | 'Настройки';
-const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Статистика', 'Рекорды', 'Настройки'];
+type Page = 'Главная' | 'Выезды' | 'Карта' | 'Журнал' | 'Статистика' | 'Рекорды' | 'Настройки';
+const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Журнал', 'Статистика', 'Рекорды', 'Настройки'];
 const pics: Record<Cat, string> = {
   'Охота': `${import.meta.env.BASE_URL}images/Охотничий закат_ утки над болотом.png`,
   'Рыбалка': `${import.meta.env.BASE_URL}images/Рыбалка на закате_ щука и снасти.png`,
@@ -39,6 +39,15 @@ const emptyDetails = { geese: '', ducks: '', otherGame: '', catchWeight: '', fis
 export default function App() {
   const [page, setPage] = useState<Page>('Главная');
   const [rows, setRows] = useState<Outing[]>([]);
+  const [journalRows, setJournalRows] = useState<JournalEntry[]>([]);
+  const [journalFilter, setJournalFilter] = useState<'Все' | JournalEntry['type']>('Все');
+  const [journalQuery, setJournalQuery] = useState('');
+  const [journalModal, setJournalModal] = useState(false);
+  const [journalEdit, setJournalEdit] = useState<JournalEntry | null>(null);
+  const [journalFiles, setJournalFiles] = useState<File[]>([]);
+  const [journalSaving, setJournalSaving] = useState(false);
+  const [journalError, setJournalError] = useState('');
+  const [journalPhotoUrls, setJournalPhotoUrls] = useState<Record<string,string>>({});
   const [modal, setModal] = useState(false);
   const [edit, setEdit] = useState<Outing | null>(null);
   const [report, setReport] = useState<Outing | null>(null);
@@ -65,14 +74,24 @@ export default function App() {
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const refresh = () => all().then(setRows);
+  const refreshJournal = () => allJournal().then(setJournalRows);
 
   useEffect(() => {
     refresh();
+    refreshJournal();
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
     return () => { removeEventListener('online', update); removeEventListener('offline', update); };
   }, []);
+
+
+  useEffect(() => {
+    const urls: Record<string, string> = {};
+    journalRows.forEach(entry => entry.photos.forEach(photo => { urls[photo.id] = URL.createObjectURL(photo.blob); }));
+    setJournalPhotoUrls(urls);
+    return () => Object.values(urls).forEach(URL.revokeObjectURL);
+  }, [journalRows]);
 
   useEffect(() => {
     let active = true;
@@ -284,6 +303,32 @@ export default function App() {
     (category === 'Все' || row.category === category) &&
     [row.title, row.place, row.note].join(' ').toLowerCase().includes(query.toLowerCase())
   );
+
+
+  function openJournalNew() { setJournalEdit(null); setJournalFiles([]); setJournalError(''); setJournalModal(true); }
+  function openJournalEdit(entry: JournalEntry) { setJournalEdit(entry); setJournalFiles([]); setJournalError(''); setJournalModal(true); }
+  async function saveJournal(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (journalSaving) return;
+    const formElement = event.currentTarget; if (!formElement.reportValidity()) return;
+    setJournalSaving(true); setJournalError('');
+    try {
+      const form = new FormData(formElement);
+      const photos: JournalPhoto[] = [...(journalEdit?.photos ?? [])];
+      for (const file of journalFiles) {
+        if (!file.type.startsWith('image/')) continue;
+        const blob = new Blob([await file.arrayBuffer()], { type: file.type || 'image/jpeg' });
+        photos.push({ id: crypto.randomUUID(), name: file.name, mimeType: file.type, size: blob.size, blob });
+      }
+      const now = new Date().toISOString();
+      const entry: JournalEntry = { id: journalEdit?.id ?? crypto.randomUUID(), title: String(form.get('title') || '').trim(), type: String(form.get('type')) as JournalEntry['type'], date: String(form.get('date')), place: String(form.get('place') || '').trim(), description: String(form.get('description') || '').trim(), photos, createdAt: journalEdit?.createdAt ?? now, updatedAt: now };
+      await putJournal(entry); await refreshJournal(); setJournalModal(false); setJournalEdit(null); setJournalFiles([]);
+    } catch (error) { setJournalError('Не удалось сохранить запись. ' + (error instanceof Error ? error.message : String(error))); }
+    finally { setJournalSaving(false); }
+  }
+  async function removeJournal(entry: JournalEntry) {
+    if (!confirm('Удалить эту запись из полевого журнала?')) return;
+    await deleteJournal(entry.id); await refreshJournal(); setJournalModal(false);
+  }
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -597,7 +642,7 @@ export default function App() {
   </div>;
 
   return <div className="app-shell" style={{'--atlas-background-image': `url("${heroImage}")`} as React.CSSProperties}>
-    <header className="topbar"><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
+    <header className="topbar"><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item === 'Журнал' ? 'Полевой журнал' : item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
     <main className="page-content">
       {page === 'Главная' && <>
         <section className="dashboard-hero">
