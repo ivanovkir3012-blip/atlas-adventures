@@ -2135,3 +2135,17 @@ html,body,#root{min-height:100%;background:transparent!important}
   background:transparent!important;
   box-shadow:none!important;
 }
+
+
+/* Records photos: remove black letterboxing by matching the image frame to landscape photos. */
+.records-page .record-fish-photo,
+.records-page .record-fish-placeholder{
+  display:block;width:100%;height:auto!important;aspect-ratio:4 / 3;
+  flex:0 0 auto!important;object-fit:contain!important;
+  object-position:center;background:transparent!important;
+}
+@media(max-width:760px){
+  .records-page .record-fish-photo,.records-page .record-fish-placeholder{
+    height:auto!important;aspect-ratio:4 / 3;
+  }
+}
