@@ -1767,7 +1767,7 @@ input,select,textarea{
 
 /* Adventure statistics dashboard */
 .stats-dashboard{display:flex;flex-direction:column;gap:16px}
-.stats-hero-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:20px 22px;border:1px solid rgba(218,185,111,.5);border-radius:16px;background:linear-gradient(105deg,rgba(7,17,15,.94),rgba(12,28,22,.76)),url('/atlas-lake-bg.jpg') center 46%/cover;box-shadow:0 12px 30px #0005}
+.stats-hero-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:20px 22px;border:1px solid rgba(218,185,111,.5);border-radius:16px;background:linear-gradient(105deg,rgba(7,17,15,.90),rgba(12,28,22,.64)),var(--atlas-background-image) center 46%/cover;box-shadow:0 12px 30px #0005}
 .stats-hero-head h1{margin:5px 0 4px;font:700 clamp(25px,3vw,38px) Georgia,serif;color:#f3e6c8}
 .stats-hero-head p{margin:0;color:#c9c0ad;font-size:13px}
 .stats-hero-head .stats-controls{margin:0;flex:0 0 auto}
