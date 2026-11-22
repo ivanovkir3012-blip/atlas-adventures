@@ -591,6 +591,17 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  function downloadPhoto(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || 'atlas-photo.jpg';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
   async function removeReportMedia(item: MediaItem) {
     if (!report || !confirm('Удалить это фото или видео из отчёта?')) return;
     await deleteMedia(item.id);
@@ -620,11 +631,16 @@ export default function App() {
     if (!fileList?.length) return;
     setSaveError('');
     try {
+      const selected = Array.from(fileList);
+      if (selected.some(file => !file.type.startsWith('image/'))) {
+        setSaveError('Можно загружать только фотографии. Видео не поддерживается.');
+        return;
+      }
       const captured: File[] = [];
-      for (const source of Array.from(fileList)) {
+      for (const source of selected) {
         const bytes = await source.arrayBuffer();
         captured.push(new File([bytes], source.name, {
-          type: source.type || 'application/octet-stream',
+          type: source.type || 'image/jpeg',
           lastModified: source.lastModified || Date.now(),
         }));
       }
@@ -744,7 +760,7 @@ export default function App() {
             {item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} muted playsInline preload="metadata"/>}
             <span>{item.type === 'image' ? 'Открыть фото ↗' : '▶ Открыть видео'}</span>
           </button>
-          <button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button>
+          {item.type === 'image' && <button type="button" className="report-media-delete" onClick={() => downloadPhoto(item.blob!, item.name)}>Скачать фото ↓</button>}<button type="button" className="report-media-delete" onClick={() => removeReportMedia(item)}>Удалить</button>
         </div> : null)}</div></section>}
         {report.note && <div className="report-block"><h3>Заметки</h3><p>{report.note}</p></div>}
         {report.impressions && <div className="report-block"><h3>Впечатления</h3><p>{report.impressions}</p></div>}
@@ -781,8 +797,8 @@ export default function App() {
         </div>
       </div>
       <div className="form-section"><h3>Заметки</h3><textarea name="note" rows={5} defaultValue={edit?.note ?? ''} placeholder="Запиши всё, что захочешь сохранить об этом выезде..." /></div>
-      <div className="form-section"><h3>Фотографии и видео</h3>
-        <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => { void captureSelectedFiles(e.currentTarget.files); e.currentTarget.value = ''; }} /></label>
+      <div className="form-section"><h3>Фотографии</h3>
+        <label className="file-picker">＋ Добавить фотографии<input type="file" accept="image/*" multiple onChange={e => { void captureSelectedFiles(e.currentTarget.files); e.currentTarget.value = ''; }} /></label>
         {files.length > 0 && <p className="file-summary">Файлов подготовлено: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
         <div className="media-existing"><label>Главное фото выезда<select key={files.map(file => file.name).join('|')} name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.findIndex(file => file.type.startsWith('image/')) >= 0 ? `new:${files.findIndex(file => file.type.startsWith('image/'))}` : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
         <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
@@ -826,7 +842,7 @@ export default function App() {
       {page === 'Журнал' && <section className="section-page journal-page">
         <div className="section-title"><div><span className="eyebrow">НАБЛЮДЕНИЯ И ВОСПОМИНАНИЯ</span><h1>Полевой журнал</h1></div><button className="gold-button" onClick={openJournalNew}>＋ Новая запись</button></div>
         <div className="journal-toolbar"><input value={journalQuery} onChange={e=>setJournalQuery(e.target.value)} placeholder="Поиск по записям"/><div className="category-filters">{(['Все','Наблюдения','Заметки','События'] as const).map(type=><button key={type} className={journalFilter===type?'active':''} onClick={()=>setJournalFilter(type)}>{type}</button>)}</div></div>
-        {journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).length ? <div className="journal-list">{journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).map(entry=>{const cover=entry.photos.find(photo=>photo.id===(entry.coverPhotoId||entry.photos[0]?.id));return <article className="journal-card" key={entry.id} onClick={()=>openJournalEdit(entry)}>{cover&&journalPhotoUrls[cover.id]?<img className="journal-card-photo" src={journalPhotoUrls[cover.id]} alt=""/>:<div className="journal-card-placeholder">✧</div>}<div className="journal-card-copy"><small>{new Date(entry.date+'T12:00:00').toLocaleDateString('ru-RU')} · {entry.type}</small><h3>{entry.title}</h3><p>{entry.description}</p><span>{entry.place || 'Место не указано'} · {entry.photos.length} фото</span></div><button className="journal-delete" onClick={e=>{e.stopPropagation();removeJournal(entry);}} aria-label="Удалить запись">×</button></article>})}</div> : <div className="journal-empty"><span>✧</span><h3>Записей пока нет</h3><p>Сохраняй наблюдения за природой, интересные места и памятные события. Они не привязаны к отдельным выездам.</p><button className="gold-button" onClick={openJournalNew}>＋ Создать первую запись</button></div>}
+        {journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).length ? <div className="journal-list">{journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).map(entry=>{const cover=entry.photos.find(photo=>photo.id===(entry.coverPhotoId||entry.photos[0]?.id));return <article className="journal-card" key={entry.id} onClick={()=>openJournalEdit(entry)}>{cover&&journalPhotoUrls[cover.id]?<img className="journal-card-photo" src={journalPhotoUrls[cover.id]} alt=""/>:<div className="journal-card-placeholder">✧</div>}<div className="journal-card-copy"><small>{new Date(entry.date+'T12:00:00').toLocaleDateString('ru-RU')} · {entry.type}</small><h3>{entry.title}</h3><p>{entry.description}</p><span>{entry.place || 'Место не указано'} · {entry.photos.length} фото</span></div>{cover&&cover.blob&&<button type="button" className="journal-download" onClick={e=>{e.stopPropagation();downloadPhoto(cover.blob,cover.name);}} aria-label="Скачать главное фото" title="Скачать главное фото">↓</button>}<button className="journal-delete" onClick={e=>{e.stopPropagation();removeJournal(entry);}} aria-label="Удалить запись">×</button></article>})}</div> : <div className="journal-empty"><span>✧</span><h3>Записей пока нет</h3><p>Сохраняй наблюдения за природой, интересные места и памятные события. Они не привязаны к отдельным выездам.</p><button className="gold-button" onClick={openJournalNew}>＋ Создать первую запись</button></div>}
       </section>}
       {page === 'Статистика' && <section className="section-page stats-page">
         <h1>Статистика</h1>
@@ -889,7 +905,7 @@ export default function App() {
     {previewMedia && previewUrl && <div className="media-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр медиа" onClick={event => { if (event.target === event.currentTarget) setPreviewMedia(null); }}>
       <button type="button" className="media-lightbox-close" onClick={() => setPreviewMedia(null)} aria-label="Закрыть просмотр">×</button>
       {previewMedia.type === 'image' ? <img src={previewUrl} alt={previewMedia.name}/> : <video src={previewUrl} controls autoPlay playsInline/>}
-      <div className="media-lightbox-caption">{previewMedia.name}</div>
+      <div className="media-lightbox-caption">{previewMedia.name}{previewMedia.type==='image'&&previewMedia.blob&&<button type="button" className="gold-button photo-download-button" onClick={()=>downloadPhoto(previewMedia.blob!,previewMedia.name)}>↓ Скачать фото</button>}</div>
     </div>}
   </div>;
 }
