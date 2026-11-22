@@ -749,9 +749,7 @@ export default function App() {
             <div className="year-stats-list">{yearlyStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>{item.outings} выездов</span><span>{item.days} дней на природе</span></div>)}</div>
           </> : <p className="stats-empty">Пока нет сохранённых выездов.</p>}
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Охотничья статистика по годам</h2></div>
-          {yearlyHuntingStats.length?<div className="year-stats-list">{yearlyHuntingStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>Гуси: {item.geese}</span><span>Утки: {item.ducks}</span></div>)}</div>:<p className="stats-empty">Пока нет охотничьих записей.</p>}
-        </section>
+
 
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
       </section>}
