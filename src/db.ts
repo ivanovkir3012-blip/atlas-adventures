@@ -194,13 +194,15 @@ export async function purgeExpiredTrash(now = Date.now()): Promise<number> {
     const mediaStore = tx.objectStore(MEDIA);
 
     expiredIds.forEach(id => outingStore.delete(id));
-    const mediaRequest = mediaStore.getAll();
-    mediaRequest.onsuccess = () => {
-      (mediaRequest.result as MediaItem[])
-        .filter(item => expiredSet.has(item.outingId))
-        .forEach(item => mediaStore.delete(item.id));
+    const mediaCursor = mediaStore.openCursor();
+    mediaCursor.onsuccess = () => {
+      const cursor = mediaCursor.result;
+      if (!cursor) return;
+      const item = cursor.value as MediaItem;
+      if (expiredSet.has(item.outingId)) cursor.delete();
+      cursor.continue();
     };
-    mediaRequest.onerror = () => {
+    mediaCursor.onerror = () => {
       try { tx.abort(); } catch { /* transaction already finished */ }
     };
 
