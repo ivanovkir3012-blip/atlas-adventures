@@ -723,9 +723,17 @@ export default function App() {
         <h1>Статистика</h1>
         {statsPeriodControls}
         
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Личные рекорды</h2></div>
+          <div className="record-stats-grid">{recordStats.map(item=><article className="record-stat-card" key={item.title}><small>{item.title}</small><strong>{item.value}</strong><span>{item.detail}</span></article>)}</div>
+        </section>
+
+        
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Распределение по категориям</h2></div>
           <div className="category-chart-layout"><div className="category-donut" style={{background:categoryTotal?`conic-gradient(${categoryGradient})`:'conic-gradient(#555 0 100%)'}}><div><strong>{categoryTotal}</strong><small>выездов</small></div></div>
             <div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
+        </section>
+        <section className="stats-panel stats-season-panel"><div className="stats-panel-heading"><h2>Активность по сезонам</h2></div>
+          <div className="season-chart">{seasonalStats.map(item=>{const max=Math.max(1,...seasonalStats.map(x=>x.outings));return <div className={`season-row season-${item.tone}`} key={item.name}><span className="season-name"><i>{item.icon}</i>{item.name}</span><div className="season-track"><i style={{width:`${item.outings/max*100}%`}}/></div><b>{item.outings}</b></div>})}</div>
         </section>
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2></div>
           <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${item.outings?Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100):0}%`}} /></div><small>{item.label}</small></div>)}</div>
@@ -744,9 +752,7 @@ export default function App() {
         <section className="stats-panel"><div className="stats-panel-heading"><h2>Охотничья статистика по годам</h2></div>
           {yearlyHuntingStats.length?<div className="year-stats-list">{yearlyHuntingStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>Гуси: {item.geese}</span><span>Утки: {item.ducks}</span></div>)}</div>:<p className="stats-empty">Пока нет охотничьих записей.</p>}
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Личные рекорды</h2></div>
-          <div className="record-stats-grid">{recordStats.map(item=><article className="record-stat-card" key={item.title}><small>{item.title}</small><strong>{item.value}</strong><span>{item.detail}</span></article>)}</div>
-        </section>
+
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
       </section>}
       {page === 'Рекорды' && <section className="section-page records-page">
