@@ -1,4 +1,3 @@
-
 name: Deploy Atlas Adventures
 
 on:
@@ -21,24 +20,53 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout main site
         uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-source
+
+      - name: Checkout preview version
+        uses: actions/checkout@v4
+        with:
+          ref: feature/map-layers-and-routes
+          path: preview-source
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install dependencies
+      - name: Install main dependencies
+        working-directory: main-source
         run: npm install
 
-      - name: Build application
+      - name: Build main site
+        working-directory: main-source
+        env:
+          VITE_BASE_PATH: /atlas-adventures/
         run: npm run build
 
-      - name: Upload build
+      - name: Install preview dependencies
+        working-directory: preview-source
+        run: npm install
+
+      - name: Build preview site
+        working-directory: preview-source
+        env:
+          VITE_BASE_PATH: /atlas-adventures/preview/
+        run: npm run build
+
+      - name: Assemble independent main and preview paths
+        run: |
+          mkdir -p site/preview
+          cp -a main-source/dist/. site/
+          cp -a preview-source/dist/. site/preview/
+
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./site
 
   deploy:
     environment:
@@ -50,4 +78,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
