@@ -273,6 +273,35 @@ export async function deleteSavedPlace(id: string): Promise<void> {
 }
 
 
+export type StorageSummary = { photoCount: number; videoCount: number; journalPhotoCount: number; mediaBytes: number; journalPhotoBytes: number; outingCount: number; deletedOutingCount: number; journalCount: number; savedPlaceCount: number };
+
+/** Reads local media metadata and Blob sizes without changing or deleting user data. */
+export async function getStorageSummary(): Promise<StorageSummary> {
+  const database = await openDb();
+  try {
+    const tx = database.transaction([OUTINGS, MEDIA, JOURNAL, PLACES], 'readonly');
+    const [outings, media, journal, places] = await Promise.all([
+      requestResult(tx.objectStore(OUTINGS).getAll()) as Promise<Outing[]>,
+      requestResult(tx.objectStore(MEDIA).getAll()) as Promise<MediaItem[]>,
+      requestResult(tx.objectStore(JOURNAL).getAll()) as Promise<JournalEntry[]>,
+      requestResult(tx.objectStore(PLACES).count()),
+    ]);
+    await transactionDone(tx);
+    const journalPhotos = journal.flatMap(entry => entry.photos || []);
+    return {
+      photoCount: media.filter(item => item.type === 'image').length,
+      videoCount: media.filter(item => item.type === 'video').length,
+      journalPhotoCount: journalPhotos.length,
+      mediaBytes: media.reduce((sum, item) => sum + (item.blob?.size ?? item.size ?? 0), 0),
+      journalPhotoBytes: journalPhotos.reduce((sum, photo) => sum + (photo.blob?.size ?? photo.size ?? 0), 0),
+      outingCount: outings.filter(item => !item.deletedAt).length,
+      deletedOutingCount: outings.filter(item => !!item.deletedAt).length,
+      journalCount: journal.length,
+      savedPlaceCount: places,
+    };
+  } finally { database.close(); }
+}
+
 /** Full portable backup: every IndexedDB store and every local Blob is included. */
 const BACKUP_STORES = [OUTINGS, MEDIA, SETTINGS, JOURNAL, PLACES] as const;
 const BACKUP_FORMAT = 'atlas-adventures-backup';
