@@ -729,26 +729,26 @@ export default function App() {
           <article className="stats-dashboard-kpi"><span>♨</span><strong>{nightsTotal}</strong><small>Ночёвок</small></article>
         </div>
         <div className="stats-dashboard-grid stats-dashboard-top">
-          <section className="stats-panel stats-geo-panel stats-photo-geo"><div className="stats-panel-heading"><h2>География приключений</h2></div>
+          <section className="stats-panel stats-geo-panel"><div className="stats-panel-heading"><h2>География приключений</h2><span>{uniquePlacesCount} уникальных мест</span></div>
             {placeGroups.length ? <div className="stats-place-list">{placeGroups.slice(0,6).map((place,index)=><div className="stats-place-row" key={place.name+'-'+index}><i>{index+1}</i><b>{place.name}</b><span>{place.count} {place.count===1?'выезд':place.count<5?'выезда':'выездов'}</span></div>)}</div> : <p className="stats-empty">Добавь места в карточки выездов — здесь появится география приключений.</p>}
           </section>
-          <section className="stats-panel stats-photo-years"><div className="stats-panel-heading"><h2>Активность по годам</h2></div>
+          <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по годам</h2><span>Выезды</span></div>
             {yearlyStats.some(item=>item.outings>0) ? <div className="stats-year-bars">{yearlyStats.filter(item=>item.outings>0).map(item=><div key={item.year}><strong>{item.outings}</strong><i style={{height:`${Math.max(8,item.outings/Math.max(1,...yearlyStats.map(x=>x.outings))*100)}%`}}/><small>{item.year}</small></div>)}</div> : <p className="stats-empty">Пока нет данных по годам.</p>}
           </section>
-          <section className="stats-panel stats-photo-categories"><div className="stats-panel-heading"><h2>Выезды по категориям</h2></div>
+          <section className="stats-panel"><div className="stats-panel-heading"><h2>Выезды по категориям</h2><span>За выбранный период</span></div>
             <div className="category-chart-layout"><div className="category-donut" style={{background:categoryTotal?`conic-gradient(${categoryGradient})`:'conic-gradient(#555 0 100%)'}}><div><strong>{categoryTotal}</strong><small>выездов</small></div></div><div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
           </section>
         </div>
         <div className="stats-dashboard-grid stats-dashboard-middle">
-          <section className="stats-panel stats-photo-months"><div className="stats-panel-heading"><h2>Активность по месяцам</h2></div>
+          <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год · выезды</span></div>
             <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings||''}</strong><div className="month-bar-track"><i style={{height:`${item.outings?Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100):0}%`}}/></div><small>{item.label}</small></div>)}</div>
           </section>
-          <section className="stats-panel stats-season-panel stats-photo-seasons"><div className="stats-panel-heading"><h2>Сезонное распределение</h2></div>
+          <section className="stats-panel stats-season-panel"><div className="stats-panel-heading"><h2>Сезонное распределение</h2><span>По дате выездов</span></div>
             <div className="stats-season-grid">{seasonalStats.map(item=><div className={`stats-season-${item.tone}`} key={item.name}><span>{item.icon}</span><b>{item.name}</b><strong>{periodRows.length?Math.round(item.outings/periodRows.length*100):0}%</strong><small>{item.outings} выездов</small></div>)}</div>
           </section>
         </div>
         <div className="stats-dashboard-grid stats-dashboard-bottom">
-          <section className="stats-panel stats-photo-achievements"><div className="stats-panel-heading"><h2>Рекорды и достижения</h2></div>
+          <section className="stats-panel"><div className="stats-panel-heading"><h2>Рекорды и достижения</h2><span>За выбранный период</span></div>
             <div className="stats-achievements">
               <article><span>🏆</span><small>Самый активный год</small><strong>{mostActiveYear?.year ?? '—'}</strong><b>{mostActiveYear?mostActiveYear.outings+' выездов':'Пока нет данных'}</b></article>
               <article><span>▦</span><small>Самый насыщенный месяц</small><strong>{busiestMonth?.label ?? '—'}</strong><b>{busiestMonth?busiestMonth.count+' выездов':'Пока нет данных'}</b></article>
@@ -756,7 +756,7 @@ export default function App() {
               <article><span>⚑</span><small>Самый продолжительный выезд</small><strong>{recordStats[0]?.value ?? '—'}</strong><b>{recordStats[0]?.detail ?? 'Пока нет данных'}</b></article>
             </div>
           </section>
-          <section className="stats-panel stats-insights-panel stats-photo-insights"><div className="stats-panel-heading"><h2>Аналитические выводы</h2></div>
+          <section className="stats-panel stats-insights-panel"><div className="stats-panel-heading"><h2>Аналитические выводы</h2><span>Автоматически по записям</span></div>
             <ul>
               <li>{topCategory&&categoryTotal ? `Главное направление — ${topCategory.category.toLowerCase()} (${Math.round(topCategory.outings/categoryTotal*100)}% выездов).` : 'Добавь несколько выездов, чтобы определить основное направление.'}</li>
               <li>{seasonalStats.length&&periodRows.length ? `Самый активный сезон — ${[...seasonalStats].sort((a,b)=>b.outings-a.outings)[0].name.toLowerCase()}.` : 'Сезонная аналитика появится после добавления выездов.'}</li>
