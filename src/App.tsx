@@ -720,31 +720,31 @@ export default function App() {
         {journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).length ? <div className="journal-list">{journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).map(entry=><article className="journal-card" key={entry.id} onClick={()=>openJournalEdit(entry)}>{entry.photos[0]&&journalPhotoUrls[entry.photos[0].id]?<img className="journal-card-photo" src={journalPhotoUrls[entry.photos[0].id]} alt=""/>:<div className="journal-card-placeholder">✧</div>}<div className="journal-card-copy"><small>{new Date(entry.date+'T12:00:00').toLocaleDateString('ru-RU')} · {entry.type}</small><h3>{entry.title}</h3><p>{entry.description}</p><span>{entry.place || 'Место не указано'} · {entry.photos.length} фото</span></div><button className="journal-delete" onClick={e=>{e.stopPropagation();removeJournal(entry);}} aria-label="Удалить запись">×</button></article>)}</div> : <div className="journal-empty"><span>✧</span><h3>Записей пока нет</h3><p>Сохраняй наблюдения за природой, интересные места и памятные события. Они не привязаны к отдельным выездам.</p><button className="gold-button" onClick={openJournalNew}>＋ Создать первую запись</button></div>}
       </section>}
       {page === 'Статистика' && <section className="section-page stats-page">
-        <span className="eyebrow">АНАЛИТИКА ПРИКЛЮЧЕНИЙ</span><h1>Статистика</h1>
+        <h1>Статистика</h1>
         {statsPeriodControls}
         
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Распределение по категориям</h2><span>За выбранный период</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Распределение по категориям</h2></div>
           <div className="category-chart-layout"><div className="category-donut" style={{background:categoryTotal?`conic-gradient(${categoryGradient})`:'conic-gradient(#555 0 100%)'}}><div><strong>{categoryTotal}</strong><small>выездов</small></div></div>
             <div className="category-legend">{categoryStats.map((item,index)=><div key={item.category}><i className={`legend-dot legend-${index}`}/><span>{item.category}</span><b>{item.outings}</b><small>{categoryTotal?Math.round(item.outings/categoryTotal*100):0}%</small></div>)}</div></div>
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2><span>{statsYear} год · выезды</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Активность по месяцам</h2></div>
           <div className="monthly-chart">{monthlyStats.map(item=><div className="month-column" key={item.month}><strong>{item.outings}</strong><div className="month-bar-track"><i style={{height:`${item.outings?Math.max(4,item.outings/Math.max(1,...monthlyStats.map(x=>x.outings))*100):0}%`}} /></div><small>{item.label}</small></div>)}</div>
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Добыча по месяцам</h2><span>Охота · {statsYear} год</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Добыча по месяцам</h2></div>
           <div className="hunting-legend"><span><i className="goose-dot"/>Гуси</span><span><i className="duck-dot"/>Утки</span></div>
           <div className="hunting-chart">{huntingMonthlyStats.map(item=>{const max=Math.max(1,...huntingMonthlyStats.map(x=>x.geese+x.ducks));return <div className="hunting-column" key={item.month}><strong>{item.geese+item.ducks||''}</strong><div className="hunting-bar-track"><i className="goose-bar" style={{height:`${item.geese/max*100}%`}}/><i className="duck-bar" style={{height:`${item.ducks/max*100}%`}}/></div><small>{item.label}</small></div>})}</div>
           <div className="hunting-total-row"><span>Всего гусей: <b>{huntingMonthlyStats.reduce((sum,item)=>sum+item.geese,0)}</b></span><span>Всего уток: <b>{huntingMonthlyStats.reduce((sum,item)=>sum+item.ducks,0)}</b></span></div>
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Сравнение по годам</h2><span>Последние годы с записями</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Сравнение по годам</h2></div>
           {yearlyStats.length ? <>
             <div className="year-line-chart"><svg viewBox="0 0 300 140" role="img" aria-label="Динамика количества выездов по годам"><line x1="18" y1="120" x2="282" y2="120"/><polyline points={yearlyStats.map((item,index)=>{const x=24+index*(252/Math.max(1,yearlyStats.length-1));const y=116-item.outings/Math.max(1,...yearlyStats.map(v=>v.outings))*88;return `${x},${y}`;}).join(' ')}/>{yearlyStats.map((item,index)=>{const x=24+index*(252/Math.max(1,yearlyStats.length-1));const y=116-item.outings/Math.max(1,...yearlyStats.map(v=>v.outings))*88;return <g key={item.year}><circle cx={x} cy={y} r="4"/><text x={x} y={Math.max(12,y-10)} textAnchor="middle">{item.outings}</text><text className="year-axis-label" x={x} y="137" textAnchor="middle">{String(item.year).slice(2)}</text></g>})}</svg><small>Количество выездов по годам</small></div>
             <div className="year-stats-list">{yearlyStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>{item.outings} выездов</span><span>{item.days} дней на природе</span></div>)}</div>
           </> : <p className="stats-empty">Пока нет сохранённых выездов.</p>}
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Охотничья статистика по годам</h2><span>Гуси и утки</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Охотничья статистика по годам</h2></div>
           {yearlyHuntingStats.length?<div className="year-stats-list">{yearlyHuntingStats.map(item=><div className="year-stats-row" key={item.year}><b>{item.year}</b><span>Гуси: {item.geese}</span><span>Утки: {item.ducks}</span></div>)}</div>:<p className="stats-empty">Пока нет охотничьих записей.</p>}
         </section>
-        <section className="stats-panel"><div className="stats-panel-heading"><h2>Личные рекорды</h2><span>По сохранённым выездам</span></div>
+        <section className="stats-panel"><div className="stats-panel-heading"><h2>Личные рекорды</h2></div>
           <div className="record-stats-grid">{recordStats.map(item=><article className="record-stat-card" key={item.title}><small>{item.title}</small><strong>{item.value}</strong><span>{item.detail}</span></article>)}</div>
         </section>
         {!periodRows.length && <p className="stats-empty">За выбранный период записей пока нет. Добавь выезд — и здесь появится статистика.</p>}
