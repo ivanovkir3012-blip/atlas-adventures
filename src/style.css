@@ -2253,3 +2253,11 @@ html,body,#root{min-height:100%;background:transparent!important}
 .profile-settings-actions{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .profile-settings-actions span{color:#b9c99e;font-size:12px}
 @media(max-width:620px){.profile-settings-form{grid-template-columns:1fr}}
+
+
+/* Photo download actions */
+.journal-download{align-self:flex-start;flex:0 0 auto;border:1px solid rgba(218,174,112,.45);border-radius:7px;background:rgba(205,139,88,.13);color:#e8c18f;padding:7px 10px;font-size:17px;cursor:pointer}
+.journal-download:hover{background:rgba(205,139,88,.26)}
+.photo-download-button{margin-left:12px;padding:8px 13px;font-size:12px}
+.report-media .report-media-delete{white-space:nowrap}
+@media(max-width:620px){.journal-download{padding:6px 8px}.photo-download-button{display:block;margin:10px 0 0}}
