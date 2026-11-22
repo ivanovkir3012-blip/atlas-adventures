@@ -10,7 +10,7 @@ export type TimelineEntry = {
 export type SavedPlace = { id: string; title: string; type: 'Избранное место' | 'Стоянка' | 'Рыбалка' | 'Наблюдение' | 'Другое'; category: Cat; lat: number; lng: number; description: string; createdAt: string; updatedAt: string };
 
 export type JournalPhoto = { id: string; name: string; mimeType: string; size: number; blob: Blob };
-export type JournalEntry = { id: string; title: string; type: 'Наблюдения' | 'Заметки' | 'События'; date: string; place: string; description: string; photos: JournalPhoto[]; createdAt: string; updatedAt: string };
+export type JournalEntry = { id: string; title: string; type: 'Наблюдения' | 'Заметки' | 'События'; date: string; place: string; description: string; photos: JournalPhoto[]; coverPhotoId?: string; createdAt: string; updatedAt: string };
 
 export type MediaItem = {
   id: string;
