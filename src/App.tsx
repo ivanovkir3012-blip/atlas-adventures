@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace, createFullBackup, restoreFullBackup } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
@@ -63,6 +63,9 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('Все');
   const [online, setOnline] = useState(navigator.onLine);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupMessage, setBackupMessage] = useState('');
+  const backupFileRef = useRef<HTMLInputElement>(null);
   
   const [statsPeriod, setStatsPeriod] = useState<'all' | 'year' | 'month'>('all');
   const [statsYear, setStatsYear] = useState(new Date().getFullYear());
@@ -455,6 +458,41 @@ export default function App() {
     }
   }
 
+  async function downloadFullBackup() {
+    setBackupBusy(true); setBackupMessage('');
+    try {
+      const blob = await createFullBackup();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'atlas-adventures-backup-' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      setBackupMessage('Резервная копия создана. Сохрани файл отдельно от устройства.');
+    } catch (error) {
+      setBackupMessage(error instanceof Error ? 'Не удалось создать копию: ' + error.message : 'Не удалось создать резервную копию.');
+    } finally { setBackupBusy(false); }
+  }
+
+  async function importFullBackup(file?: File) {
+    if (!file) return;
+    if (!confirm('Восстановление заменит текущие данные Атласа данными из выбранной копии. Перед продолжением рекомендуется скачать текущую резервную копию. Продолжить?')) {
+      if (backupFileRef.current) backupFileRef.current.value = '';
+      return;
+    }
+    setBackupBusy(true); setBackupMessage('');
+    try {
+      const result = await restoreFullBackup(file);
+      await Promise.all([refresh(), refreshJournal(), refreshSavedPlaces()]);
+      setBackupMessage('Восстановление завершено. Записей: ' + Object.values(result.counts).reduce((sum,count)=>sum+count,0) + '.');
+    } catch (error) {
+      setBackupMessage(error instanceof Error ? 'Не удалось восстановить копию: ' + error.message : 'Не удалось восстановить резервную копию.');
+    } finally {
+      setBackupBusy(false);
+      if (backupFileRef.current) backupFileRef.current.value = '';
+    }
+  }
+
   function exportOutingsCsv() {
     const headers = [
       'Дата','Время','Категория','Название','Место','Широта','Долгота','Участники','Погода',
@@ -776,7 +814,7 @@ export default function App() {
           {trophyRecords.slice(6,7).map(item=><article className="record-card record-count-card" key={item.key}><small>{item.title}</small><strong>{item.row ? item.count : '—'}</strong>{item.row ? <button className="record-outing-link" onClick={()=>item.row && setReport(item.row)}>Открыть выезд ↗</button> : <span className="record-no-data">Пока нет рекорда</span>}</article>)}
         </div></div>
       </section>}
-      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid">{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}<div className="setting-card"><h3>Экспорт данных</h3><p>Скачай список всех сохранённых выездов в формате CSV. Файл открывается в Excel и других табличных редакторах.</p><button className="gold-button" onClick={exportOutingsCsv} disabled={!rows.length}>↓ Экспортировать CSV</button><small>{rows.length ? rows.length + ' выездов · без фотографий и видео' : 'Пока нет выездов для экспорта'}</small></div></div></section>}
+      {page === 'Настройки' && <section className="section-page"><span className="eyebrow">УПРАВЛЕНИЕ ПРИЛОЖЕНИЕМ</span><h1>Настройки</h1><div className="settings-grid"><div className="setting-card backup-setting-card"><h3>Резервная копия</h3><p>Полная копия всех выездов, фотографий, видео, полевого журнала, сохранённых мест и настроек. Файл можно перенести на другое устройство.</p><div className="backup-actions"><button className="gold-button" onClick={downloadFullBackup} disabled={backupBusy}>{backupBusy?'Обрабатываем…':'↓ Создать резервную копию'}</button><button className="outline-button" onClick={()=>backupFileRef.current?.click()} disabled={backupBusy}>↑ Восстановить из файла</button><input ref={backupFileRef} type="file" accept=".json,application/json" hidden onChange={event=>importFullBackup(event.target.files?.[0])}/></div>{backupMessage&&<small className="backup-message" role="status">{backupMessage}</small>}<small>Копия хранится в выбранном тобой месте. Автоматическая отправка в облако не выполняется.</small></div>{[['Профиль и устройства','Профиль и подключение устройств по QR-коду'],['Синхронизация','Статус, очередь загрузки, Wi-Fi и мобильный интернет'],['Хранилище','Объём данных, локальные копии и корзина'],['Приватность','Доступ к данным и публикация отдельных выездов']].map(([title,description])=><div className="setting-card" key={title}><h3>{title}</h3><p>{description}</p><small>Будет реализовано на следующих этапах</small></div>)}<div className="setting-card"><h3>Экспорт данных</h3><p>Скачай список всех сохранённых выездов в формате CSV. Файл открывается в Excel и других табличных редакторах.</p><button className="gold-button" onClick={exportOutingsCsv} disabled={!rows.length}>↓ Экспортировать CSV</button><small>{rows.length ? rows.length + ' выездов · без фотографий и видео' : 'Пока нет выездов для экспорта'}</small></div></div></section>}
     </main>
     
     {reportView}{modal&&form}
