@@ -1767,7 +1767,7 @@ input,select,textarea{
 
 /* Adventure statistics dashboard */
 .stats-dashboard{display:flex;flex-direction:column;gap:16px}
-.stats-hero-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:20px 22px;border:1px solid rgba(218,185,111,.5);border-radius:16px;background:linear-gradient(105deg,rgba(7,17,15,.90),rgba(12,28,22,.64)),var(--atlas-background-image) center 46%/cover;box-shadow:0 12px 30px #0005}
+.stats-hero-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:20px 22px;border:1px solid rgba(218,185,111,.5);border-radius:16px;background:linear-gradient(105deg,rgba(7,17,15,.94),rgba(12,28,22,.76)),url('/atlas-lake-bg.jpg') center 46%/cover;box-shadow:0 12px 30px #0005}
 .stats-hero-head h1{margin:5px 0 4px;font:700 clamp(25px,3vw,38px) Georgia,serif;color:#f3e6c8}
 .stats-hero-head p{margin:0;color:#c9c0ad;font-size:13px}
 .stats-hero-head .stats-controls{margin:0;flex:0 0 auto}
@@ -1846,60 +1846,3 @@ input,select,textarea{
  .stats-dashboard .category-chart-layout{grid-template-columns:115px minmax(0,1fr)}
  .stats-dashboard .category-donut{width:115px}
 }
-
-
-/* Statistics visual language: reuse the Atlas public photo library and bronze/graphite surfaces. */
-.stats-dashboard .stats-hero-head{
-  background-image:linear-gradient(90deg,rgba(7,17,14,.94) 0%,rgba(7,17,14,.72) 56%,rgba(7,17,14,.28) 100%),url('/atlas-lake-bg.jpg');
-  background-position:center 48%;
-  border-color:rgba(207,173,103,.72);
-}
-.stats-dashboard .stats-dashboard-kpi{
-  background-image:linear-gradient(145deg,rgba(7,22,17,.91),rgba(8,16,14,.82)),url('/images/Золотой маршрут сквозь леса и озёра.png');
-  background-size:cover;
-  background-position:center;
-  border-color:rgba(199,164,90,.62);
-}
-.stats-dashboard .stats-panel{
-  position:relative;
-  isolation:isolate;
-  overflow:hidden;
-  background-color:#0c1914;
-  border-color:rgba(199,164,90,.56);
-}
-.stats-dashboard .stats-panel:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:-1;
-  opacity:.24;
-  background-size:cover;
-  background-position:center;
-  pointer-events:none;
-}
-.stats-dashboard .stats-panel-heading{
-  border-bottom-color:rgba(199,164,90,.34);
-}
-.stats-dashboard .stats-panel-heading h2{
-  color:#f0e4c9;
-  font-family:'Playfair Display',Georgia,serif;
-}
-.stats-dashboard .stats-photo-geo:before{background-image:linear-gradient(90deg,rgba(7,20,15,.96),rgba(7,20,15,.35)),url('/images/Золотой маршрут сквозь леса и озёра.png');opacity:.34}
-.stats-dashboard .stats-photo-years:before{background-image:linear-gradient(rgba(7,18,14,.74),rgba(7,18,14,.74)),url('/images/Навигация на закате.png')}
-.stats-dashboard .stats-photo-categories:before{background-image:linear-gradient(rgba(7,18,14,.78),rgba(7,18,14,.78)),url('/images/Кряквы над водой на закате.png')}
-.stats-dashboard .stats-photo-months:before{background-image:linear-gradient(rgba(7,18,14,.80),rgba(7,18,14,.80)),url('/images/Золотой закат в лесном лагере.png')}
-.stats-dashboard .stats-photo-seasons:before{background-image:linear-gradient(rgba(7,18,14,.64),rgba(7,18,14,.72)),url('/images/Кемпинг у озера на закате.png');opacity:.38}
-.stats-dashboard .stats-photo-achievements:before{background-image:linear-gradient(rgba(7,18,14,.82),rgba(7,18,14,.82)),url('/images/Бронзовая эмблема команды с природным гербом.png')}
-.stats-dashboard .stats-photo-insights:before{background-image:linear-gradient(rgba(7,18,14,.82),rgba(7,18,14,.82)),url('/images/Походный натюрморт на закате.png')}
-.stats-dashboard .stats-achievements article{
-  background:linear-gradient(160deg,rgba(12,29,22,.82),rgba(8,16,14,.9)),url('/images/Бронзовая эмблема походного лагеря на закате.png') center/cover;
-  border-color:rgba(199,164,90,.48);
-}
-.stats-dashboard .stats-achievements article>span{color:#d9b66b}
-.stats-dashboard .stats-dashboard-kpi>span{color:#d9b66b}
-.stats-dashboard .stats-dashboard-kpi>strong{color:#f4e6c8}
-.stats-dashboard .stats-insights-panel li:before{color:#b5c58a}
-.stats-dashboard .stats-place-row i{background:rgba(199,164,90,.2);color:#e4c47f}
-.stats-dashboard .stats-year-bars i{background:linear-gradient(180deg,#dfc27c,#87663a);border-color:#d9b66b}
-.stats-dashboard .stats-season-grid>div{background:rgba(5,15,11,.22);border-radius:8px}
-.stats-dashboard .stats-panel-heading>span{display:none!important}
