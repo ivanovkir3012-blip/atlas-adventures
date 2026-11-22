@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - foundation-v2
+      - feature/map-layers-and-routes
   pull_request:
     branches:
+      - foundation-v2
       - main
 
 permissions:
