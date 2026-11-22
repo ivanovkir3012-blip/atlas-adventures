@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace, FuturePlace, allFuturePlaces, putFuturePlace, deleteFuturePlace, AdventureRoute, allRoutes, putRoute, deleteRoute } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
@@ -71,17 +71,6 @@ export default function App() {
   const [mapFilter, setMapFilter] = useState('Все');
   const [mapMessage, setMapMessage] = useState('');
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
-  const [futurePlaces, setFuturePlaces] = useState<FuturePlace[]>([]);
-  const [routes, setRoutes] = useState<AdventureRoute[]>([]);
-  const [mapLayers, setMapLayers] = useState({ visited: true, routes: true, future: true });
-  const [routeDrawing, setRouteDrawing] = useState(false);
-  const [routeDraft, setRouteDraft] = useState<Array<{lat:number;lng:number}>>([]);
-  const [routeTitle, setRouteTitle] = useState('');
-  const [futurePlaceModal, setFuturePlaceModal] = useState(false);
-  const [futurePlaceError, setFuturePlaceError] = useState('');
-  const [activeFuturePlace, setActiveFuturePlace] = useState<FuturePlace | null>(null);
-  const [visitPlaceError, setVisitPlaceError] = useState('');
-  const [visitingPlace, setVisitingPlace] = useState(false);
   const [placeModal, setPlaceModal] = useState(false);
   const [placeEdit, setPlaceEdit] = useState<SavedPlace | null>(null);
   const [activeSavedPlace, setActiveSavedPlace] = useState<SavedPlace | null>(null);
@@ -93,15 +82,11 @@ export default function App() {
   const refresh = () => all().then(setRows);
   const refreshJournal = () => allJournal().then(setJournalRows);
   const refreshSavedPlaces = () => allSavedPlaces().then(setSavedPlaces);
-  const refreshFuturePlaces = () => allFuturePlaces().then(setFuturePlaces);
-  const refreshRoutes = () => allRoutes().then(setRoutes);
 
   useEffect(() => {
     refresh();
     refreshJournal();
     refreshSavedPlaces();
-    refreshFuturePlaces();
-    refreshRoutes();
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
@@ -135,7 +120,7 @@ export default function App() {
       const w = window as any;
       const loadScript = (src:string, marker:string) => new Promise<void>((resolve,reject)=>{
         const existing=document.querySelector('script['+marker+']') as HTMLScriptElement|null;
-        if(existing){if(w.maplibregl&&marker==='data-maplibre'){resolve();return;}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(),{once:true});return;}
+        if(existing){if((w as any).maplibregl&&marker==='data-maplibre'){resolve();return;}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(),{once:true});return;}
         const script=document.createElement('script');script.src=src;script.setAttribute(marker,'1');script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
       });
       if(!w.maplibregl){
@@ -144,75 +129,72 @@ export default function App() {
       }
       if(cancelled||!mapElement.current||!w.maplibregl)return;
       if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}
-      const map=new w.maplibregl.Map({container:mapElement.current,center:[0,20],zoom:1.5,minZoom:1,style:'https://tiles.openfreemap.org/styles/liberty',attributionControl:true,renderWorldCopies:false});
+      const map=new w.maplibregl.Map({container:mapElement.current,center:[27.56,53.9],zoom:6,style:'https://tiles.openfreemap.org/styles/liberty',attributionControl:true,renderWorldCopies:false});
       mapInstance.current=map;
       map.addControl(new w.maplibregl.NavigationControl({showCompass:true,showZoom:true}),'top-right');
       map.addControl(new w.maplibregl.ScaleControl({maxWidth:120,unit:'metric'}),'bottom-left');
       map.on('load',()=>{
         if(cancelled)return;
-        map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'});
-        map.addSource('atlas-street',{type:'raster',tiles:['https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap contributors'});
-        map.addSource('atlas-topo',{type:'raster',tiles:['https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'© OpenStreetMap contributors, SRTM | OpenTopoMap'});
+        map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
+        map.addSource('atlas-street',{type:'raster',tiles:['https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'&copy; OpenStreetMap contributors'});
+        map.addSource('atlas-topo',{type:'raster',tiles:['https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM | OpenTopoMap'});
         const firstVector=(map.getStyle().layers||[]).find((layer:any)=>layer.type!=='background')?.id;
         map.addLayer({id:'atlas-satellite-layer',type:'raster',source:'atlas-satellite',layout:{visibility:'visible'},paint:{'raster-opacity':1}},firstVector);
         map.addLayer({id:'atlas-street-layer',type:'raster',source:'atlas-street',layout:{visibility:'none'}},firstVector);
         map.addLayer({id:'atlas-topo-layer',type:'raster',source:'atlas-topo',layout:{visibility:'none'}},firstVector);
         const layerControl=document.createElement('div');layerControl.className='maplibregl-ctrl maplibregl-ctrl-group atlas-map-layer-switcher';
-        [['hybrid','Спутник + подписи'],['street','Схема'],['topo','Топографическая']].forEach(([key,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.title=label;button.className=key==='hybrid'?'active':'';button.addEventListener('click',()=>{['hybrid','street','topo'].forEach(mode=>{const id=mode==='hybrid'?'atlas-satellite-layer':mode==='street'?'atlas-street-layer':'atlas-topo-layer';map.setLayoutProperty(id,'visibility',mode===key?'visible':'none');});Array.from(layerControl.querySelectorAll('button')).forEach((node:any)=>node.classList.toggle('active',node===button));});layerControl.appendChild(button);});
-        map.addControl({onAdd:()=>layerControl,onRemove:()=>layerControl.remove()},'top-left');
-        (map.getStyle().layers||[]).forEach((layer:any)=>{if(layer.id==='atlas-satellite-layer')return;if(layer.type==='background'){map.setLayoutProperty(layer.id,'visibility','none');return;}if(layer.type!=='symbol')map.setLayoutProperty(layer.id,'visibility','none');});
-        const marker=(color:string)=>createMapMarkerElement(color);
-        if(mapLayers.visited){
-          const filtered=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
-          const byCoordinate=new Map<string,Outing[]>();
-          filtered.forEach(row=>{const key=row.coordinates!.lat.toFixed(4)+','+row.coordinates!.lng.toFixed(4);byCoordinate.set(key,[...(byCoordinate.get(key)||[]),row]);});
-          byCoordinate.forEach(group=>{
-            const row=group[0];const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
-            const pin=new w.maplibregl.Marker({element:marker(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
-            const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent=group.length>1?row.place+' · '+group.length+' посещения':row.title;popup.appendChild(title);
-            group.slice(0,8).forEach(item=>{const line=document.createElement('div');line.textContent=item.title+' · '+item.date;popup.appendChild(line);});
-            pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
-            pin.getElement().addEventListener('click',()=>setReport(row));
-          });
-          savedPlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter).forEach(place=>{
-            const pin=new w.maplibregl.Marker({element:marker('#d6ad55'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
-            const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent=place.title;popup.appendChild(title);
-            const meta=document.createElement('div');meta.textContent=place.type+' · '+place.category;popup.appendChild(meta);
-            if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
-            pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
-            pin.getElement().addEventListener('click',()=>setActiveSavedPlace(place));
-          });
-        }
-        if(mapLayers.future) futurePlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter).forEach(place=>{
-          const pin=new w.maplibregl.Marker({element:marker('#8fc7a0'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
-          const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent='Хочу посетить: '+place.title;popup.appendChild(title);
-          const meta=document.createElement('div');meta.textContent=[place.country,place.region,place.priority].filter(Boolean).join(' · ');popup.appendChild(meta);
-          if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
-          pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
-          pin.getElement().addEventListener('click',()=>setActiveFuturePlace(place));
+        const choices=[['hybrid','Спутник + подписи'],['street','Схема'],['topo','Топографическая']];
+        choices.forEach(([key,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.title=label;button.className=key==='hybrid'?'active':'';button.addEventListener('click',()=>{['hybrid','street','topo'].forEach(mode=>{const id=mode==='hybrid'?'atlas-satellite-layer':mode==='street'?'atlas-street-layer':'atlas-topo-layer';map.setLayoutProperty(id,'visibility',mode===key?'visible':'none');});Array.from(layerControl.querySelectorAll('button')).forEach((node:any)=>node.classList.toggle('active',node===button));});layerControl.appendChild(button);});
+        const layerControlPlugin={onAdd:()=>layerControl,onRemove:()=>layerControl.remove()};
+        map.addControl(layerControlPlugin,'top-left');
+        const layers=(map.getStyle().layers||[]);
+        layers.forEach((layer:any)=>{
+          if(layer.id==='atlas-satellite-layer')return;
+          if(layer.type==='background'){map.setLayoutProperty(layer.id,'visibility','none');return;}
+          if(layer.type!=='symbol'){map.setLayoutProperty(layer.id,'visibility','none');return;}
+          const id=String(layer.id).toLowerCase();
+          if(id.includes('poi')||id.includes('housenumber')||id.includes('transit')||id.includes('airport'))map.setLayoutProperty(layer.id,'visibility','none');
         });
-        if(mapLayers.routes) routes.filter(route=>route.geometry.length>1).forEach(route=>{
-          const sourceId='route-'+route.id.replace(/[^a-zA-Z0-9_-]/g,'');
-          map.addSource(sourceId,{type:'geojson',data:{type:'Feature',properties:{title:route.title},geometry:{type:'LineString',coordinates:route.geometry}}});
-          map.addLayer({id:sourceId+'-line',type:'line',source:sourceId,layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#d6ad55','line-width':3,'line-opacity':0.9}});
+        const markerIcon=(color:string)=>createMapMarkerElement(color);
+        const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
+        const visiblePlaces=savedPlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter);
+        visible.forEach(row=>{
+          const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
+          const marker=new w.maplibregl.Marker({element:markerIcon(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
+          const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');
+          const popup=document.createElement('div');popup.className='atlas-map-popup';popup.innerHTML=(photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace;
+          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+          marker.getElement().addEventListener('click',()=>setReport(row));
+        });
+        visiblePlaces.forEach(place=>{
+          const marker=new w.maplibregl.Marker({element:markerIcon('#d6ad55'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
+          const popup=document.createElement('div');popup.className='atlas-map-popup';
+          const title=document.createElement('strong');title.textContent=place.title;popup.appendChild(title);
+          const meta=document.createElement('div');meta.textContent=place.type+' · '+place.category;popup.appendChild(meta);
+          if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
+          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+          marker.getElement().addEventListener('click',()=>setActiveSavedPlace(place));
         });
         map.on('click',(event:any)=>{
           const target=event.originalEvent?.target as HTMLElement;
           if(target?.closest('.maplibregl-marker,.maplibregl-popup,.maplibregl-ctrl'))return;
           const lat=Number(event.lngLat.lat.toFixed(6));const lng=Number(event.lngLat.lng.toFixed(6));
-          if(routeDrawing){setRouteDraft(current=>[...current,{lat,lng}]);setMapMessage('Точка маршрута добавлена. Добавь следующую или сохрани маршрут.');return;}
           setPickedCoordinates({lat,lng});setMapMessage('Точка выбрана. Можно сохранить её отдельно или создать выезд.');
-          const pin=new w.maplibregl.Marker({element:marker('#d7b65d'),anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
-          if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();(map as any).atlasPickedMarker=pin;
-          const popup=document.createElement('div');popup.className='atlas-map-popup';popup.textContent=lat.toFixed(6)+', '+lng.toFixed(6);
-          pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).togglePopup();
+          const el=markerIcon('#d7b65d');
+          const marker=new w.maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
+          const popup=document.createElement('div');popup.className='atlas-map-popup atlas-map-picked-popup';popup.innerHTML='<span>Выбранная точка</span><strong>'+lat.toFixed(6)+', '+lng.toFixed(6)+'</strong>';
+          marker.setPopup(new w.maplibregl.Popup({offset:22,closeButton:false,closeOnClick:false}).setDOMContent(popup)).togglePopup();
+          if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();
+          (map as any).atlasPickedMarker=marker;
         });
+        if(visible.length){const bounds=new w.maplibregl.LngLatBounds();visible.forEach(row=>bounds.extend([row.coordinates!.lng,row.coordinates!.lat]));map.fitBounds(bounds,{padding:60,maxZoom:11,duration:0});}
       });
       map.on('error',(event:any)=>{if(event?.error)setMapMessage('Ошибка загрузки карты или картографических данных. Проверь подключение к интернету.');});
     };
     init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
     return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
-  },[page,rows,savedPlaces,futurePlaces,routes,mapFilter,coverUrls,mapLayers,routeDrawing]);
+  },[page,rows,savedPlaces,mapFilter,coverUrls]);
+
   useEffect(() => {
     let active = true;
     const urls: Record<string, string> = {};
@@ -695,26 +677,13 @@ export default function App() {
       </>}
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
       {page === 'Карта' && <section className="section-page map-page">
-        <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length + savedPlaces.length + futurePlaces.length} точек</span></div>
+        <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length + savedPlaces.length} точек</span></div>
         <div className="map-toolbar"><input value={mapQuery} onChange={e=>setMapQuery(e.target.value)} placeholder="Найти озеро, населённый пункт или место"/><button className="gold-button" onClick={async()=>{if(!mapQuery.trim())return;setMapMessage('Ищем место…');try{const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(mapQuery));if(!response.ok)throw new Error();const result=await response.json();if(!result.length){setMapMessage('Место не найдено. Уточни запрос.');return;}const map=mapInstance.current;const lat=Number(result[0].lat),lng=Number(result[0].lon);setPickedCoordinates({lat,lng});if(map){map.flyTo({center:[lng,lat],zoom:13,essential:true});const marker=createMapMarkerElement('#d7b65d');marker.classList.add('atlas-map-marker-picked');const popup=document.createElement('div');popup.textContent=result[0].display_name;const pin=new (window as any).maplibregl.Marker({element:marker,anchor:'bottom'}).setLngLat([lng,lat]).setPopup(new (window as any).maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);if((map as any).atlasSearchMarker)(map as any).atlasSearchMarker.remove();(map as any).atlasSearchMarker=pin;pin.togglePopup();}setMapMessage('Место найдено и выбрано. Его можно сохранить отдельно или создать выезд.');}catch{setMapMessage('Поиск доступен при подключении к интернету.');}}}>Найти</button></div>
         <div className="category-filters map-filters"><button className={mapFilter==='Все'?'active':''} onClick={()=>setMapFilter('Все')}>Все</button>{cats.map(cat=><button key={cat} className={mapFilter===cat?'active':''} onClick={()=>setMapFilter(cat)}>{cat}</button>)}</div>
-        <div className="category-filters map-layer-toggles">
-          <button className={mapLayers.visited?'active':''} onClick={()=>setMapLayers(current=>({...current,visited:!current.visited}))}>Посещено</button>
-          <button className={mapLayers.routes?'active':''} onClick={()=>setMapLayers(current=>({...current,routes:!current.routes}))}>Маршруты</button>
-          <button className={mapLayers.future?'active':''} onClick={()=>setMapLayers(current=>({...current,future:!current.future}))}>Хочу посетить</button>
-        </div>
-        <div className="map-route-tools">
-          {!routeDrawing ? <button className="outline-button" onClick={()=>{setRouteDraft([]);setRouteTitle('');setRouteDrawing(true);setPickedCoordinates(null);setMapMessage('Режим маршрута: нажимай на карту, чтобы добавлять точки по порядку.');}}>＋ Нарисовать маршрут</button> : <><span>Точек маршрута: {routeDraft.length}</span><button className="outline-button" onClick={()=>setRouteDraft(current=>current.slice(0,-1))} disabled={!routeDraft.length}>Отменить точку</button><button className="outline-button" onClick={()=>{setRouteDrawing(false);setRouteDraft([]);setMapMessage('Создание маршрута отменено.');}}>Отмена</button></>}
-          <button className="outline-button" onClick={()=>{if(!pickedCoordinates){setMapMessage('Сначала выбери точку на карте.');return;}setFuturePlaceError('');setFuturePlaceModal(true);}}>＋ Добавить в «Хочу посетить»</button>
-        </div>
-        {routeDrawing && <div className="map-picked"><span>Нажми на карту, чтобы добавить остановки маршрута.</span><button className="gold-button" disabled={routeDraft.length<2} onClick={async()=>{const title=window.prompt('Название маршрута');if(!title?.trim())return;const now=new Date().toISOString();const waypoints=routeDraft.map((point,index)=>({id:crypto.randomUUID(),title:index===0?'Начало':index===routeDraft.length-1?'Финиш':'Остановка '+index,lat:point.lat,lng:point.lng,kind:(index===0?'start':index===routeDraft.length-1?'finish':'stop') as 'start'|'stop'|'finish'}));const distanceKm=routeDraft.slice(1).reduce((sum,point,index)=>{const previous=routeDraft[index];const rad=(value:number)=>value*Math.PI/180;const dLat=rad(point.lat-previous.lat),dLng=rad(point.lng-previous.lng);const h=Math.sin(dLat/2)**2+Math.cos(rad(previous.lat))*Math.cos(rad(point.lat))*Math.sin(dLng/2)**2;return sum+6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));},0);const route:AdventureRoute={id:crypto.randomUUID(),title:title.trim(),date:now.slice(0,10),description:'',category:'Путешествия',waypoints,geometry:routeDraft.map(point=>[point.lng,point.lat] as [number,number]),distanceKm,notes:'',photoMediaIds:[],createdAt:now,updatedAt:now};await putRoute(route);await refreshRoutes();setRouteDrawing(false);setRouteDraft([]);setMapMessage('Маршрут сохранён.');}}>Сохранить маршрут</button></div>}
-
         {mapMessage && <p className="map-message">{mapMessage}</p>}
         {pickedCoordinates && <div className="map-picked"><span>Выбрано: {pickedCoordinates.lat.toFixed(6)}, {pickedCoordinates.lng.toFixed(6)}</span><button className="gold-button" onClick={()=>{setEdit(null);setFiles([]);setModal(true);}}>Создать выезд</button><button className="outline-button" onClick={()=>{setPlaceEdit(null);setPlaceError('');setPlaceModal(true);}}>Сохранить место</button><button className="outline-button" onClick={()=>setPickedCoordinates(null)}>Сбросить</button></div>}
         <div className="adventure-map" ref={mapElement}><div className="map-loading">Загружаем карту…</div></div>
         {activeSavedPlace && <article className="saved-place-detail"><div><small>{activeSavedPlace.type} · {activeSavedPlace.category}</small><h3>{activeSavedPlace.title}</h3><p>{activeSavedPlace.description || 'Без описания'}</p><span>{activeSavedPlace.lat.toFixed(5)}, {activeSavedPlace.lng.toFixed(5)}</span></div><button className="outline-button" onClick={()=>{setPlaceEdit(activeSavedPlace);setPickedCoordinates({lat:activeSavedPlace.lat,lng:activeSavedPlace.lng});setPlaceError('');setPlaceModal(true);}}>Изменить</button><button className="danger-button" onClick={async()=>{if(confirm('Удалить сохранённое место?')){await deleteSavedPlace(activeSavedPlace.id);setActiveSavedPlace(null);refreshSavedPlaces();}}}>Удалить</button></article>}<div className="saved-place-list"><div className="saved-place-list-head"><h3>Сохранённые места</h3><span>{savedPlaces.length}</span></div>{savedPlaces.length ? savedPlaces.map(place=><button className="saved-place-row" key={place.id} onClick={()=>{setActiveSavedPlace(place);mapInstance.current?.flyTo({center:[place.lng,place.lat],zoom:13,essential:true});}}><span className="saved-place-pin">⌖</span><span><b>{place.title}</b><small>{place.type} · {place.category}</small></span><i>↗</i></button>) : <p className="muted-note">Пока нет отдельных сохранённых мест. Нажми на карту и сохрани интересную точку.</p>}</div><p className="muted-note">Места и выезды хранятся отдельно. Поиск требует интернета; сохранённые отметки доступны офлайн.</p>
-        <div className="saved-place-list"><div className="saved-place-list-head"><h3>Хочу посетить</h3><span>{futurePlaces.length}</span></div>{futurePlaces.length?futurePlaces.map(place=><div className="saved-place-row" key={place.id}><button type="button" onClick={()=>{setActiveFuturePlace(place);mapInstance.current?.flyTo({center:[place.lng,place.lat],zoom:10,essential:true});}}><span className="saved-place-pin">✧</span><span><b>{place.title}</b><small>{[place.country,place.region,place.priority].filter(Boolean).join(' · ')}{place.linkedSavedPlaceId?' · Посещено':''}</small></span></button><button type="button" className="danger-button" onClick={async()=>{if(confirm('Удалить будущую цель?')){await deleteFuturePlace(place.id);await refreshFuturePlaces();}}}>×</button></div>):<p className="muted-note">Будущие места появятся здесь после добавления на карту.</p>}</div>
-        <div className="saved-place-list"><div className="saved-place-list-head"><h3>Маршруты</h3><span>{routes.length}</span></div>{routes.length?routes.map(route=><div className="saved-place-row" key={route.id}><button type="button" onClick={()=>{const first=route.geometry[0];if(first)mapInstance.current?.flyTo({center:first,zoom:8,essential:true});}}><span className="saved-place-pin">⌁</span><span><b>{route.title}</b><small>{route.date} · {route.waypoints.length} точек{route.distanceKm? ' · '+route.distanceKm.toFixed(1)+' км':''}</small></span></button><button type="button" className="danger-button" onClick={async()=>{if(confirm('Удалить маршрут?')){await deleteRoute(route.id);await refreshRoutes();}}}>×</button></div>):<p className="muted-note">Маршруты появятся здесь. Для создания нажми «Нарисовать маршрут».</p>}</div>
         <div className="map-legend"><span>● Охота</span><span>● Рыбалка</span><span>● Кемпинг</span><span>● Путешествия</span></div>
       </section>}
       {page === 'Журнал' && <section className="section-page journal-page">
@@ -772,8 +741,6 @@ export default function App() {
     </main>
     
     {reportView}{modal&&form}
-    {futurePlaceModal && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setFuturePlaceModal(false);}}><form className="journal-modal saved-place-modal" onSubmit={async e=>{e.preventDefault();if(!pickedCoordinates){setFuturePlaceError('Сначала выбери точку на карте.');return;}setFuturePlaceError('');try{const data=new FormData(e.currentTarget);const now=new Date().toISOString();const value:FuturePlace={id:crypto.randomUUID(),title:String(data.get('title')||'').trim(),country:String(data.get('country')||'').trim(),region:String(data.get('region')||'').trim(),category:data.get('category') as FuturePlace['category'],lat:pickedCoordinates.lat,lng:pickedCoordinates.lng,description:String(data.get('description')||'').trim(),priority:data.get('priority') as FuturePlace['priority'],note:String(data.get('note')||'').trim(),createdAt:now,updatedAt:now};if(!value.title)throw new Error('Укажи название места.');await putFuturePlace(value);await refreshFuturePlaces();setFuturePlaceModal(false);setMapMessage('Место добавлено в слой «Хочу посетить».');}catch(err){setFuturePlaceError(err instanceof Error?err.message:'Не удалось сохранить место.');}}}><div className="modal-heading"><div><span className="eyebrow">ПЛАНЫ И МЕЧТЫ</span><h2>Хочу посетить</h2></div><button type="button" className="modal-close" onClick={()=>setFuturePlaceModal(false)}>×</button></div><p className="muted-note">Координаты: {pickedCoordinates?pickedCoordinates.lat.toFixed(6)+', '+pickedCoordinates.lng.toFixed(6):'не выбраны'}</p><label>Название<input name="title" required maxLength={90} placeholder="Например, Карелия"/></label><div className="journal-form-row"><label>Страна<input name="country" placeholder="Страна"/></label><label>Регион<input name="region" placeholder="Область или район"/></label></div><label>Категория<select name="category" defaultValue="Путешествия">{cats.map(cat=><option key={cat}>{cat}</option>)}</select></label><label>Приоритет<select name="priority" defaultValue="Средний"><option>Низкий</option><option>Средний</option><option>Высокий</option></select></label><label>Описание<textarea name="description" rows={3} placeholder="Почему хочется побывать здесь?"/></label><label>Заметка<textarea name="note" rows={2} placeholder="Что нужно учесть при планировании"/></label>{futurePlaceError&&<div className="save-error" role="alert">{futurePlaceError}</div>}<div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setFuturePlaceModal(false)}>Отмена</button><button className="gold-button" type="submit">Сохранить место</button></div></form></div>}
-    {activeFuturePlace && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!visitingPlace)setActiveFuturePlace(null);}}><form className="journal-modal saved-place-modal" onSubmit={async e=>{e.preventDefault();if(!activeFuturePlace)return;setVisitingPlace(true);setVisitPlaceError('');try{const data=new FormData(e.currentTarget);const linkedOutingId=String(data.get('outingId')||'')||undefined;const now=new Date().toISOString();const saved:SavedPlace={id:activeFuturePlace.linkedSavedPlaceId||crypto.randomUUID(),title:activeFuturePlace.title,type:'Избранное место',category:activeFuturePlace.category,lat:activeFuturePlace.lat,lng:activeFuturePlace.lng,description:[activeFuturePlace.description,activeFuturePlace.note].filter(Boolean).join('\n\n'),createdAt:activeFuturePlace.createdAt,updatedAt:now};await putSavedPlace(saved);const updated:FuturePlace={...activeFuturePlace,linkedSavedPlaceId:saved.id,linkedOutingId,updatedAt:now};await putFuturePlace(updated);await refreshSavedPlaces();await refreshFuturePlaces();setActiveSavedPlace(saved);setActiveFuturePlace(null);setMapMessage('Место отмечено посещённым. Исходная цель сохранена и связана с историей.');}catch(err){setVisitPlaceError(err instanceof Error?err.message:'Не удалось отметить место посещённым.');}finally{setVisitingPlace(false);}}}><div className="modal-heading"><div><span className="eyebrow">ИСТОРИЯ ПРИКЛЮЧЕНИЙ</span><h2>{activeFuturePlace.linkedSavedPlaceId?'Место уже посещено':'Отметить посещённым'}</h2></div><button type="button" className="modal-close" onClick={()=>setActiveFuturePlace(null)}>×</button></div><h3>{activeFuturePlace.title}</h3><p className="muted-note">Будущая цель останется в списке, а в посещённых местах появится связанная карточка с теми же координатами.</p><label>Связать с выездом (необязательно)<select name="outingId" defaultValue={activeFuturePlace.linkedOutingId||''}><option value="">Без привязки к выезду</option>{rows.map(row=><option key={row.id} value={row.id}>{row.date} · {row.title}</option>)}</select></label>{visitPlaceError&&<div className="save-error" role="alert">{visitPlaceError}</div>}<div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setActiveFuturePlace(null)} disabled={visitingPlace}>Закрыть</button><button className="gold-button" type="submit" disabled={visitingPlace}>{visitingPlace?'Сохраняем…':'Сохранить посещение'}</button></div></form></div>}
     {placeModal && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!placeSaving)setPlaceModal(false);}}><form className="journal-modal saved-place-modal" onSubmit={async e=>{e.preventDefault();if(!pickedCoordinates){setPlaceError('Сначала выбери точку на карте или найди место через поиск.');return;}setPlaceSaving(true);setPlaceError('');try{const data=new FormData(e.currentTarget);const now=new Date().toISOString();const value:SavedPlace={id:placeEdit?.id??crypto.randomUUID(),title:String(data.get('title')||'').trim(),type:data.get('type') as SavedPlace['type'],category:data.get('category') as SavedPlace['category'],lat:pickedCoordinates.lat,lng:pickedCoordinates.lng,description:String(data.get('description')||'').trim(),createdAt:placeEdit?.createdAt??now,updatedAt:now};if(!value.title)throw new Error('Укажи название места.');await putSavedPlace(value);await refreshSavedPlaces();setActiveSavedPlace(value);setPlaceModal(false);setMapMessage('Место сохранено отдельно от выездов.');}catch(err){setPlaceError(err instanceof Error?err.message:'Не удалось сохранить место.');}finally{setPlaceSaving(false);}}}><div className="modal-heading"><div><span className="eyebrow">ЛИЧНАЯ КАРТА</span><h2>{placeEdit?'Изменить место':'Сохранить место'}</h2></div><button type="button" className="modal-close" onClick={()=>setPlaceModal(false)}>×</button></div><p className="muted-note">Координаты: {pickedCoordinates?pickedCoordinates.lat.toFixed(6)+', '+pickedCoordinates.lng.toFixed(6):'не выбраны'}</p><label>Название<input name="title" required maxLength={90} defaultValue={placeEdit?.title??''} placeholder="Например, стоянка у озера"/></label><label>Тип места<select name="type" defaultValue={placeEdit?.type??'Избранное место'}><option>Избранное место</option><option>Стоянка</option><option>Рыбалка</option><option>Наблюдение</option><option>Другое</option></select></label><label>Категория<select name="category" defaultValue={placeEdit?.category??'Путешествия'}>{cats.map(cat=><option key={cat}>{cat}</option>)}</select></label><label>Заметки<textarea name="description" rows={4} defaultValue={placeEdit?.description??''} placeholder="Подъезд, особенности места, что стоит помнить..."/></label>{placeError&&<div className="save-error" role="alert">{placeError}</div>}<small className="muted-note">Сохранённые места не создают выезд и не влияют на статистику.</small><div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setPlaceModal(false)} disabled={placeSaving}>Отмена</button><button className="gold-button" type="submit" disabled={placeSaving}>{placeSaving?'Сохраняем…':'Сохранить место'}</button></div></form></div>}
     {journalModal && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!journalSaving)setJournalModal(false);}}><form className="journal-modal" onSubmit={saveJournal}><div className="modal-heading"><div><span className="eyebrow">ПОЛЕВЫЕ ЗАПИСИ</span><h2>{journalEdit?'Редактировать запись':'Новая запись'}</h2></div><button type="button" className="modal-close" onClick={()=>setJournalModal(false)}>×</button></div><label>Заголовок<input name="title" required maxLength={90} defaultValue={journalEdit?.title??''} placeholder="Например, Пролёт гусей"/></label><label>Тип записи<select name="type" defaultValue={journalEdit?.type??'Наблюдения'}><option>Наблюдения</option><option>Заметки</option><option>События</option></select></label><div className="journal-form-row"><label>Дата<input name="date" type="date" required defaultValue={journalEdit?.date??new Date().toISOString().slice(0,10)}/></label><label>Место<input name="place" defaultValue={journalEdit?.place??''} placeholder="Озеро, лес, район"/></label></div><label>Описание<textarea name="description" rows={5} required defaultValue={journalEdit?.description??''} placeholder="Что заметил, что произошло, что стоит запомнить..."/></label><label className="file-picker">＋ Добавить фотографии<input type="file" accept="image/*" multiple onChange={e=>setJournalFiles(Array.from(e.target.files??[]))}/></label>{(journalEdit?.photos.length??0)>0&&<p className="file-summary">Уже сохранено фотографий: {journalEdit?.photos.length}</p>}{journalFiles.length>0&&<p className="file-summary">Выбрано новых фото: {journalFiles.length}</p>}<small className="muted-note">Записи и фотографии хранятся локально на этом устройстве. Облачная синхронизация пока не подключена.</small>{journalError&&<div className="save-error" role="alert">{journalError}</div>}<div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setJournalModal(false)} disabled={journalSaving}>Отмена</button><button className="gold-button" type="submit" disabled={journalSaving}>{journalSaving?'Сохраняем…':'Сохранить запись'}</button>{journalEdit&&<button type="button" className="outline-button" onClick={()=>removeJournal(journalEdit)}>Удалить</button>}</div></form></div>}
 
