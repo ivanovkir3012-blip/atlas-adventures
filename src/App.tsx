@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
@@ -70,15 +70,23 @@ export default function App() {
   const [mapQuery, setMapQuery] = useState('');
   const [mapFilter, setMapFilter] = useState('Все');
   const [mapMessage, setMapMessage] = useState('');
+  const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
+  const [placeModal, setPlaceModal] = useState(false);
+  const [placeEdit, setPlaceEdit] = useState<SavedPlace | null>(null);
+  const [activeSavedPlace, setActiveSavedPlace] = useState<SavedPlace | null>(null);
+  const [placeSaving, setPlaceSaving] = useState(false);
+  const [placeError, setPlaceError] = useState('');
   const [pickedCoordinates, setPickedCoordinates] = useState<{lat:number;lng:number}|null>(null);
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const refresh = () => all().then(setRows);
   const refreshJournal = () => allJournal().then(setJournalRows);
+  const refreshSavedPlaces = () => allSavedPlaces().then(setSavedPlaces);
 
   useEffect(() => {
     refresh();
     refreshJournal();
+    refreshSavedPlaces();
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
@@ -149,6 +157,7 @@ export default function App() {
         });
         const markerIcon=(color:string)=>createMapMarkerElement(color);
         const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
+        const visiblePlaces=savedPlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter);
         visible.forEach(row=>{
           const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
           const marker=new w.maplibregl.Marker({element:markerIcon(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
@@ -157,11 +166,20 @@ export default function App() {
           marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
           marker.getElement().addEventListener('click',()=>setReport(row));
         });
+        visiblePlaces.forEach(place=>{
+          const marker=new w.maplibregl.Marker({element:markerIcon('#d6ad55'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
+          const popup=document.createElement('div');popup.className='atlas-map-popup';
+          const title=document.createElement('strong');title.textContent=place.title;popup.appendChild(title);
+          const meta=document.createElement('div');meta.textContent=place.type+' · '+place.category;popup.appendChild(meta);
+          if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
+          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+          marker.getElement().addEventListener('click',()=>setActiveSavedPlace(place));
+        });
         map.on('click',(event:any)=>{
           const target=event.originalEvent?.target as HTMLElement;
           if(target?.closest('.maplibregl-marker,.maplibregl-popup,.maplibregl-ctrl'))return;
           const lat=Number(event.lngLat.lat.toFixed(6));const lng=Number(event.lngLat.lng.toFixed(6));
-          setPickedCoordinates({lat,lng});setMapMessage('Выбрана точка: '+lat+', '+lng+'. Координаты подставятся в новую запись выезда.');
+          setPickedCoordinates({lat,lng});setMapMessage('Точка выбрана. Можно сохранить её отдельно или создать выезд.');
           const el=markerIcon('#d7b65d');
           const marker=new w.maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
           const popup=document.createElement('div');popup.className='atlas-map-popup atlas-map-picked-popup';popup.innerHTML='<span>Выбранная точка</span><strong>'+lat.toFixed(6)+', '+lng.toFixed(6)+'</strong>';
@@ -175,7 +193,7 @@ export default function App() {
     };
     init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
     return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
-  },[page,rows,mapFilter,coverUrls]);
+  },[page,rows,savedPlaces,mapFilter,coverUrls]);
 
   useEffect(() => {
     let active = true;
@@ -659,7 +677,7 @@ export default function App() {
       </>}
       {page === 'Выезды' && <section className="section-page"><div className="section-title"><div><span className="eyebrow">ТВОИ ИСТОРИИ</span><h1>Выезды</h1></div><button className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div><div className="outing-toolbar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названию и месту"/><div className="category-filters"><button className={category==='Все'?'active':''} onClick={()=>setCategory('Все')}>Все</button>{cats.map(cat=><button key={cat} className={category===cat?'active':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div></div>{renderRows(filtered)}</section>}
       {page === 'Карта' && <section className="section-page map-page">
-        <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length} точек</span></div>
+        <div className="section-title"><div><span className="eyebrow">ГЕОГРАФИЯ ТВОИХ ПРИКЛЮЧЕНИЙ</span><h1>Карта приключений</h1></div><span className="map-count">{rows.filter(row=>row.coordinates).length + savedPlaces.length} точек</span></div>
         <div className="map-toolbar"><input value={mapQuery} onChange={e=>setMapQuery(e.target.value)} placeholder="Найти озеро, населённый пункт или место"/><button className="gold-button" onClick={async()=>{if(!mapQuery.trim())return;setMapMessage('Ищем место…');try{const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(mapQuery));if(!response.ok)throw new Error();const result=await response.json();if(!result.length){setMapMessage('Место не найдено. Уточни запрос.');return;}const map=mapInstance.current;const lat=Number(result[0].lat),lng=Number(result[0].lon);setPickedCoordinates({lat,lng});if(map){map.flyTo({center:[lng,lat],zoom:13,essential:true});const marker=createMapMarkerElement('#d7b65d');marker.classList.add('atlas-map-marker-picked');const popup=document.createElement('div');popup.textContent=result[0].display_name;const pin=new (window as any).maplibregl.Marker({element:marker,anchor:'bottom'}).setLngLat([lng,lat]).setPopup(new (window as any).maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);if((map as any).atlasSearchMarker)(map as any).atlasSearchMarker.remove();(map as any).atlasSearchMarker=pin;pin.togglePopup();}setMapMessage('Место найдено и выбрано. Нажми «Создать выезд в этой точке», чтобы сохранить его.');}catch{setMapMessage('Поиск доступен при подключении к интернету.');}}}>Найти</button></div>
         <div className="category-filters map-filters"><button className={mapFilter==='Все'?'active':''} onClick={()=>setMapFilter('Все')}>Все</button>{cats.map(cat=><button key={cat} className={mapFilter===cat?'active':''} onClick={()=>setMapFilter(cat)}>{cat}</button>)}</div>
         {mapMessage && <p className="map-message">{mapMessage}</p>}
