@@ -5,10 +5,11 @@ const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путе
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
 type Page = 'Главная' | 'Выезды' | 'Карта' | 'Журнал' | 'Статистика' | 'Рекорды' | 'Настройки';
 const pages: Page[] = ['Главная', 'Выезды', 'Карта', 'Журнал', 'Статистика', 'Рекорды', 'Настройки'];
+const imageAsset = (filename: string) => `${import.meta.env.BASE_URL}images/${encodeURIComponent(filename)}`;
 const pics: Record<Cat, string> = {
-  'Охота': `${import.meta.env.BASE_URL}images/Охотничий закат_ утки над болотом.png`,
-  'Рыбалка': `${import.meta.env.BASE_URL}images/Рыбалка на закате_ щука и снасти.png`,
-  'Кемпинг': `${import.meta.env.BASE_URL}images/Кемпинг у озера на закате.png`,
+  'Охота': imageAsset('Охотничий закат_ утки над болотом.png'),
+  'Рыбалка': imageAsset('Рыбалка на закате_ щука и снасти.png'),
+  'Кемпинг': imageAsset('Кемпинг у озера на закате.png'),
   'Путешествия': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85',
 };
 const assetBase = import.meta.env.BASE_URL;
@@ -737,7 +738,7 @@ export default function App() {
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>История выездов</h2></div></div>
           {statsPeriodControls}
-          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Закатный лагерь у озера.png','Дней на природе':'Золотой закат в лесном лагере.png','Гусей':'Гуси над туманным озером на закате.png','Уток':'Кряквы над водой на закате.png','Всего проехал':'Золотой маршрут сквозь леса и озёра.png','Потрачено':'Походный натюрморт на закате.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong><small>{stat.label}</small></div>)}</div>
+          <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={imageAsset(({'Всего выездов':'Закатный лагерь у озера.png','Дней на природе':'Золотой закат в лесном лагере.png','Гусей':'Гуси над туманным озером на закате.png','Уток':'Кряквы над водой на закате.png','Всего проехал':'Золотой маршрут сквозь леса и озёра.png','Потрачено':'Походный натюрморт на закате.png'} as Record<string,string>)[stat.label])} alt="" /></div><strong>{stat.value}</strong><small>{stat.label}</small></div>)}</div>
         </section>
         <section className="dashboard-section photo-story-section"><div className="section-title"><div><h2>Фотоистория</h2><p>Моменты, к которым хочется возвращаться</p></div><button className="text-button" onClick={()=>{setCategory('Все');setPage('Выезды')}}>Все выезды ↗</button></div>{renderPhotoStory([...rows].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0,3))}</section>
 
