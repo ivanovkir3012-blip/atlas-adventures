@@ -1964,3 +1964,11 @@ input,select,textarea{
  .latest-outing-empty{align-items:flex-start;flex-direction:column;padding:16px}
  .latest-outing-empty strong{font-size:16px}
 }
+
+
+/* Full local backup controls */
+.backup-setting-card{grid-column:1/-1}
+.backup-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.backup-message{display:block!important;color:#e5c47f!important;line-height:1.5;margin:8px 0}
+.backup-setting-card>small:last-child{display:block;color:#aaa99f;font-size:10px;line-height:1.5;margin-top:9px}
+@media(max-width:560px){.backup-actions{display:grid}.backup-actions button{width:100%}}
