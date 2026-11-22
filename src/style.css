@@ -2211,3 +2211,31 @@ html,body,#root{min-height:100%;background:transparent!important}
  .home-backup-reminder-copy strong{font-size:14px}
  .home-backup-reminder>button{margin-left:42px}
 }
+
+/* Device storage overview — sunset atlas panels. */
+.storage-setting-card{grid-column:1/-1}
+.storage-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.storage-heading>div{min-width:0}
+.storage-heading h3{margin-bottom:5px}
+.storage-heading p{margin:0}
+.storage-total{display:grid;gap:4px;margin:18px 0 14px;padding:18px;border:1px solid rgba(218,157,103,.35);background:linear-gradient(120deg,rgba(108,67,43,.25),rgba(26,34,33,.6))}
+.storage-total strong{font:700 32px/1.1 'Playfair Display',Georgia,serif;color:#f0c99e}
+.storage-total span,.storage-muted{font-size:11px;color:#c7b8a5}
+.storage-breakdown,.storage-records{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.storage-breakdown>div,.storage-records>span{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid rgba(211,157,111,.17);font-size:11px;color:#d5c5b2}
+.storage-breakdown strong,.storage-records b{color:#efc69c;font-weight:700;white-space:nowrap}
+.storage-records{margin-top:10px}
+.storage-quota{margin:17px 0 10px;padding:13px;border:1px solid rgba(211,157,111,.2);background:rgba(7,12,13,.28)}
+.storage-quota>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#d8c6b1}
+.storage-quota>div:first-child b{color:#efc69c;white-space:nowrap}
+.storage-quota-track{height:8px;margin:10px 0 7px;background:rgba(0,0,0,.35);border:1px solid rgba(211,157,111,.22);overflow:hidden}
+.storage-quota-track i{display:block;height:100%;background:linear-gradient(90deg,#9b6048,#e6a36e)}
+.storage-quota small,.storage-setting-card>small:last-child{display:block;margin-top:9px;font-size:10px;line-height:1.5;color:#bcae9b}
+.storage-error{color:#f0a18b;font-size:12px}
+@media(max-width:560px){
+ .storage-total{padding:15px}
+ .storage-total strong{font-size:28px}
+ .storage-breakdown,.storage-records{grid-template-columns:1fr}
+ .storage-breakdown>div,.storage-records>span{font-size:10px}
+ .storage-quota>div:first-child{flex-direction:column;gap:5px}
+}
