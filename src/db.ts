@@ -180,19 +180,35 @@ export async function restore(id: string): Promise<void> {
 
 export async function purgeExpiredTrash(now = Date.now()): Promise<number> {
   const rows = await all(true);
-  const expired = rows.filter(row => row.deletedAt && now - Date.parse(row.deletedAt) >= 30 * 24 * 60 * 60 * 1000);
-  if (!expired.length) return 0;
+  const expiredIds = rows
+    .filter(row => row.deletedAt && Number.isFinite(Date.parse(row.deletedAt)) && now - Date.parse(row.deletedAt) >= 30 * 24 * 60 * 60 * 1000)
+    .map(row => row.id);
+  if (!expiredIds.length) return 0;
+
+  const expiredSet = new Set(expiredIds);
   const database = await openDb();
-  const tx = database.transaction([OUTINGS, MEDIA], 'readwrite');
-  for (const row of expired) {
-    tx.objectStore(OUTINGS).delete(row.id);
+  try {
+    const tx = database.transaction([OUTINGS, MEDIA], 'readwrite');
+    const done = transactionDone(tx);
+    const outingStore = tx.objectStore(OUTINGS);
     const mediaStore = tx.objectStore(MEDIA);
-    const media = await requestResult(mediaStore.index('outingId').getAllKeys(row.id));
-    media.forEach(key => mediaStore.delete(key));
+
+    expiredIds.forEach(id => outingStore.delete(id));
+    const mediaRequest = mediaStore.getAll();
+    mediaRequest.onsuccess = () => {
+      (mediaRequest.result as MediaItem[])
+        .filter(item => expiredSet.has(item.outingId))
+        .forEach(item => mediaStore.delete(item.id));
+    };
+    mediaRequest.onerror = () => {
+      try { tx.abort(); } catch { /* transaction already finished */ }
+    };
+
+    await done;
+    return expiredIds.length;
+  } finally {
+    database.close();
   }
-  await transactionDone(tx);
-  database.close();
-  return expired.length;
 }
 
 export async function del(id: string): Promise<void> {
