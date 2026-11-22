@@ -2172,3 +2172,8 @@ html,body,#root{min-height:100%;background:transparent!important}
 .records-page .record-fish-card{
   overflow:hidden!important;
 }
+
+
+.backup-last-info{display:grid;gap:4px;margin:12px 0;padding:11px 13px;border-left:2px solid #d69a68;background:rgba(214,154,104,.08)}
+.backup-last-info span{font-size:10px;color:#bcae9b}
+.backup-last-info strong{font:600 14px 'Manrope',sans-serif;color:#f0d5b4}
