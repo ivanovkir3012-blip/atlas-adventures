@@ -129,7 +129,7 @@ export default function App() {
       }
       if(cancelled||!mapElement.current||!w.maplibregl)return;
       if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}
-      const map=new w.maplibregl.Map({container:mapElement.current,center:[27.56,53.9],zoom:6,style:'https://tiles.openfreemap.org/styles/liberty',attributionControl:true,renderWorldCopies:false});
+      const map=new w.maplibregl.Map({container:mapElement.current,center:[0,20],zoom:1.5,minZoom:1,style:'https://tiles.openfreemap.org/styles/liberty',attributionControl:true,renderWorldCopies:false});
       mapInstance.current=map;
       map.addControl(new w.maplibregl.NavigationControl({showCompass:true,showZoom:true}),'top-right');
       map.addControl(new w.maplibregl.ScaleControl({maxWidth:120,unit:'metric'}),'bottom-left');
