@@ -605,7 +605,7 @@ export default function App() {
         </section>
         <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index} category-emblem-tile`} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="category-emblem-art"><img src={pics[cat]} alt="" /></span><small>{rows.filter(row=>row.category===cat).length} выездов</small></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
-          <div className="section-title"><div><h2>Мои приключения в цифрах</h2></div></div>
+          <div className="section-title"><div><h2>История выездов</h2></div></div>
           {statsPeriodControls}
           <div className="stat-grid stat-grid-home">{stats.map(stat=><div className="stat-card stat-art-card" key={stat.label}><div className="stat-art-viewport"><img className="stat-art stat-art-full" src={`${assetBase}images/${({'Всего выездов':'Закатный лагерь у озера.png','Дней на природе':'Золотой закат в лесном лагере.png','Гусей':'Гуси над туманным озером на закате.png','Уток':'Кряквы над водой на закате.png','Всего проехал':'Золотой маршрут сквозь леса и озёра.png','Потрачено':'Походный натюрморт на закате.png'} as Record<string,string>)[stat.label]}`} alt="" /></div><strong>{stat.value}</strong><small>{stat.label}</small></div>)}</div>
         </section>
