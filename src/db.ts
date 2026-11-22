@@ -7,6 +7,9 @@ export type TimelineEntry = {
   description?: string;
 };
 
+export type JournalPhoto = { id: string; name: string; mimeType: string; size: number; blob: Blob };
+export type JournalEntry = { id: string; title: string; type: 'Наблюдения' | 'Заметки' | 'События'; date: string; place: string; description: string; photos: JournalPhoto[]; createdAt: string; updatedAt: string };
+
 export type MediaItem = {
   id: string;
   outingId: string;
@@ -46,10 +49,11 @@ export type Outing = {
 };
 
 const DB = 'atlas-db';
-const VERSION = 2;
+const VERSION = 3;
 const OUTINGS = 'outings';
 const MEDIA = 'media';
 const SETTINGS = 'settings';
+const JOURNAL = 'journal';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -65,6 +69,9 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!database.objectStoreNames.contains(SETTINGS)) {
         database.createObjectStore(SETTINGS, { keyPath: 'key' });
+      }
+      if (!database.objectStoreNames.contains(JOURNAL)) {
+        database.createObjectStore(JOURNAL, { keyPath: 'id' });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -210,4 +217,27 @@ export async function getMediaForOuting(outingId: string): Promise<MediaItem[]> 
   await transactionDone(tx);
   database.close();
   return rows;
+}
+
+
+export async function allJournal(): Promise<JournalEntry[]> {
+  const database = await openDb();
+  const tx = database.transaction(JOURNAL, 'readonly');
+  const rows = await requestResult(tx.objectStore(JOURNAL).getAll()) as JournalEntry[];
+  await transactionDone(tx);
+  database.close();
+  return rows.sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
+}
+export async function putJournal(value: JournalEntry): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(JOURNAL, 'readwrite');
+  tx.objectStore(JOURNAL).put(value);
+  await transactionDone(tx);
+  database.close();
+}
+export async function deleteJournal(id: string): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(JOURNAL, 'readwrite');
+  tx.objectStore(JOURNAL).delete(id);
+  await transactionDone(tx);
 }
