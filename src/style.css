@@ -2261,3 +2261,29 @@ html,body,#root{min-height:100%;background:transparent!important}
 .photo-download-button{margin-left:12px;padding:8px 13px;font-size:12px}
 .report-media .report-media-delete{white-space:nowrap}
 @media(max-width:620px){.journal-download{padding:6px 8px}.photo-download-button{display:block;margin:10px 0 0}}
+
+
+/* Mobile navigation: keep tabs on one scrollable row without squeezing or overlap. */
+@media(max-width:1000px){
+  .topbar{display:flex;flex-wrap:wrap;align-items:center;row-gap:10px}
+  .topbar>.brand{order:1;flex:0 0 auto;min-width:0}
+  .topbar>.connection{order:2;margin-left:auto;flex:0 0 auto}
+  .topbar>.main-nav{
+    order:3;display:flex;flex:0 0 100%;width:100%;min-width:0;
+    justify-content:flex-start;align-items:stretch;gap:5px;
+    overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+    scrollbar-width:none;padding:2px 0 5px;
+  }
+  .topbar>.main-nav::-webkit-scrollbar{display:none}
+  .topbar>.main-nav button{
+    display:block;flex:0 0 auto;width:auto;min-width:max-content;
+    white-space:nowrap;word-break:keep-all;overflow-wrap:normal;
+    padding:11px 12px 10px;line-height:1.2;
+  }
+}
+@media(max-width:620px){
+  .topbar{padding:9px 0 7px;column-gap:8px}
+  .topbar>.main-nav{gap:3px}
+  .topbar>.main-nav button{font-size:10px;padding:10px 11px 9px}
+}
