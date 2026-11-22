@@ -317,11 +317,12 @@ export async function createFullBackup(): Promise<Blob> {
   const database = await openDb();
   try {
     const tx = database.transaction([...BACKUP_STORES], 'readonly');
+    const done = transactionDone(tx);
     const snapshots = await Promise.all(BACKUP_STORES.map(async name => {
       const rows = await requestResult(tx.objectStore(name).getAll());
       return [name, await encodeBackupValue(rows)] as const;
     }));
-    await transactionDone(tx);
+    await done;
     const payload = {
       format: BACKUP_FORMAT,
       version: BACKUP_VERSION,
