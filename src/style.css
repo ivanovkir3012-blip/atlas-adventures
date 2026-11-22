@@ -1972,3 +1972,20 @@ input,select,textarea{
 .backup-message{display:block!important;color:#e5c47f!important;line-height:1.5;margin:8px 0}
 .backup-setting-card>small:last-child{display:block;color:#aaa99f;font-size:10px;line-height:1.5;margin-top:9px}
 @media(max-width:560px){.backup-actions{display:grid}.backup-actions button{width:100%}}
+
+
+/* Persistent shared scenic backdrop across all app pages (mobile-safe). */
+.app-shell{position:relative!important;isolation:isolate!important;min-height:100vh!important;background:transparent!important}
+.app-shell::before{
+  content:""!important;position:fixed!important;inset:0!important;z-index:-1!important;
+  pointer-events:none!important;display:block!important;
+  background-image:
+    linear-gradient(180deg,rgba(7,11,15,.34) 0%,rgba(7,11,15,.24) 48%,rgba(7,11,15,.43) 100%),
+    linear-gradient(90deg,rgba(7,11,15,.12),rgba(7,11,15,.04)),
+    var(--atlas-background-image)!important;
+  background-size:cover!important;background-position:center center!important;
+  background-repeat:no-repeat!important;background-attachment:scroll!important;
+  transform:none!important;
+}
+.app-shell>.topbar,.app-shell>.page-content,.app-shell>.app-footer{position:relative!important;z-index:1!important}
+html,body,#root{min-height:100%;background:transparent!important}
