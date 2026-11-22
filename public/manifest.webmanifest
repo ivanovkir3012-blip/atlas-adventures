@@ -1,1 +1,21 @@
-{"id":"./","name":"Атлас приключений","short_name":"Атлас","start_url":"./","scope":"./","display":"standalone","background_color":"#102a22","theme_color":"#102a22","lang":"ru"}
+{
+  "id": "./",
+  "name": "Атлас приключений",
+  "short_name": "Атлас",
+  "description": "Личный атлас охоты, рыбалки, кемпинга и путешествий",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#102a22",
+  "theme_color": "#102a22",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "./images/%D0%91%D1%80%D0%BE%D0%BD%D0%B7%D0%B0%D1%8F%20%D1%8D%D0%BC%D0%B1%D0%BB%D0%B5%D0%BC%D0%B0%20команды%20с%20природным%20гербом.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
