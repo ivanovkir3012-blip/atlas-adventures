@@ -7,6 +7,8 @@ export type TimelineEntry = {
   description?: string;
 };
 
+export type SavedPlace = { id: string; title: string; type: 'Избранное место' | 'Стоянка' | 'Рыбалка' | 'Наблюдение' | 'Другое'; category: Cat; lat: number; lng: number; description: string; createdAt: string; updatedAt: string };
+
 export type JournalPhoto = { id: string; name: string; mimeType: string; size: number; blob: Blob };
 export type JournalEntry = { id: string; title: string; type: 'Наблюдения' | 'Заметки' | 'События'; date: string; place: string; description: string; photos: JournalPhoto[]; createdAt: string; updatedAt: string };
 
@@ -49,11 +51,12 @@ export type Outing = {
 };
 
 const DB = 'atlas-db';
-const VERSION = 3;
+const VERSION = 4;
 const OUTINGS = 'outings';
 const MEDIA = 'media';
 const SETTINGS = 'settings';
 const JOURNAL = 'journal';
+const PLACES = 'savedPlaces';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -72,6 +75,9 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!database.objectStoreNames.contains(JOURNAL)) {
         database.createObjectStore(JOURNAL, { keyPath: 'id' });
+      }
+      if (!database.objectStoreNames.contains(PLACES)) {
+        database.createObjectStore(PLACES, { keyPath: 'id' });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -240,4 +246,28 @@ export async function deleteJournal(id: string): Promise<void> {
   const tx = database.transaction(JOURNAL, 'readwrite');
   tx.objectStore(JOURNAL).delete(id);
   await transactionDone(tx);
+}
+
+
+export async function allSavedPlaces(): Promise<SavedPlace[]> {
+  const database = await openDb();
+  const tx = database.transaction(PLACES, 'readonly');
+  const rows = await requestResult(tx.objectStore(PLACES).getAll()) as SavedPlace[];
+  await transactionDone(tx);
+  database.close();
+  return rows.sort((a,b) => a.title.localeCompare(b.title, 'ru'));
+}
+export async function putSavedPlace(value: SavedPlace): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(PLACES, 'readwrite');
+  tx.objectStore(PLACES).put(value);
+  await transactionDone(tx);
+  database.close();
+}
+export async function deleteSavedPlace(id: string): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(PLACES, 'readwrite');
+  tx.objectStore(PLACES).delete(id);
+  await transactionDone(tx);
+  database.close();
 }
