@@ -1906,3 +1906,10 @@ input,select,textarea{
   .stats-page .hunting-bar-track{height:96px}
   .stats-page .year-stats-row{padding:10px 2px}
 }
+
+
+/* Statistics heading alignment and clean book-style section titles. */
+.stats-page>h1{text-align:center}
+.stats-page>.eyebrow{display:none}
+.stats-page .stats-panel-heading{justify-content:flex-start}
+.stats-page .stats-panel-heading span{display:none!important}
