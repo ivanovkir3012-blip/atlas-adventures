@@ -665,7 +665,7 @@ export default function App() {
         {mapMessage && <p className="map-message">{mapMessage}</p>}
         {pickedCoordinates && <div className="map-picked"><span>Выбрано: {pickedCoordinates.lat.toFixed(6)}, {pickedCoordinates.lng.toFixed(6)}</span><button className="gold-button" onClick={()=>{setEdit(null);setFiles([]);setModal(true);}}>Создать выезд в этой точке</button><button className="outline-button" onClick={()=>setPickedCoordinates(null)}>Сбросить точку</button></div>}
         <div className="adventure-map" ref={mapElement}><div className="map-loading">Загружаем карту…</div></div>
-        <p className="muted-note">На карте отображаются выезды с сохранёнными координатами. Чтобы добавить точку, укажи широту и долготу в полевом журнале. Поиск требует интернета; сохранённые точки доступны офлайн.</p>
+        <p className="muted-note">На карте отображаются выезды с сохранёнными координатами. Чтобы добавить точку, выбери место на карте и создай выезд либо укажи координаты в карточке выезда. Поиск мест требует интернета; сохранённые отметки выездов доступны офлайн.</p>
         <div className="map-legend"><span>● Охота</span><span>● Рыбалка</span><span>● Кемпинг</span><span>● Путешествия</span></div>
       </section>}
       {page === 'Журнал' && <section className="section-page journal-page">
