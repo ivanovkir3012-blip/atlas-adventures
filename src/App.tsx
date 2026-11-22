@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace, FuturePlace, allFuturePlaces, putFuturePlace, deleteFuturePlace, AdventureRoute, allRoutes, putRoute } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
@@ -71,6 +71,14 @@ export default function App() {
   const [mapFilter, setMapFilter] = useState('Все');
   const [mapMessage, setMapMessage] = useState('');
   const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
+  const [futurePlaces, setFuturePlaces] = useState<FuturePlace[]>([]);
+  const [routes, setRoutes] = useState<AdventureRoute[]>([]);
+  const [mapLayers, setMapLayers] = useState({ visited: true, routes: true, future: true });
+  const [routeDrawing, setRouteDrawing] = useState(false);
+  const [routeDraft, setRouteDraft] = useState<Array<{lat:number;lng:number}>>([]);
+  const [routeTitle, setRouteTitle] = useState('');
+  const [futurePlaceModal, setFuturePlaceModal] = useState(false);
+  const [futurePlaceError, setFuturePlaceError] = useState('');
   const [placeModal, setPlaceModal] = useState(false);
   const [placeEdit, setPlaceEdit] = useState<SavedPlace | null>(null);
   const [activeSavedPlace, setActiveSavedPlace] = useState<SavedPlace | null>(null);
@@ -82,11 +90,15 @@ export default function App() {
   const refresh = () => all().then(setRows);
   const refreshJournal = () => allJournal().then(setJournalRows);
   const refreshSavedPlaces = () => allSavedPlaces().then(setSavedPlaces);
+  const refreshFuturePlaces = () => allFuturePlaces().then(setFuturePlaces);
+  const refreshRoutes = () => allRoutes().then(setRoutes);
 
   useEffect(() => {
     refresh();
     refreshJournal();
     refreshSavedPlaces();
+    refreshFuturePlaces();
+    refreshRoutes();
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
@@ -120,7 +132,7 @@ export default function App() {
       const w = window as any;
       const loadScript = (src:string, marker:string) => new Promise<void>((resolve,reject)=>{
         const existing=document.querySelector('script['+marker+']') as HTMLScriptElement|null;
-        if(existing){if((w as any).maplibregl&&marker==='data-maplibre'){resolve();return;}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(),{once:true});return;}
+        if(existing){if(w.maplibregl&&marker==='data-maplibre'){resolve();return;}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(),{once:true});return;}
         const script=document.createElement('script');script.src=src;script.setAttribute(marker,'1');script.onload=()=>resolve();script.onerror=()=>reject();document.body.appendChild(script);
       });
       if(!w.maplibregl){
@@ -135,66 +147,68 @@ export default function App() {
       map.addControl(new w.maplibregl.ScaleControl({maxWidth:120,unit:'metric'}),'bottom-left');
       map.on('load',()=>{
         if(cancelled)return;
-        map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
-        map.addSource('atlas-street',{type:'raster',tiles:['https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'&copy; OpenStreetMap contributors'});
-        map.addSource('atlas-topo',{type:'raster',tiles:['https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM | OpenTopoMap'});
+        map.addSource('atlas-satellite',{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'});
+        map.addSource('atlas-street',{type:'raster',tiles:['https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OpenStreetMap contributors'});
+        map.addSource('atlas-topo',{type:'raster',tiles:['https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'© OpenStreetMap contributors, SRTM | OpenTopoMap'});
         const firstVector=(map.getStyle().layers||[]).find((layer:any)=>layer.type!=='background')?.id;
         map.addLayer({id:'atlas-satellite-layer',type:'raster',source:'atlas-satellite',layout:{visibility:'visible'},paint:{'raster-opacity':1}},firstVector);
         map.addLayer({id:'atlas-street-layer',type:'raster',source:'atlas-street',layout:{visibility:'none'}},firstVector);
         map.addLayer({id:'atlas-topo-layer',type:'raster',source:'atlas-topo',layout:{visibility:'none'}},firstVector);
         const layerControl=document.createElement('div');layerControl.className='maplibregl-ctrl maplibregl-ctrl-group atlas-map-layer-switcher';
-        const choices=[['hybrid','Спутник + подписи'],['street','Схема'],['topo','Топографическая']];
-        choices.forEach(([key,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.title=label;button.className=key==='hybrid'?'active':'';button.addEventListener('click',()=>{['hybrid','street','topo'].forEach(mode=>{const id=mode==='hybrid'?'atlas-satellite-layer':mode==='street'?'atlas-street-layer':'atlas-topo-layer';map.setLayoutProperty(id,'visibility',mode===key?'visible':'none');});Array.from(layerControl.querySelectorAll('button')).forEach((node:any)=>node.classList.toggle('active',node===button));});layerControl.appendChild(button);});
-        const layerControlPlugin={onAdd:()=>layerControl,onRemove:()=>layerControl.remove()};
-        map.addControl(layerControlPlugin,'top-left');
-        const layers=(map.getStyle().layers||[]);
-        layers.forEach((layer:any)=>{
-          if(layer.id==='atlas-satellite-layer')return;
-          if(layer.type==='background'){map.setLayoutProperty(layer.id,'visibility','none');return;}
-          if(layer.type!=='symbol'){map.setLayoutProperty(layer.id,'visibility','none');return;}
-          const id=String(layer.id).toLowerCase();
-          if(id.includes('poi')||id.includes('housenumber')||id.includes('transit')||id.includes('airport'))map.setLayoutProperty(layer.id,'visibility','none');
-        });
-        const markerIcon=(color:string)=>createMapMarkerElement(color);
-        const visible=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
-        const visiblePlaces=savedPlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter);
-        visible.forEach(row=>{
-          const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
-          const marker=new w.maplibregl.Marker({element:markerIcon(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
-          const photo=coverUrls[row.id];const safeTitle=String(row.title||'Выезд').replace(/[&<>"]/g,'');const safePlace=String(row.place||'Место не указано').replace(/[&<>"]/g,'');
-          const popup=document.createElement('div');popup.className='atlas-map-popup';popup.innerHTML=(photo?'<img src="'+photo+'" alt="" style="width:190px;height:105px;object-fit:cover;border-radius:6px;margin-bottom:6px"/><br>':'')+'<strong>'+safeTitle+'</strong><br>'+String(row.category).replace(/[&<>"]/g,'')+' · '+String(row.date)+'<br>'+safePlace;
-          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
-          marker.getElement().addEventListener('click',()=>setReport(row));
-        });
-        visiblePlaces.forEach(place=>{
-          const marker=new w.maplibregl.Marker({element:markerIcon('#d6ad55'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
-          const popup=document.createElement('div');popup.className='atlas-map-popup';
-          const title=document.createElement('strong');title.textContent=place.title;popup.appendChild(title);
-          const meta=document.createElement('div');meta.textContent=place.type+' · '+place.category;popup.appendChild(meta);
+        [['hybrid','Спутник + подписи'],['street','Схема'],['topo','Топографическая']].forEach(([key,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.title=label;button.className=key==='hybrid'?'active':'';button.addEventListener('click',()=>{['hybrid','street','topo'].forEach(mode=>{const id=mode==='hybrid'?'atlas-satellite-layer':mode==='street'?'atlas-street-layer':'atlas-topo-layer';map.setLayoutProperty(id,'visibility',mode===key?'visible':'none');});Array.from(layerControl.querySelectorAll('button')).forEach((node:any)=>node.classList.toggle('active',node===button));});layerControl.appendChild(button);});
+        map.addControl({onAdd:()=>layerControl,onRemove:()=>layerControl.remove()},'top-left');
+        (map.getStyle().layers||[]).forEach((layer:any)=>{if(layer.id==='atlas-satellite-layer')return;if(layer.type==='background'){map.setLayoutProperty(layer.id,'visibility','none');return;}if(layer.type!=='symbol')map.setLayoutProperty(layer.id,'visibility','none');});
+        const marker=(color:string)=>createMapMarkerElement(color);
+        if(mapLayers.visited){
+          const filtered=rows.filter(row=>row.coordinates&&(mapFilter==='Все'||row.category===mapFilter));
+          const byCoordinate=new Map<string,Outing[]>();
+          filtered.forEach(row=>{const key=row.coordinates!.lat.toFixed(4)+','+row.coordinates!.lng.toFixed(4);byCoordinate.set(key,[...(byCoordinate.get(key)||[]),row]);});
+          byCoordinate.forEach(group=>{
+            const row=group[0];const color=row.category==='Охота'?'#d7b65d':row.category==='Рыбалка'?'#65a9d2':row.category==='Кемпинг'?'#75ad79':'#b18bd0';
+            const pin=new w.maplibregl.Marker({element:marker(color),anchor:'bottom'}).setLngLat([row.coordinates!.lng,row.coordinates!.lat]);
+            const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent=group.length>1?row.place+' · '+group.length+' посещения':row.title;popup.appendChild(title);
+            group.slice(0,8).forEach(item=>{const line=document.createElement('div');line.textContent=item.title+' · '+item.date;popup.appendChild(line);});
+            pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+            pin.getElement().addEventListener('click',()=>setReport(row));
+          });
+          savedPlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter).forEach(place=>{
+            const pin=new w.maplibregl.Marker({element:marker('#d6ad55'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
+            const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent=place.title;popup.appendChild(title);
+            const meta=document.createElement('div');meta.textContent=place.type+' · '+place.category;popup.appendChild(meta);
+            if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
+            pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+            pin.getElement().addEventListener('click',()=>setActiveSavedPlace(place));
+          });
+        }
+        if(mapLayers.future) futurePlaces.filter(place=>mapFilter==='Все'||place.category===mapFilter).forEach(place=>{
+          const pin=new w.maplibregl.Marker({element:marker('#8fc7a0'),anchor:'bottom'}).setLngLat([place.lng,place.lat]);
+          const popup=document.createElement('div');popup.className='atlas-map-popup';const title=document.createElement('strong');title.textContent='Хочу посетить: '+place.title;popup.appendChild(title);
+          const meta=document.createElement('div');meta.textContent=[place.country,place.region,place.priority].filter(Boolean).join(' · ');popup.appendChild(meta);
           if(place.description){const desc=document.createElement('p');desc.textContent=place.description;popup.appendChild(desc);}
-          marker.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
-          marker.getElement().addEventListener('click',()=>setActiveSavedPlace(place));
+          pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).addTo(map);
+        });
+        if(mapLayers.routes) routes.filter(route=>route.geometry.length>1).forEach(route=>{
+          const sourceId='route-'+route.id.replace(/[^a-zA-Z0-9_-]/g,'');
+          map.addSource(sourceId,{type:'geojson',data:{type:'Feature',properties:{title:route.title},geometry:{type:'LineString',coordinates:route.geometry}}});
+          map.addLayer({id:sourceId+'-line',type:'line',source:sourceId,layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#d6ad55','line-width':3,'line-opacity':0.9}});
         });
         map.on('click',(event:any)=>{
           const target=event.originalEvent?.target as HTMLElement;
           if(target?.closest('.maplibregl-marker,.maplibregl-popup,.maplibregl-ctrl'))return;
           const lat=Number(event.lngLat.lat.toFixed(6));const lng=Number(event.lngLat.lng.toFixed(6));
+          if(routeDrawing){setRouteDraft(current=>[...current,{lat,lng}]);setMapMessage('Точка маршрута добавлена. Добавь следующую или сохрани маршрут.');return;}
           setPickedCoordinates({lat,lng});setMapMessage('Точка выбрана. Можно сохранить её отдельно или создать выезд.');
-          const el=markerIcon('#d7b65d');
-          const marker=new w.maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
-          const popup=document.createElement('div');popup.className='atlas-map-popup atlas-map-picked-popup';popup.innerHTML='<span>Выбранная точка</span><strong>'+lat.toFixed(6)+', '+lng.toFixed(6)+'</strong>';
-          marker.setPopup(new w.maplibregl.Popup({offset:22,closeButton:false,closeOnClick:false}).setDOMContent(popup)).togglePopup();
-          if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();
-          (map as any).atlasPickedMarker=marker;
+          const pin=new w.maplibregl.Marker({element:marker('#d7b65d'),anchor:'bottom'}).setLngLat([lng,lat]).addTo(map);
+          if((map as any).atlasPickedMarker)(map as any).atlasPickedMarker.remove();(map as any).atlasPickedMarker=pin;
+          const popup=document.createElement('div');popup.className='atlas-map-popup';popup.textContent=lat.toFixed(6)+', '+lng.toFixed(6);
+          pin.setPopup(new w.maplibregl.Popup({offset:22}).setDOMContent(popup)).togglePopup();
         });
-        if(visible.length){const bounds=new w.maplibregl.LngLatBounds();visible.forEach(row=>bounds.extend([row.coordinates!.lng,row.coordinates!.lat]));map.fitBounds(bounds,{padding:60,maxZoom:11,duration:0});}
       });
       map.on('error',(event:any)=>{if(event?.error)setMapMessage('Ошибка загрузки карты или картографических данных. Проверь подключение к интернету.');});
     };
     init().catch(()=>setMapMessage('Не удалось загрузить карту. Проверь подключение к интернету.'));
     return ()=>{cancelled=true;if(mapInstance.current){mapInstance.current.remove();mapInstance.current=null;}};
-  },[page,rows,savedPlaces,mapFilter,coverUrls]);
-
+  },[page,rows,savedPlaces,futurePlaces,routes,mapFilter,coverUrls,mapLayers,routeDrawing]);
   useEffect(() => {
     let active = true;
     const urls: Record<string, string> = {};
