@@ -2255,51 +2255,23 @@ html,body,#root{min-height:100%;background:transparent!important}
 @media(max-width:620px){.profile-settings-form{grid-template-columns:1fr}}
 
 
-/* Tablet navigation alignment: distribute tabs evenly across the full row. */
-@media(min-width:621px) and (max-width:1000px){
-  .topbar>.main-nav{justify-content:space-between}
-}
-
-/* Photo download actions */
-.journal-download{align-self:flex-start;flex:0 0 auto;border:1px solid rgba(218,174,112,.45);border-radius:7px;background:rgba(205,139,88,.13);color:#e8c18f;padding:7px 10px;font-size:17px;cursor:pointer}
-.journal-download:hover{background:rgba(205,139,88,.26)}
-.photo-download-button{margin-left:12px;padding:8px 13px;font-size:12px}
-.report-media .report-media-delete{white-space:nowrap}
-@media(max-width:620px){.journal-download{padding:6px 8px}.photo-download-button{display:block;margin:10px 0 0}}
-
-
-/* Mobile navigation: keep tabs on one scrollable row without squeezing or overlap. */
-@media(max-width:1000px){
-  .topbar{display:flex;flex-wrap:wrap;align-items:center;row-gap:10px}
-  .topbar>.brand{order:1;flex:0 0 auto;min-width:0}
-  .topbar>.connection{order:2;margin-left:auto;flex:0 0 auto}
-  .topbar>.main-nav{
-    order:3;display:flex;flex:0 0 100%;width:100%;min-width:0;
-    justify-content:flex-start;align-items:stretch;gap:5px;
-    overflow-x:auto;overflow-y:hidden;white-space:nowrap;
-    -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
-    scrollbar-width:none;padding:2px 0 5px;
-  }
-  .topbar>.main-nav::-webkit-scrollbar{display:none}
-  .topbar>.main-nav button{
-    display:block;flex:0 0 auto;width:auto;min-width:max-content;
-    white-space:nowrap;word-break:keep-all;overflow-wrap:normal;
-    padding:11px 12px 10px;line-height:1.2;
-  }
-}
-@media(max-width:620px){
-  .topbar{padding:9px 0 7px;column-gap:8px}
-  .topbar>.main-nav{gap:3px}
-  .topbar>.main-nav button{font-size:10px;padding:10px 11px 9px}
-}
-
-/* Final tablet override: must follow the mobile navigation rules above. */
-@media (min-width:621px) and (max-width:1000px){
-  .topbar>.main-nav{
-    flex:1 1 100%!important;
-    width:100%!important;
-    justify-content:space-between!important;
-    gap:8px!important;
-  }
   .topbar>.main-nav button{flex:0 0 auto!important}
+}
+
+
+/* Navigation is the only visible topbar item: occupy the full bar width.
+   This is viewport-independent because tablet browser CSS widths vary with display scaling. */
+.topbar{display:flex;flex-wrap:wrap!important;align-items:center}
+.topbar>.main-nav{
+  display:flex;flex:0 0 100%!important;width:100%!important;min-width:0;
+  justify-content:space-between!important;align-items:center;gap:8px;
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  scrollbar-width:none;
+}
+.topbar>.main-nav::-webkit-scrollbar{display:none}
+.topbar>.main-nav button{flex:0 0 auto;white-space:nowrap;word-break:keep-all}
+@media(max-width:620px){
+  .topbar>.main-nav{justify-content:space-between!important;gap:3px}
+  .topbar>.main-nav button{font-size:10px;padding:10px 11px 9px}
 }
