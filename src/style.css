@@ -2239,3 +2239,17 @@ html,body,#root{min-height:100%;background:transparent!important}
  .storage-breakdown>div,.storage-records>span{font-size:10px}
  .storage-quota>div:first-child{flex-direction:column;gap:5px}
 }
+
+
+/* Profile and device settings */
+.profile-setting-card{grid-column:1/-1}
+.profile-settings-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.profile-settings-form>label{display:grid;gap:7px;color:#d9c7a8;font-size:12px}
+.profile-settings-form input{width:100%;min-height:42px;padding:10px 12px;border:1px solid rgba(220,190,126,.28);border-radius:8px;background:rgba(0,0,0,.24);color:inherit;font:inherit}
+.profile-device-info{grid-column:1/-1;display:grid;gap:5px;padding:14px;border:1px solid rgba(220,190,126,.2);border-radius:8px;background:rgba(0,0,0,.16)}
+.profile-device-info strong{color:#e8c98e;font:700 15px 'Playfair Display',Georgia,serif}
+.profile-device-info span{color:#f2e8d6;font-size:13px}
+.profile-device-info small{color:#b9ad9a;font-size:11px;line-height:1.5}
+.profile-settings-actions{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.profile-settings-actions span{color:#b9c99e;font-size:12px}
+@media(max-width:620px){.profile-settings-form{grid-template-columns:1fr}}
