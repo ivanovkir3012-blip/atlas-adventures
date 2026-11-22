@@ -1,9 +1,10 @@
-const CACHE_NAME = 'atlas-shell-v3';
+const CACHE_NAME = 'atlas-shell-v4';
 const APP_BASE = new URL('./', self.registration.scope);
 const APP_FILES = [
   APP_BASE.href,
   new URL('index.html', APP_BASE).href,
   new URL('manifest.webmanifest', APP_BASE).href,
+  new URL('images/%D0%91%D1%80%D0%BE%D0%BD%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%8D%D0%BC%D0%B1%D0%BB%D0%B5%D0%BC%D0%B0%20%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B%20%D1%81%20%D0%BF%D1%80%D0%B8%D1%80%D0%BE%D0%B4%D0%BD%D1%8B%D0%BC%20%D0%B3%D0%B5%D1%80%D0%B1%D0%BE%D0%BC.png', APP_BASE).href,
 ];
 
 self.addEventListener('install', event => {
