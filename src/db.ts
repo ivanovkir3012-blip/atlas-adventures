@@ -9,6 +9,50 @@ export type TimelineEntry = {
 
 export type SavedPlace = { id: string; title: string; type: 'Избранное место' | 'Стоянка' | 'Рыбалка' | 'Наблюдение' | 'Другое'; category: Cat; lat: number; lng: number; description: string; createdAt: string; updatedAt: string };
 
+export type FuturePlace = {
+  id: string;
+  title: string;
+  country?: string;
+  region?: string;
+  category: Cat;
+  lat: number;
+  lng: number;
+  description: string;
+  priority: 'Низкий' | 'Средний' | 'Высокий';
+  note?: string;
+  linkedSavedPlaceId?: string;
+  linkedOutingId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RouteWaypoint = {
+  id: string;
+  title: string;
+  lat: number;
+  lng: number;
+  kind: 'start' | 'stop' | 'finish';
+  note?: string;
+};
+
+export type AdventureRoute = {
+  id: string;
+  title: string;
+  coverMediaId?: string;
+  date: string;
+  description: string;
+  category: Cat;
+  linkedOutingId?: string;
+  waypoints: RouteWaypoint[];
+  /** Ordered [longitude, latitude] pairs; geometry is stored, never inferred as a straight line. */
+  geometry: [number, number][];
+  distanceKm?: number;
+  notes: string;
+  photoMediaIds: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type JournalPhoto = { id: string; name: string; mimeType: string; size: number; blob: Blob };
 export type JournalEntry = { id: string; title: string; type: 'Наблюдения' | 'Заметки' | 'События'; date: string; place: string; description: string; photos: JournalPhoto[]; createdAt: string; updatedAt: string };
 
@@ -51,12 +95,12 @@ export type Outing = {
 };
 
 const DB = 'atlas-db';
-const VERSION = 4;
+const VERSION = 5;
 const OUTINGS = 'outings';
 const MEDIA = 'media';
 const SETTINGS = 'settings';
 const JOURNAL = 'journal';
-const PLACES = 'savedPlaces';
+const PLACES = 'savedPlaces';\nconst FUTURE_PLACES = 'futurePlaces';\nconst ROUTES = 'routes';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -270,4 +314,56 @@ export async function deleteSavedPlace(id: string): Promise<void> {
   tx.objectStore(PLACES).delete(id);
   await transactionDone(tx);
   database.close();
+}
+
+
+/** Future destinations are stored separately from visited places and outings. */
+export async function allFuturePlaces(): Promise<FuturePlace[]> {
+  const database = await openDb();
+  const tx = database.transaction(FUTURE_PLACES, 'readonly');
+  const rows = await requestResult(tx.objectStore(FUTURE_PLACES).getAll()) as FuturePlace[];
+  await transactionDone(tx);
+  database.close();
+  return rows.sort((a,b) => b.priority.localeCompare(a.priority, 'ru') || a.title.localeCompare(b.title, 'ru'));
+}
+
+export async function putFuturePlace(value: FuturePlace): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(FUTURE_PLACES, 'readwrite');
+  tx.objectStore(FUTURE_PLACES).put(value);
+  await transactionDone(tx);
+  database.close();
+}
+
+export async function deleteFuturePlace(id: string): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(FUTURE_PLACES, 'readwrite');
+  tx.objectStore(FUTURE_PLACES).delete(id);
+  await transactionDone(tx);
+  database.close();
+}
+
+/** Routes keep ordered stops and an explicit saved path geometry. */
+export async function allRoutes(): Promise<AdventureRoute[]> {
+  const database = await openDb();
+  const tx = database.transaction(ROUTES, 'readonly');
+  const rows = await requestResult(tx.objectStore(ROUTES).getAll()) as AdventureRoute[];
+  await transactionDone(tx);
+  database.close();
+  return rows.sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function putRoute(value: AdventureRoute): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(ROUTES, 'readwrite');
+  tx.objectStore(ROUTES).put(value);
+  await transactionDone(tx);
+  database.close();
+}
+
+export async function deleteRoute(id: string): Promise<void> {
+  const database = await openDb();
+  const tx = database.transaction(ROUTES, 'readwrite');
+  tx.objectStore(ROUTES).delete(id);
+  await transactionDone(tx);
 }
