@@ -125,6 +125,12 @@ function openDb(): Promise<IDBDatabase> {
       if (!database.objectStoreNames.contains(PLACES)) {
         database.createObjectStore(PLACES, { keyPath: 'id' });
       }
+      if (!database.objectStoreNames.contains(FUTURE_PLACES)) {
+        database.createObjectStore(FUTURE_PLACES, { keyPath: 'id' });
+      }
+      if (!database.objectStoreNames.contains(ROUTES)) {
+        database.createObjectStore(ROUTES, { keyPath: 'id' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
