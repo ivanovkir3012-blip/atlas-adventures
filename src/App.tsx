@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace, createFullBackup, restoreFullBackup, getStorageSummary, StorageSummary } from './db';
+import { all, put, softDelete, deleteMedia, Cat, Outing, saveMedia, getMediaForOuting, MediaItem, JournalEntry, JournalPhoto, allJournal, putJournal, deleteJournal, SavedPlace, allSavedPlaces, putSavedPlace, deleteSavedPlace, createFullBackup, restoreFullBackup, getStorageSummary, StorageSummary, purgeExpiredTrash } from './db';
 
 const cats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг', 'Путешествия'];
 const homeCats: Cat[] = ['Охота', 'Рыбалка', 'Кемпинг'];
@@ -109,13 +109,25 @@ export default function App() {
   }, [page, rows, journalRows]);
 
   useEffect(() => {
-    refresh();
-    refreshJournal();
-    refreshSavedPlaces();
+    let active = true;
+    const loadInitialData = async () => {
+      try {
+        await purgeExpiredTrash();
+      } catch (error) {
+        console.warn('Не удалось очистить просроченные записи корзины:', error);
+      }
+      if (!active) return;
+      await Promise.all([refresh(), refreshJournal(), refreshSavedPlaces()]);
+    };
+    void loadInitialData();
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update);
     addEventListener('offline', update);
-    return () => { removeEventListener('online', update); removeEventListener('offline', update); };
+    return () => {
+      active = false;
+      removeEventListener('online', update);
+      removeEventListener('offline', update);
+    };
   }, []);
 
 
