@@ -692,8 +692,15 @@ export default function App() {
     <header className="topbar"><nav className="main-nav">{pages.map(item => <button key={item} className={page === item ? 'selected' : ''} onClick={() => setPage(item)}>{item === 'Журнал' ? 'Полевой журнал' : item}</button>)}</nav><div className={online ? 'connection online' : 'connection offline'}><i />{online ? 'В сети' : 'Офлайн'}</div></header>
     <main className="page-content">
       {page === 'Главная' && <>
-        <section className="dashboard-hero">
+        <section className="dashboard-hero" style={{backgroundImage:`linear-gradient(90deg,rgba(8,13,17,.58),rgba(8,13,17,.12)),url("${heroImage}")`}}>
           <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
+        </section>
+        <section className="dashboard-section latest-outing-section">
+          <div className="section-title"><div><h2>Последний выезд</h2></div><button className="text-button" onClick={()=>setPage('Выезды')}>Все выезды ↗</button></div>
+          {rows.length ? (()=>{const latest=[...rows].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt))[0];return <button type="button" className="latest-outing-card" onClick={()=>setReport(latest)}>
+            {coverUrls[latest.id]?<img src={coverUrls[latest.id]} alt="" className="latest-outing-photo"/>:<div className="latest-outing-placeholder">✦</div>}
+            <span className="latest-outing-copy"><small>{new Date(latest.date+'T12:00:00').toLocaleDateString('ru-RU')} · {latest.category}</small><strong>{latest.title||'Выезд без названия'}</strong><span>{latest.place||'Место не указано'}</span></span><i>Открыть ↗</i>
+          </button>})() : <div className="latest-outing-empty"><div><strong>История начинается с первого выезда</strong><span>Добавь поездку, чтобы она появилась здесь.</span></div><button type="button" className="gold-button" onClick={openNew}>＋ Добавить выезд</button></div>}
         </section>
         <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index} category-emblem-tile`} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="category-emblem-art"><img src={pics[cat]} alt="" /></span><small>{rows.filter(row=>row.category===cat).length} выездов</small></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
