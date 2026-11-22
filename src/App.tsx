@@ -762,6 +762,11 @@ export default function App() {
         <section className="dashboard-hero" style={{backgroundImage:`linear-gradient(90deg,rgba(8,13,17,.58),rgba(8,13,17,.12)),url("${heroImage}")`}}>
           <div className="hero-copy"><h1>Создавай жизнь,<br/>которую хочется вспоминать.</h1></div>
         </section>
+        {(!lastBackupInfo || Date.now()-new Date(lastBackupInfo.createdAt).getTime()>30*24*60*60*1000) && <section className="home-backup-reminder" role="status">
+          <div className="home-backup-reminder-icon">↥</div>
+          <div className="home-backup-reminder-copy"><strong>{lastBackupInfo?'Пора обновить резервную копию':'Защити историю своих приключений'}</strong><span>{lastBackupInfo?'С последней отмеченной копии прошло больше 30 дней.':'Ты ещё не создавал резервную копию на этом устройстве.'} Сохрани выезды, фотографии и журнал.</span></div>
+          <button type="button" onClick={()=>setPage('Настройки')}>Создать копию ↗</button>
+        </section>}
         <section className="category-grid">{homeCats.map((cat,index) => <button key={cat} className={`category-tile category-${index} category-emblem-tile`} onClick={()=>{setCategory(cat);setPage('Выезды')}}><span className="category-emblem-art"><img src={pics[cat]} alt="" /></span><small>{rows.filter(row=>row.category===cat).length} выездов</small></button>)}</section>
         <section className="dashboard-section dashboard-stats-section">
           <div className="section-title"><div><h2>История выездов</h2></div></div>
