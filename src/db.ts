@@ -100,7 +100,9 @@ const OUTINGS = 'outings';
 const MEDIA = 'media';
 const SETTINGS = 'settings';
 const JOURNAL = 'journal';
-const PLACES = 'savedPlaces';\nconst FUTURE_PLACES = 'futurePlaces';\nconst ROUTES = 'routes';
+const PLACES = 'savedPlaces';
+const FUTURE_PLACES = 'futurePlaces';
+const ROUTES = 'routes';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
