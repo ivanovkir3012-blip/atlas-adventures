@@ -2255,6 +2255,11 @@ html,body,#root{min-height:100%;background:transparent!important}
 @media(max-width:620px){.profile-settings-form{grid-template-columns:1fr}}
 
 
+/* Tablet navigation alignment: distribute tabs evenly across the full row. */
+@media(min-width:621px) and (max-width:1000px){
+  .topbar>.main-nav{justify-content:space-between}
+}
+
 /* Photo download actions */
 .journal-download{align-self:flex-start;flex:0 0 auto;border:1px solid rgba(218,174,112,.45);border-radius:7px;background:rgba(205,139,88,.13);color:#e8c18f;padding:7px 10px;font-size:17px;cursor:pointer}
 .journal-download:hover{background:rgba(205,139,88,.26)}
