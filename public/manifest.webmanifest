@@ -1,1 +1,1 @@
-{"name":"Атлас приключений","short_name":"Атлас","start_url":"/","display":"standalone","background_color":"#102a22","theme_color":"#102a22","lang":"ru"}
+{"id":"./","name":"Атлас приключений","short_name":"Атлас","start_url":"./","scope":"./","display":"standalone","background_color":"#102a22","theme_color":"#102a22","lang":"ru"}
