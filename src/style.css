@@ -2177,3 +2177,9 @@ html,body,#root{min-height:100%;background:transparent!important}
 .backup-last-info{display:grid;gap:4px;margin:12px 0;padding:11px 13px;border-left:2px solid #d69a68;background:rgba(214,154,104,.08)}
 .backup-last-info span{font-size:10px;color:#bcae9b}
 .backup-last-info strong{font:600 14px 'Manrope',sans-serif;color:#f0d5b4}
+
+
+.backup-integrity-ok{color:#d8b77a!important;font-size:10px}
+.backup-reminder{display:grid;gap:5px;margin:12px 0;padding:12px 14px;border:1px solid rgba(214,154,104,.45);border-radius:7px;background:linear-gradient(120deg,rgba(111,67,43,.2),rgba(35,31,28,.45))}
+.backup-reminder strong{font:600 14px 'Playfair Display',Georgia,serif;color:#f0c99e}
+.backup-reminder span{font-size:11px;line-height:1.5;color:#c9b9a7}
