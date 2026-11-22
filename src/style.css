@@ -2127,3 +2127,11 @@ html,body,#root{min-height:100%;background:transparent!important}
    height:190px;flex-basis:190px;
  }
 }
+
+
+/* Remove the unwanted green divider from every home-page statistic image card. */
+.dashboard-stats-section .stat-grid-home .stat-art-card strong{
+  border-top:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
