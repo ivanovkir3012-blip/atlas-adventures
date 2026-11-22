@@ -632,8 +632,8 @@ export default function App() {
     setSaveError('');
     try {
       const selected = Array.from(fileList);
-      if (selected.some(file => !file.type.startsWith('image/'))) {
-        setSaveError('Можно загружать только фотографии. Видео не поддерживается.');
+      if (selected.some(file => !file.type.startsWith('image/') && !file.type.startsWith('video/'))) {
+        setSaveError('Можно загружать только фотографии и видео. Этот формат не поддерживается.');
         return;
       }
       const captured: File[] = [];
@@ -797,11 +797,11 @@ export default function App() {
         </div>
       </div>
       <div className="form-section"><h3>Заметки</h3><textarea name="note" rows={5} defaultValue={edit?.note ?? ''} placeholder="Запиши всё, что захочешь сохранить об этом выезде..." /></div>
-      <div className="form-section"><h3>Фотографии</h3>
-        <label className="file-picker">＋ Добавить фотографии<input type="file" accept="image/*" multiple onChange={e => { void captureSelectedFiles(e.currentTarget.files); e.currentTarget.value = ''; }} /></label>
-        {files.length > 0 && <p className="file-summary">Файлов подготовлено: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
+      <div className="form-section"><h3>Фото и видео</h3>
+        <label className="file-picker">＋ Добавить фото и видео<input type="file" accept="image/*,video/*" multiple onChange={e => { void captureSelectedFiles(e.currentTarget.files); e.currentTarget.value = ''; }} /></label>
+        {files.length > 0 && <p className="file-summary">Подготовлено: {files.filter(file => file.type.startsWith('image/')).length} фото · {files.filter(file => file.type.startsWith('video/')).length} видео · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
         <div className="media-existing"><label>Главное фото выезда<select key={files.map(file => file.name).join('|')} name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.findIndex(file => file.type.startsWith('image/')) >= 0 ? `new:${files.findIndex(file => file.type.startsWith('image/'))}` : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
-        <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
+        <small className="muted-note">Фото и видео сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
       </div>
       {saveError && <div className="save-error" role="alert">{saveError}</div>}
       <div className="modal-actions"><button type="button" className="outline-button" disabled={isSaving} onClick={() => { setModal(false); setEdit(null); setSaveError(''); }}>Отмена</button><button className="gold-button" type="submit" disabled={isSaving}>{isSaving ? 'Сохраняем…' : 'Сохранить выезд'}</button></div>
