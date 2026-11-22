@@ -1765,3 +1765,73 @@ input,select,textarea{
 .saved-place-modal{max-width:560px}
 
 
+
+
+/* Statistics — Atlas visual language: forest graphite, antique bronze and expedition typography. */
+.stats-page{position:relative;isolation:isolate;padding:26px 0 38px}
+.stats-page:before{content:"";position:absolute;inset:0 -18px auto;height:220px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 18% 0%,rgba(91,119,77,.19),transparent 65%)}
+.stats-page>.eyebrow{color:#d7b875;letter-spacing:2.2px}
+.stats-page>h1{margin:7px 0 18px;color:#f1ead9;font:700 clamp(32px,4vw,42px)/1.1 'Playfair Display',Georgia,serif;letter-spacing:-.5px}
+.stats-page .stats-controls{margin:18px 0 22px;padding:13px 15px;border:1px solid rgba(196,163,94,.32);border-radius:12px;background:linear-gradient(115deg,rgba(24,51,38,.94),rgba(12,30,22,.94));box-shadow:inset 0 1px rgba(255,255,255,.035),0 10px 28px rgba(0,0,0,.16)}
+.stats-page .stats-period button{padding:9px 15px;border:1px solid rgba(196,163,94,.36);border-radius:7px;background:rgba(5,18,12,.46);color:#c9c6b7;font-size:11px;font-weight:700;transition:background .2s,border-color .2s,color .2s}
+.stats-page .stats-period button:hover{border-color:#d4b36d;color:#f2dfb2}
+.stats-page .stats-period button.active{border-color:#d1ad65;background:linear-gradient(135deg,#d9bd7c,#a98545);color:#17251b;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.stats-page .stats-selectors label{color:#d7c69d;font-size:11px;font-weight:600}
+.stats-page .stats-selectors select{border-color:rgba(196,163,94,.38);border-radius:7px;background:#0c2118;color:#f0e6cf}
+.stats-page .stats-panel{position:relative;margin:17px 0;padding:21px 22px;border:1px solid rgba(194,160,91,.42);border-radius:13px;background:linear-gradient(145deg,rgba(25,54,40,.96),rgba(12,31,23,.98));box-shadow:inset 0 1px rgba(255,255,255,.035),0 12px 30px rgba(0,0,0,.18);overflow:hidden}
+.stats-page .stats-panel:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#e2c780,rgba(194,160,91,.08));opacity:.7}
+.stats-page .stats-panel-heading{position:relative;align-items:center;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(196,163,94,.2)}
+.stats-page .stats-panel-heading h2{color:#ead9ad;font:700 21px 'Playfair Display',Georgia,serif;letter-spacing:.1px}
+.stats-page .stats-panel-heading span{color:#aebba9;font-size:10px;letter-spacing:.4px}
+.stats-page .category-donut{box-shadow:0 10px 28px rgba(0,0,0,.28),0 0 0 1px rgba(218,190,125,.16)}
+.stats-page .category-donut:before{background:#10251b;border-color:rgba(218,190,125,.2);box-shadow:inset 0 0 18px rgba(0,0,0,.35)}
+.stats-page .category-donut strong{color:#f1d99d;font-family:'Playfair Display',Georgia,serif}
+.stats-page .category-donut small{color:#b8c5b5}
+.stats-page .category-legend>div{color:#dce2d5}
+.stats-page .category-legend b{color:#f0d99e}
+.stats-page .category-legend small{color:#aebba9}
+.stats-page .legend-0{background:#d6b66f;box-shadow:0 0 8px #d6b66f55}
+.stats-page .legend-1{background:#78a89a}
+.stats-page .legend-2{background:#7799b3}
+.stats-page .legend-3{background:#b18c70}
+.stats-page .monthly-chart{padding:4px 2px 0}
+.stats-page .month-bar-track,.stats-page .hunting-bar-track{background:rgba(2,13,8,.38);border:1px solid rgba(196,163,94,.13);border-bottom:0}
+.stats-page .month-bar-track i{background:linear-gradient(180deg,#e8d18f 0%,#c29b55 55%,#806337 100%);box-shadow:0 0 12px rgba(210,176,105,.15)}
+.stats-page .month-column strong,.stats-page .hunting-column strong{color:#f0dfb6}
+.stats-page .month-column small,.stats-page .hunting-column small{color:#b5c1b2}
+.stats-page .hunting-legend{color:#cbd3c5}
+.stats-page .goose-dot{background:#d6b66f}.stats-page .duck-dot{background:#79aebd}
+.stats-page .hunting-bar-track .goose-bar{background:linear-gradient(180deg,#ead28f,#a98243)}
+.stats-page .hunting-bar-track .duck-bar{background:linear-gradient(180deg,#a5cbd2,#548b98)}
+.stats-page .hunting-total-row{padding-top:12px;border-top:1px solid rgba(196,163,94,.18);color:#bdc9b8}
+.stats-page .hunting-total-row b{color:#f0d99e}
+.stats-page .year-line-chart svg line{stroke:rgba(211,194,151,.25)}
+.stats-page .year-line-chart svg polyline{stroke:#d6b66f;filter:drop-shadow(0 2px 4px rgba(214,182,111,.22))}
+.stats-page .year-line-chart svg circle{fill:#f0d99e;stroke:#183326}
+.stats-page .year-line-chart svg text{fill:#f0d99e}
+.stats-page .year-line-chart svg .year-axis-label,.stats-page .year-line-chart>small{fill:#b4c0b1;color:#b4c0b1}
+.stats-page .year-stats-row{border-bottom-color:rgba(196,163,94,.17);color:#d6ddcf}
+.stats-page .year-stats-row b{color:#e7c982}
+.stats-page .record-stat-card{border:1px solid rgba(196,163,94,.28);border-radius:9px;background:linear-gradient(140deg,rgba(29,62,46,.8),rgba(12,30,22,.8));box-shadow:inset 0 1px rgba(255,255,255,.035)}
+.stats-page .record-stat-card small{color:#cbb987;letter-spacing:.35px}
+.stats-page .record-stat-card strong{color:#f0d99e;font-family:'Playfair Display',Georgia,serif}
+.stats-page .record-stat-card span{color:#b7c4b5}
+.stats-page .stats-empty{border:1px dashed rgba(196,163,94,.3);border-radius:9px;background:rgba(15,38,27,.55);color:#c2cdbd}
+@media(max-width:620px){
+ .stats-page{padding-top:14px}
+ .stats-page>h1{font-size:30px;margin-bottom:14px}
+ .stats-page .stats-controls{padding:11px;border-radius:10px;gap:10px}
+ .stats-page .stats-period button{font-size:10px}
+ .stats-page .stats-panel{padding:15px 13px;margin:13px 0;border-radius:11px}
+ .stats-page .stats-panel-heading{align-items:flex-start;flex-direction:column;gap:5px;margin-bottom:13px}
+ .stats-page .stats-panel-heading h2{font-size:18px}
+ .stats-page .category-chart-layout{grid-template-columns:112px minmax(0,1fr);gap:12px}
+ .stats-page .category-donut{width:112px}
+ .stats-page .category-donut strong{font-size:22px}
+ .stats-page .category-legend>div{font-size:9px}
+ .stats-page .monthly-chart{height:145px}
+ .stats-page .month-bar-track{height:96px}
+ .stats-page .hunting-chart{height:140px}
+ .stats-page .hunting-bar-track{height:96px}
+ .stats-page .year-stats-row{padding:10px 2px}
+}
