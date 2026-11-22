@@ -570,6 +570,27 @@ export default function App() {
   function openNew() { setEdit(null); setFiles([]); setSaveError(''); setModal(true); }
   function openEdit(row: Outing) { setEdit(row); setFiles([]); setModal(true); }
 
+  // Android content-provider File handles may expire after the picker closes.
+  // Copy the bytes immediately while the temporary permission is still valid.
+  async function captureSelectedFiles(fileList: FileList | null) {
+    if (!fileList?.length) return;
+    setSaveError('');
+    try {
+      const captured: File[] = [];
+      for (const source of Array.from(fileList)) {
+        const bytes = await source.arrayBuffer();
+        captured.push(new File([bytes], source.name, {
+          type: source.type || 'application/octet-stream',
+          lastModified: source.lastModified || Date.now(),
+        }));
+      }
+      setFiles(current => [...current, ...captured]);
+    } catch (error) {
+      console.error('Не удалось прочитать выбранные файлы:', error);
+      setSaveError('Не удалось прочитать один из выбранных файлов. Открой выбор файлов ещё раз и выбери их повторно. Не закрывай форму до завершения загрузки.');
+    }
+  }
+
   function renderRecent(items: Outing[]) {
     if (!items.length) return <div className="recent-empty"><span>✧</span><div><b>Первое приключение ещё впереди</b><small>Добавь выезд — здесь появится его фотография и история.</small></div><button className="outline-button" onClick={openNew}>Добавить</button></div>;
     return <div className="recent-list">{items.map(row => <button className="recent-line" key={row.id} onClick={() => setReport(row)}>
@@ -717,8 +738,8 @@ export default function App() {
       </div>
       <div className="form-section"><h3>Заметки</h3><textarea name="note" rows={5} defaultValue={edit?.note ?? ''} placeholder="Запиши всё, что захочешь сохранить об этом выезде..." /></div>
       <div className="form-section"><h3>Фотографии и видео</h3>
-        <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => setFiles(Array.from(e.target.files ?? []))} /></label>
-        {files.length > 0 && <p className="file-summary">Новых файлов выбрано: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
+        <label className="file-picker">＋ Добавить фото или видео<input type="file" accept="image/*,video/*" multiple onChange={e => { void captureSelectedFiles(e.currentTarget.files); e.currentTarget.value = ''; }} /></label>
+        {files.length > 0 && <p className="file-summary">Файлов подготовлено: {files.length} · {(files.reduce((n,f) => n + f.size, 0) / 1024 / 1024).toFixed(1)} МБ</p>}
         <div className="media-existing"><label>Главное фото выезда<select key={files.map(file => file.name).join('|')} name="coverChoice" defaultValue={edit?.coverMediaId ?? (files.findIndex(file => file.type.startsWith('image/')) >= 0 ? `new:${files.findIndex(file => file.type.startsWith('image/'))}` : '')}><option value="">Автоматически выбрать первое фото</option>{media.filter(item => item.type === 'image').map(item => <option value={item.id} key={item.id}>Уже добавлено: {item.name}</option>)}{files.map((file,index) => file.type.startsWith('image/') ? <option value={`new:${index}`} key={`new-${index}`}>Новое фото: {file.name}</option> : null)}</select></label></div>
         <small className="muted-note">Файлы сохраняются в локальном хранилище этого устройства. Облачная синхронизация между устройствами ещё не подключена.</small>
       </div>
