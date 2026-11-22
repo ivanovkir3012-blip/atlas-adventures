@@ -271,3 +271,93 @@ export async function deleteSavedPlace(id: string): Promise<void> {
   await transactionDone(tx);
   database.close();
 }
+
+
+/** Full portable backup: every IndexedDB store and every local Blob is included. */
+const BACKUP_STORES = [OUTINGS, MEDIA, SETTINGS, JOURNAL, PLACES] as const;
+const BACKUP_FORMAT = 'atlas-adventures-backup';
+const BACKUP_VERSION = 1;
+
+async function encodeBackupValue(value: any): Promise<any> {
+  if (value instanceof Blob) {
+    const bytes = new Uint8Array(await value.arrayBuffer());
+    let binary = '';
+    const chunk = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunk) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunk));
+    }
+    return { __atlasBlob: true, mimeType: value.type, data: btoa(binary) };
+  }
+  if (Array.isArray(value)) return Promise.all(value.map(encodeBackupValue));
+  if (value && typeof value === 'object') {
+    const result: Record<string, any> = {};
+    for (const [key, item] of Object.entries(value)) result[key] = await encodeBackupValue(item);
+    return result;
+  }
+  return value;
+}
+
+function decodeBackupValue(value: any): any {
+  if (value && typeof value === 'object' && value.__atlasBlob === true && typeof value.data === 'string') {
+    const binary = atob(value.data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: String(value.mimeType || 'application/octet-stream') });
+  }
+  if (Array.isArray(value)) return value.map(decodeBackupValue);
+  if (value && typeof value === 'object') {
+    const result: Record<string, any> = {};
+    for (const [key, item] of Object.entries(value)) result[key] = decodeBackupValue(item);
+    return result;
+  }
+  return value;
+}
+
+export async function createFullBackup(): Promise<Blob> {
+  const database = await openDb();
+  try {
+    const tx = database.transaction([...BACKUP_STORES], 'readonly');
+    const snapshots = await Promise.all(BACKUP_STORES.map(async name => {
+      const rows = await requestResult(tx.objectStore(name).getAll());
+      return [name, await encodeBackupValue(rows)] as const;
+    }));
+    await transactionDone(tx);
+    const payload = {
+      format: BACKUP_FORMAT,
+      version: BACKUP_VERSION,
+      databaseVersion: VERSION,
+      createdAt: new Date().toISOString(),
+      stores: Object.fromEntries(snapshots),
+    };
+    return new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  } finally {
+    database.close();
+  }
+}
+
+export async function restoreFullBackup(file: File): Promise<{ createdAt: string; counts: Record<string, number> }> {
+  const parsed = JSON.parse(await file.text());
+  if (!parsed || parsed.format !== BACKUP_FORMAT || parsed.version !== BACKUP_VERSION || !parsed.stores) {
+    throw new Error('Файл не распознан как резервная копия Атласа приключений.');
+  }
+  for (const name of BACKUP_STORES) {
+    if (!Array.isArray(parsed.stores[name])) throw new Error('В резервной копии отсутствуют данные раздела: ' + name);
+  }
+  const restored = Object.fromEntries(BACKUP_STORES.map(name => [name, parsed.stores[name].map(decodeBackupValue)]));
+  const database = await openDb();
+  try {
+    const tx = database.transaction([...BACKUP_STORES], 'readwrite');
+    for (const name of BACKUP_STORES) {
+      const store = tx.objectStore(name);
+      store.clear();
+      for (const row of restored[name]) store.put(row);
+    }
+    await transactionDone(tx);
+    return {
+      createdAt: String(parsed.createdAt || ''),
+      counts: Object.fromEntries(BACKUP_STORES.map(name => [name, restored[name].length])),
+    };
+  } finally {
+    database.close();
+  }
+}
