@@ -1932,3 +1932,35 @@ input,select,textarea{
 .stats-page .season-row b{text-align:right;color:#f0c99e;font:700 15px 'Playfair Display',Georgia,serif}
 @media(max-width:760px){.stats-page .record-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.stats-page .record-stats-grid{grid-template-columns:1fr}.stats-page .record-stat-card{min-height:94px}.stats-page .season-row{grid-template-columns:75px minmax(0,1fr) 24px;gap:8px}.stats-page .season-name{font-size:10px}}
+
+
+/* Home page fixes: visible scenic backdrop and latest outing feature. */
+.app-shell::before{z-index:0!important}
+.app-shell>.topbar,.app-shell>.page-content,.app-shell>.app-footer{position:relative;z-index:1}
+.dashboard-hero{background-repeat:no-repeat!important;background-size:cover!important;background-position:center 54%!important}
+.latest-outing-section{margin:24px 0 34px}
+.latest-outing-section .section-title{margin-bottom:13px}
+.latest-outing-card{display:flex;align-items:center;gap:18px;width:100%;min-height:126px;padding:12px;text-align:left;border:1px solid rgba(210,174,105,.72);border-radius:13px;background:linear-gradient(110deg,rgba(21,25,29,.9),rgba(17,21,24,.72));color:#f2ead8;box-shadow:0 12px 32px rgba(0,0,0,.22)}
+.latest-outing-card:hover{border-color:#e4c77f;transform:translateY(-1px)}
+.latest-outing-photo,.latest-outing-placeholder{width:168px;height:102px;flex:0 0 168px;object-fit:cover;border-radius:8px;background:linear-gradient(135deg,#654b36,#1a292b);display:grid;place-items:center;color:#e4bd76;font-size:30px}
+.latest-outing-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:7px}
+.latest-outing-copy small{color:#d8b777;font-size:10px;letter-spacing:.5px}
+.latest-outing-copy strong{font:700 21px 'Playfair Display',Georgia,serif;color:#f2e4c7}
+.latest-outing-copy>span{color:#c5c0b5;font-size:12px}
+.latest-outing-card>i{font-size:11px;color:#e1bf79;font-style:normal;white-space:nowrap}
+.latest-outing-empty{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px;border:1px dashed rgba(210,174,105,.58);border-radius:12px;background:rgba(20,24,27,.68)}
+.latest-outing-empty>div{display:grid;gap:6px}
+.latest-outing-empty strong{font:700 18px 'Playfair Display',Georgia,serif;color:#f0dfc0}
+.latest-outing-empty span{font-size:12px;color:#c4bcad}
+@media(max-width:560px){
+ .latest-outing-section{margin:17px 0 25px}
+ .latest-outing-card{gap:10px;min-height:94px;padding:8px}
+ .latest-outing-photo,.latest-outing-placeholder{width:104px;height:78px;flex-basis:104px}
+ .latest-outing-copy{gap:5px}
+ .latest-outing-copy small{font-size:9px}
+ .latest-outing-copy strong{font-size:15px}
+ .latest-outing-copy>span{font-size:10px}
+ .latest-outing-card>i{font-size:9px}
+ .latest-outing-empty{align-items:flex-start;flex-direction:column;padding:16px}
+ .latest-outing-empty strong{font-size:16px}
+}
