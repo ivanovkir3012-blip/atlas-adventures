@@ -276,7 +276,13 @@ export async function deleteSavedPlace(id: string): Promise<void> {
 /** Full portable backup: every IndexedDB store and every local Blob is included. */
 const BACKUP_STORES = [OUTINGS, MEDIA, SETTINGS, JOURNAL, PLACES] as const;
 const BACKUP_FORMAT = 'atlas-adventures-backup';
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
+
+async function sha256Hex(value: string): Promise<string> {
+  if (!globalThis.crypto?.subtle) throw new Error('Проверка целостности недоступна в этом браузере. Открой Атлас через защищённое соединение.');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
 
 async function encodeBackupValue(value: any): Promise<any> {
   if (value instanceof Blob) {
@@ -330,7 +336,9 @@ export async function createFullBackup(): Promise<Blob> {
       createdAt: new Date().toISOString(),
       stores: Object.fromEntries(snapshots),
     };
-    return new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const canonical = JSON.stringify(payload);
+    const checksum = await sha256Hex(canonical);
+    return new Blob([JSON.stringify({ ...payload, checksum })], { type: 'application/json' });
   } finally {
     database.close();
   }
@@ -338,8 +346,14 @@ export async function createFullBackup(): Promise<Blob> {
 
 export async function restoreFullBackup(file: File): Promise<{ createdAt: string; counts: Record<string, number> }> {
   const parsed = JSON.parse(await file.text());
-  if (!parsed || parsed.format !== BACKUP_FORMAT || parsed.version !== BACKUP_VERSION || !parsed.stores) {
+  if (!parsed || parsed.format !== BACKUP_FORMAT || ![1, BACKUP_VERSION].includes(parsed.version) || !parsed.stores) {
     throw new Error('Файл не распознан как резервная копия Атласа приключений.');
+  }
+  if (parsed.version >= 2) {
+    const { checksum, ...payload } = parsed;
+    if (typeof checksum !== 'string' || await sha256Hex(JSON.stringify(payload)) !== checksum) {
+      throw new Error('Проверка целостности не пройдена. Файл повреждён или был изменён; данные не восстановлены.');
+    }
   }
   for (const name of BACKUP_STORES) {
     if (!Array.isArray(parsed.stores[name])) throw new Error('В резервной копии отсутствуют данные раздела: ' + name);
