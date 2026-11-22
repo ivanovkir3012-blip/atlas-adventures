@@ -2065,3 +2065,26 @@ html,body,#root{min-height:100%;background:transparent!important}
  .records-page .record-card-copy>strong,.records-page .record-count-card>strong{font-size:23px}
  .records-page .record-count-card{min-height:122px;padding:14px}
 }
+
+
+/* Records: give trophy photography more room and make captions quieter/lower. */
+.records-page .record-fish-card{display:flex;flex-direction:column;overflow:hidden}
+.records-page .record-fish-photo,
+.records-page .record-fish-placeholder{height:238px;flex:0 0 238px;width:100%;object-fit:cover;object-position:center}
+.records-page .record-card-copy{
+  min-height:88px;display:flex;flex-direction:column;justify-content:flex-end;
+  align-items:center;gap:5px;padding:8px 12px 13px;text-align:center;
+}
+.records-page .record-card-copy>small{font-size:9px;line-height:1.2;letter-spacing:.2px}
+.records-page .record-card-copy>strong{font-size:23px;line-height:1.05}
+.records-page .record-card-copy .record-outing-link,
+.records-page .record-card-copy .record-no-data{font-size:10px;line-height:1.2}
+@media(max-width:760px){
+ .records-page .record-fish-photo,.records-page .record-fish-placeholder{height:190px;flex-basis:190px}
+ .records-page .record-card-copy{min-height:76px;padding:7px 9px 11px;gap:4px}
+ .records-page .record-card-copy>small{font-size:8px}
+ .records-page .record-card-copy>strong{font-size:20px}
+}
+@media(max-width:420px){
+ .records-page .record-fish-photo,.records-page .record-fish-placeholder{height:164px;flex-basis:164px}
+}
