@@ -2293,6 +2293,3 @@ html,body,#root{min-height:100%;background:transparent!important}
   .media-lightbox-caption{max-width:calc(100vw - 112px);font-size:10px}
 }
 
-.report-icon-art{display:grid;place-items:center;width:100%;height:100%;position:relative}
-.report-icon-art>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
-.report-icon-fallback{display:none;place-items:center;width:100%;height:100%;color:#d8b66d;font-size:27px;font-weight:700}
