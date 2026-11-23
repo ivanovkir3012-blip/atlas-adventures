@@ -944,7 +944,7 @@ export default function App() {
     {previewMedia && previewUrl && <div className="media-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр медиа" onClick={event => { if (event.target === event.currentTarget) setPreviewMedia(null); }}>
       <button type="button" className="media-lightbox-close" onClick={() => { setPreviewMedia(null); setPreviewGallery([]); }} aria-label="Закрыть просмотр">×</button>
       {previewMedia.type === 'image' && previewGallery.length > 1 && <button type="button" className="media-lightbox-nav media-lightbox-prev" onClick={() => movePreview(-1)} aria-label="Предыдущее фото">‹</button>}
-      {previewMedia.type === 'image' ? <img src={previewUrl} alt={previewMedia.name}/> : <video src={previewUrl} controls autoPlay playsInline/>}
+      {previewMedia.type === 'image' ? <img src={previewUrl} alt=""/> : <video src={previewUrl} controls autoPlay playsInline/>}
       {previewMedia.type === 'image' && previewGallery.length > 1 && <button type="button" className="media-lightbox-nav media-lightbox-next" onClick={() => movePreview(1)} aria-label="Следующее фото">›</button>}
       <div className="media-lightbox-caption">{previewMedia.type === 'image' && previewGallery.length > 1 && <span className="media-lightbox-counter">{previewIndex + 1} / {previewGallery.length}</span>}{previewMedia.type==='image'&&previewMedia.blob&&<button type="button" className="gold-button photo-download-button" onClick={()=>downloadPhoto(previewMedia.blob!,previewMedia.name)}>↓ Скачать фото</button>}</div>
     </div>}
