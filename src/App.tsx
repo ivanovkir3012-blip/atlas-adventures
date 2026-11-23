@@ -544,8 +544,8 @@ export default function App() {
   async function blobAsDataUrl(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Не удалось прочитать фотографию.')); reader.readAsDataURL(blob); });
   }
-  function openPdfDocument(title: string, body: string) {
-    const popup = window.open('', '_blank'); if (!popup) throw new Error('Разреши всплывающие окна для Атласа и повтори экспорт.');
+  function openPdfDocument(title: string, body: string, target?: Window) {
+    const popup = target || window.open('', '_blank'); if (!popup) throw new Error('Разреши всплывающие окна для Атласа и повтори экспорт.');
     popup.document.open();
     popup.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + pdfEscape(title) + '</title><style>@page{size:A4;margin:16mm}*{box-sizing:border-box}body{font:11pt/1.5 Arial,sans-serif;color:#252820}h1{font-size:25pt;color:#243329}h2{font-size:16pt;color:#344b3c;margin:22px 0 8px;break-after:avoid}p{white-space:pre-wrap}.meta{color:#687267;font-size:9pt;margin-bottom:16px}.hero{width:100%;max-height:100mm;object-fit:cover}.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fact{border:1px solid #d9ded6;padding:8px;break-inside:avoid}.fact small{display:block;color:#758074}.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.photo{break-inside:avoid}.photo img{width:100%;height:68mm;object-fit:cover}.outing{border-top:1px solid #ccd2c8;padding-top:14px;margin-top:18px;break-inside:avoid-page}.hint{background:#f1f3ee;padding:9px;font-size:9pt}@media print{.hint{display:none}}</style></head><body><div class="hint">В окне печати выбери «Сохранить как PDF».</div>' + body + '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));</script></body></html>');
     popup.document.close();
@@ -562,7 +562,7 @@ export default function App() {
       const timeline = row.timeline?.length ? '<h2>Ход приключения</h2>' + row.timeline.map(item => '<p><strong>' + pdfEscape(item.time || '') + ' ' + pdfEscape(item.title) + '</strong><br>' + pdfEscape(item.description || '') + '</p>').join('') : '';
       const photos = images.length ? '<h2>Фотографии</h2><div class="photo-grid">' + images.map(item => '<figure class="photo"><img src="' + item.src + '"><figcaption>' + pdfEscape(item.name) + '</figcaption></figure>').join('') + '</div>' : '';
       const body = '<h1>' + pdfEscape(row.title || 'Выезд без названия') + '</h1><div class="meta">' + pdfEscape(row.category) + ' · ' + pdfEscape(row.date) + ' · ' + pdfEscape(row.place || 'Место не указано') + '</div>' + (cover ? '<img class="hero" src="' + cover.src + '">' : '') + '<div class="facts">' + factHtml + '</div>' + timeline + (row.note ? '<h2>Заметки</h2><p>' + pdfEscape(row.note) + '</p>' : '') + (row.impressions ? '<h2>Впечатления</h2><p>' + pdfEscape(row.impressions) + '</p>' : '') + (row.conclusion ? '<h2>Итоги выезда</h2><p>' + pdfEscape(row.conclusion) + '</p>' : '') + photos;
-      popup.close(); openPdfDocument('Атлас — ' + row.title, body);
+      openPdfDocument('Атлас — ' + row.title, body, popup);
     } catch (error) { popup.close(); alert(error instanceof Error ? error.message : 'Не удалось подготовить PDF-отчёт.'); }
   }
   async function exportAnnualAlbumPdf(year: number) {
@@ -575,7 +575,7 @@ export default function App() {
         const photos = await Promise.all(items.map(async item => '<figure class="photo"><img src="' + await blobAsDataUrl(item.blob!) + '"><figcaption>' + pdfEscape(item.name) + '</figcaption></figure>'));
         return '<section class="outing"><h2>' + pdfEscape(row.title || 'Выезд без названия') + '</h2><div class="meta">' + pdfEscape(row.date) + ' · ' + pdfEscape(row.category) + ' · ' + pdfEscape(row.place || 'Место не указано') + '</div>' + (row.note ? '<p>' + pdfEscape(row.note) + '</p>' : '') + (photos.length ? '<div class="photo-grid">' + photos.join('') + '</div>' : '<p>Без фотографий</p>') + '</section>';
       }));
-      popup.close(); openPdfDocument('Атлас приключений — ' + year, '<h1>Атлас приключений</h1><div class="meta">Семейный фотоальбом · ' + year + ' год · ' + yearRows.length + ' выездов</div>' + (sections.join('') || '<p>За выбранный год выездов не найдено.</p>'));
+      openPdfDocument('Атлас приключений — ' + year, '<h1>Атлас приключений</h1><div class="meta">Семейный фотоальбом · ' + year + ' год · ' + yearRows.length + ' выездов</div>' + (sections.join('') || '<p>За выбранный год выездов не найдено.</p>'), popup);
     } catch (error) { popup.close(); alert(error instanceof Error ? error.message : 'Не удалось подготовить фотоальбом.'); } finally { setPdfBusy(false); }
   }
   async function downloadFullBackup() {
