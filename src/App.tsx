@@ -57,6 +57,7 @@ export default function App() {
   const [report, setReport] = useState<Outing | null>(null);
   const [reportMedia, setReportMedia] = useState<MediaItem[]>([]);
   const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null);
+  const [previewGallery, setPreviewGallery] = useState<MediaItem[]>([]);
   const [previewUrl, setPreviewUrl] = useState('');
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
@@ -251,6 +252,29 @@ export default function App() {
     if (!report) { setReportMedia([]); return; }
     getMediaForOuting(report.id).then(setReportMedia);
   }, [report]);
+
+  const previewIndex = previewGallery.findIndex(item => item.id === previewMedia?.id);
+  const openReportPhoto = (item: MediaItem) => {
+    const photos = reportMedia.filter(mediaItem => mediaItem.type === 'image' && mediaItem.blob);
+    setPreviewGallery(photos);
+    setPreviewMedia(item);
+  };
+  const movePreview = (direction: number) => {
+    if (previewGallery.length < 2 || previewIndex < 0) return;
+    const next = (previewIndex + direction + previewGallery.length) % previewGallery.length;
+    setPreviewMedia(previewGallery[next]);
+  };
+
+  useEffect(() => {
+    if (!previewMedia) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); movePreview(-1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); movePreview(1); }
+      if (event.key === 'Escape') setPreviewMedia(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [previewMedia, previewGallery, previewIndex]);
 
   useEffect(() => {
     if (!previewMedia?.blob) { setPreviewUrl(''); return; }
@@ -756,7 +780,7 @@ export default function App() {
         {report.weather && <div className="report-block"><h3>Погода и условия</h3><p>{report.weather}</p></div>}
         {report.timeline?.length > 0 && <div className="report-block"><h3>Ход приключения</h3><div className="report-timeline">{report.timeline.map((entry,index)=><div className="report-timeline-item" key={entry.id || index}><time>{entry.time || '—'}</time><div><strong>{entry.title}</strong>{entry.description && <p>{entry.description}</p>}</div></div>)}</div></div>}
         {reportMedia.length > 0 && <section className="report-gallery-section"><div className="report-section-heading"><span>СОХРАНЁННЫЕ МОМЕНТЫ</span><h3>Фото и видео <small>{reportMedia.length}</small></h3></div><div className="report-gallery">{reportMedia.map(item => item.blob ? <div className="report-media" key={item.id}>
-          <button type="button" className="report-media-open" onClick={() => setPreviewMedia(item)} aria-label={'Открыть ' + (item.type === 'image' ? 'фото: ' : 'видео: ') + item.name}>
+          <button type="button" className="report-media-open" onClick={() => item.type === 'image' ? openReportPhoto(item) : setPreviewMedia(item)} aria-label={'Открыть ' + (item.type === 'image' ? 'фото: ' : 'видео: ') + item.name}>
             {item.type === 'image' ? <img src={URL.createObjectURL(item.blob)} alt={item.name}/> : <video src={URL.createObjectURL(item.blob)} muted playsInline preload="metadata"/>}
             <span>{item.type === 'image' ? 'Открыть фото ↗' : '▶ Открыть видео'}</span>
           </button>
@@ -903,9 +927,11 @@ export default function App() {
     {journalModal && <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!journalSaving)setJournalModal(false);}}><form className="journal-modal" onSubmit={saveJournal}><div className="modal-heading"><div><span className="eyebrow">ПОЛЕВЫЕ ЗАПИСИ</span><h2>{journalEdit?'Редактировать запись':'Новая запись'}</h2></div><button type="button" className="modal-close" onClick={()=>setJournalModal(false)}>×</button></div><label>Заголовок<input name="title" required maxLength={90} defaultValue={journalEdit?.title??''} placeholder="Например, Пролёт гусей"/></label><label>Тип записи<select name="type" defaultValue={journalEdit?.type??'Наблюдения'}><option>Наблюдения</option><option>Заметки</option><option>События</option></select></label><div className="journal-form-row"><label>Дата<input name="date" type="date" required defaultValue={journalEdit?.date??new Date().toISOString().slice(0,10)}/></label><label>Место<input name="place" defaultValue={journalEdit?.place??''} placeholder="Озеро, лес, район"/></label></div><label>Описание<textarea name="description" rows={5} required defaultValue={journalEdit?.description??''} placeholder="Что заметил, что произошло, что стоит запомнить..."/></label><label className="file-picker">＋ Добавить фотографии<input type="file" accept="image/*" multiple onChange={e=>{setJournalFiles(Array.from(e.target.files??[]));setJournalCoverChoice('');}}/></label>{(journalEdit?.photos.length??0)>0&&<p className="file-summary">Уже сохранено фотографий: {journalEdit?.photos.length}</p>}{journalFiles.length>0&&<p className="file-summary">Выбрано новых фото: {journalFiles.length}</p>}<label>Главное фото записи<select value={journalCoverChoice} onChange={e=>setJournalCoverChoice(e.target.value)}><option value="">Автоматически — первое фото</option>{(journalEdit?.photos??[]).map(photo=><option value={photo.id} key={photo.id}>Сохранённое: {photo.name}</option>)}{journalFiles.map((file,index)=>file.type.startsWith('image/')?<option value={`new:${index}`} key={`new-${index}`}>Новое: {file.name}</option>:null)}</select></label><small className="muted-note">Записи и фотографии хранятся локально на этом устройстве. Облачная синхронизация пока не подключена.</small>{journalError&&<div className="save-error" role="alert">{journalError}</div>}<div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setJournalModal(false)} disabled={journalSaving}>Отмена</button><button className="gold-button" type="submit" disabled={journalSaving}>{journalSaving?'Сохраняем…':'Сохранить запись'}</button>{journalEdit&&<button type="button" className="outline-button" onClick={()=>removeJournal(journalEdit)}>Удалить</button>}</div></form></div>}
 
     {previewMedia && previewUrl && <div className="media-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр медиа" onClick={event => { if (event.target === event.currentTarget) setPreviewMedia(null); }}>
-      <button type="button" className="media-lightbox-close" onClick={() => setPreviewMedia(null)} aria-label="Закрыть просмотр">×</button>
+      <button type="button" className="media-lightbox-close" onClick={() => { setPreviewMedia(null); setPreviewGallery([]); }} aria-label="Закрыть просмотр">×</button>
+      {previewMedia.type === 'image' && previewGallery.length > 1 && <button type="button" className="media-lightbox-nav media-lightbox-prev" onClick={() => movePreview(-1)} aria-label="Предыдущее фото">‹</button>}
       {previewMedia.type === 'image' ? <img src={previewUrl} alt={previewMedia.name}/> : <video src={previewUrl} controls autoPlay playsInline/>}
-      <div className="media-lightbox-caption">{previewMedia.name}{previewMedia.type==='image'&&previewMedia.blob&&<button type="button" className="gold-button photo-download-button" onClick={()=>downloadPhoto(previewMedia.blob!,previewMedia.name)}>↓ Скачать фото</button>}</div>
+      {previewMedia.type === 'image' && previewGallery.length > 1 && <button type="button" className="media-lightbox-nav media-lightbox-next" onClick={() => movePreview(1)} aria-label="Следующее фото">›</button>}
+      <div className="media-lightbox-caption">{previewMedia.type === 'image' && previewGallery.length > 1 && <span className="media-lightbox-counter">{previewIndex + 1} / {previewGallery.length}　·　</span>}{previewMedia.name}{previewMedia.type==='image'&&previewMedia.blob&&<button type="button" className="gold-button photo-download-button" onClick={()=>downloadPhoto(previewMedia.blob!,previewMedia.name)}>↓ Скачать фото</button>}</div>
     </div>}
   </div>;
 }
