@@ -5,7 +5,7 @@
    light, sunset, or forest-green theme experiments further down this file.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+/* Web fonts are loaded asynchronously from index.html to avoid blocking first render. */
 :root{font-family:Manrope,Arial,sans-serif;color:#eee9da;background:#0b1d16;font-synthesis:none;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at 50% -20%,#254735 0%,#10271d 45%,#091810 100%);min-width:320px}
