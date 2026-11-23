@@ -713,7 +713,7 @@ export default function App() {
   function renderRows(items: Outing[]) {
     if (!items.length) return <div className="empty-state"><div className="empty-landscape">✧</div><h3>Твои приключения начнутся здесь</h3><p>Сохраняй поездки, встречи с природой и важные моменты.</p><button className="gold-button" onClick={openNew}>＋ Добавить первый выезд</button></div>;
     return <div className="outing-list">{items.map(row => <article className="outing-row" key={row.id}>
-      <div className="outing-thumb" style={{ backgroundImage: `linear-gradient(0deg,#071a13aa,#071a1300),url(${coverUrls[row.id] || pics[row.category]})` }} />
+      <div className="outing-thumb"><img src={coverUrls[row.id] || pics[row.category]} alt="" loading="lazy" decoding="async" onError={event => { const image = event.currentTarget; const fallback = new URL(pics[row.category], document.baseURI).href; if (image.src !== fallback) image.src = fallback; else image.style.visibility = 'hidden'; }} /></div>
       <div className="outing-info"><small>{row.category} <span>·</span> {row.date}</small><h3>{row.title}</h3><p>{row.place || 'Место не указано'}</p></div>
       <div className="outing-result">{row.note || 'Открыть отчёт'}</div>
       <button className="outline-button" onClick={() => setReport(row)}>Открыть ↗</button>
