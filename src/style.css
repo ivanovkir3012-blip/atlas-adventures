@@ -2255,10 +2255,6 @@ html,body,#root{min-height:100%;background:transparent!important}
 @media(max-width:620px){.profile-settings-form{grid-template-columns:1fr}}
 
 
-  .topbar>.main-nav button{flex:0 0 auto!important}
-}
-
-
 /* Navigation is the only visible topbar item: occupy the full bar width.
    This is viewport-independent because tablet browser CSS widths vary with display scaling. */
 .topbar{display:flex;flex-wrap:wrap!important;align-items:center}
