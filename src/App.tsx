@@ -741,11 +741,8 @@ export default function App() {
       other: 'Бронзовый медальон с перекрещенными ружьями.png',
     };
     const file = assets[kind] || assets.other;
-    const imageUrl = file.startsWith('../')
-      ? `${assetBase}${encodeURI(file.slice(3))}`
-      : `${assetBase}images/${encodeURI(file)}`;
-    const symbols: Record<string,string> = { calendar:'▦', 'category-hunt':'♧', 'category-fish':'♧', 'category-camp':'⌂', 'category-travel':'⌁', days:'☼', distance:'⌖', money:'₽', fish:'♧', camp:'⌂', route:'⌁', goose:'➤', duck:'➤', people:'♙', observation:'◉', other:'✦' };
-    return <span className="report-icon-art"><img src={imageUrl} alt="" aria-hidden="true" onError={event => { event.currentTarget.style.display = 'none'; const fallback = event.currentTarget.nextElementSibling as HTMLElement | null; if (fallback) fallback.style.display = 'grid'; }} /><span className="report-icon-fallback" aria-hidden="true">{symbols[kind] || '✦'}</span></span>;
+    const imageUrl = imageAsset(file);
+    return <img src={imageUrl} alt="" aria-hidden="true" loading="eager" decoding="async" />;
   };
   const reportDetails = report?.details ?? {};
   const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
