@@ -337,7 +337,7 @@ export default function App() {
     const bestDucks = [...rows].map(row=>({...row, metric:Number(row.details?.ducks ?? 0)})).filter(row=>row.category==='Охота'&&row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
     const bestCatch = [...rows].map(row=>({...row, metric:Number(row.details?.catchWeight ?? 0)})).filter(row=>row.category==='Рыбалка'&&row.metric>0).sort((a,b)=>b.metric-a.metric)[0];
     return [
-      {title:'Самый долгий выезд',value:bestDays?`${bestDays.metric} дн.`:'—',detail:bestDays?.title||'Пока нет данных'},
+      {title:'Самый долгий выезд',value:bestDays?`${bestDays.metric} дней`:'—',detail:bestDays?.title||'Пока нет данных'},
       {title:'Самый длинный маршрут',value:bestDistance?`${bestDistance.metric} км`:'—',detail:bestDistance?.title||'Пока нет данных'},
       {title:'Больше всего гусей',value:bestGeese?String(bestGeese.metric):'—',detail:bestGeese?.title||'Пока нет данных'},
       {title:'Больше всего уток',value:bestDucks?String(bestDucks.metric):'—',detail:bestDucks?.title||'Пока нет данных'},
