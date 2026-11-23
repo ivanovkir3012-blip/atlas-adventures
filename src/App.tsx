@@ -259,6 +259,21 @@ export default function App() {
     setPreviewGallery(photos);
     setPreviewMedia(item);
   };
+  const openJournalPhoto = (entry: JournalEntry, selected: JournalPhoto) => {
+    const photos: MediaItem[] = entry.photos.map(photo => ({
+      id: photo.id,
+      outingId: entry.id,
+      name: photo.name,
+      type: 'image',
+      mimeType: photo.mimeType,
+      size: photo.size,
+      createdAt: entry.updatedAt,
+      blob: photo.blob,
+      uploadState: 'local',
+    }));
+    setPreviewGallery(photos);
+    setPreviewMedia(photos.find(photo => photo.id === selected.id) ?? photos[0] ?? null);
+  };
   const movePreview = (direction: number) => {
     if (previewGallery.length < 2 || previewIndex < 0) return;
     const next = (previewIndex + direction + previewGallery.length) % previewGallery.length;
@@ -866,7 +881,7 @@ export default function App() {
       {page === 'Журнал' && <section className="section-page journal-page">
         <div className="section-title"><div><span className="eyebrow">НАБЛЮДЕНИЯ И ВОСПОМИНАНИЯ</span><h1>Полевой журнал</h1></div><button className="gold-button" onClick={openJournalNew}>＋ Новая запись</button></div>
         <div className="journal-toolbar"><input value={journalQuery} onChange={e=>setJournalQuery(e.target.value)} placeholder="Поиск по записям"/><div className="category-filters">{(['Все','Наблюдения','Заметки','События'] as const).map(type=><button key={type} className={journalFilter===type?'active':''} onClick={()=>setJournalFilter(type)}>{type}</button>)}</div></div>
-        {journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).length ? <div className="journal-list">{journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).map(entry=>{const cover=entry.photos.find(photo=>photo.id===(entry.coverPhotoId||entry.photos[0]?.id));return <article className="journal-card" key={entry.id} onClick={()=>openJournalEdit(entry)}>{cover&&journalPhotoUrls[cover.id]?<img className="journal-card-photo" src={journalPhotoUrls[cover.id]} alt=""/>:<div className="journal-card-placeholder">✧</div>}<div className="journal-card-copy"><small>{new Date(entry.date+'T12:00:00').toLocaleDateString('ru-RU')} · {entry.type}</small><h3>{entry.title}</h3><p>{entry.description}</p><span>{entry.place || 'Место не указано'} · {entry.photos.length} фото</span></div><button className="journal-delete" onClick={e=>{e.stopPropagation();removeJournal(entry);}} aria-label="Удалить запись">×</button></article>})}</div> : <div className="journal-empty"><span>✧</span><h3>Записей пока нет</h3><p>Сохраняй наблюдения за природой, интересные места и памятные события. Они не привязаны к отдельным выездам.</p><button className="gold-button" onClick={openJournalNew}>＋ Создать первую запись</button></div>}
+        {journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).length ? <div className="journal-list">{journalRows.filter(entry=>(journalFilter==='Все'||entry.type===journalFilter)&&[entry.title,entry.place,entry.description].join(' ').toLowerCase().includes(journalQuery.toLowerCase())).map(entry=>{const cover=entry.photos.find(photo=>photo.id===(entry.coverPhotoId||entry.photos[0]?.id));return <article className="journal-card" key={entry.id} onClick={()=>openJournalEdit(entry)}>{cover&&journalPhotoUrls[cover.id]?<button type="button" className="journal-photo-open" onClick={event=>{event.stopPropagation();openJournalPhoto(entry,cover);}} aria-label="Открыть фотографии записи"><img className="journal-card-photo" src={journalPhotoUrls[cover.id]} alt=""/></button>:<div className="journal-card-placeholder">✧</div>}<div className="journal-card-copy"><small>{new Date(entry.date+'T12:00:00').toLocaleDateString('ru-RU')} · {entry.type}</small><h3>{entry.title}</h3><p>{entry.description}</p><span>{entry.place || 'Место не указано'} · {entry.photos.length} фото</span></div><button className="journal-delete" onClick={e=>{e.stopPropagation();removeJournal(entry);}} aria-label="Удалить запись">×</button></article>})}</div> : <div className="journal-empty"><span>✧</span><h3>Записей пока нет</h3><p>Сохраняй наблюдения за природой, интересные места и памятные события. Они не привязаны к отдельным выездам.</p><button className="gold-button" onClick={openJournalNew}>＋ Создать первую запись</button></div>}
       </section>}
       {page === 'Статистика' && <section className="section-page stats-page">
         <h1>Статистика</h1>
