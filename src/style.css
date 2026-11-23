@@ -2271,3 +2271,21 @@ html,body,#root{min-height:100%;background:transparent!important}
   .topbar>.main-nav{justify-content:space-between!important;gap:3px}
   .topbar>.main-nav button{font-size:10px;padding:10px 11px 9px}
 }
+
+
+/* Photo lightbox navigation */
+.media-lightbox-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  display:grid;place-items:center;width:48px;height:64px;
+  border:1px solid rgba(240,216,165,.58);border-radius:9px;
+  background:rgba(18,29,23,.82);color:#f5e4b9;font-size:42px;line-height:1;
+}
+.media-lightbox-prev{left:18px}
+.media-lightbox-next{right:18px}
+.media-lightbox-counter{color:#d9bb7b;font-weight:800;white-space:nowrap}
+@media(max-width:620px){
+  .media-lightbox-nav{top:auto;bottom:78px;width:42px;height:52px;font-size:36px}
+  .media-lightbox-prev{left:10px}
+  .media-lightbox-next{right:10px}
+  .media-lightbox-caption{max-width:calc(100vw - 112px);font-size:10px}
+}
