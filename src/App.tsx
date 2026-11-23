@@ -744,7 +744,8 @@ export default function App() {
     const imageUrl = file.startsWith('../')
       ? `${assetBase}${encodeURI(file.slice(3))}`
       : `${assetBase}images/${encodeURI(file)}`;
-    return <img src={imageUrl} alt="" aria-hidden="true" onError={event => { const image = event.currentTarget; image.style.display = 'none'; }} />;
+    const symbols: Record<string,string> = { calendar:'▦', 'category-hunt':'♧', 'category-fish':'♧', 'category-camp':'⌂', 'category-travel':'⌁', days:'☼', distance:'⌖', money:'₽', fish:'♧', camp:'⌂', route:'⌁', goose:'➤', duck:'➤', people:'♙', observation:'◉', other:'✦' };
+    return <span className="report-icon-art"><img src={imageUrl} alt="" aria-hidden="true" onError={event => { event.currentTarget.style.display = 'none'; const fallback = event.currentTarget.nextElementSibling as HTMLElement | null; if (fallback) fallback.style.display = 'grid'; }} /><span className="report-icon-fallback" aria-hidden="true">{symbols[kind] || '✦'}</span></span>;
   };
   const reportDetails = report?.details ?? {};
   const reportCover = report ? (coverUrls[report.id] || pics[report.category]) : '';
@@ -767,7 +768,7 @@ export default function App() {
     <section className="report-modal report-modal-premium">
       <div className="report-hero" style={{backgroundImage:`linear-gradient(0deg,rgba(5,15,11,.96) 0%,rgba(5,15,11,.42) 55%,rgba(5,15,11,.12) 100%),url("${reportCover}")`}}>
         <div className="report-hero-top"><span>{report.category} <i>·</i> {report.date}</span><button className="close-button" onClick={() => setReport(null)} aria-label="Закрыть">×</button></div>
-        <div className="report-hero-copy"><span className="report-kicker">АТЛАС ПРИКЛЮЧЕНИЙ</span><h2>{report.title || 'Выезд без названия'}</h2><p>⌖ {report.place || 'Место не указано'}</p></div>
+        <div className="report-hero-copy"><h2>{report.title || 'Выезд без названия'}</h2><p>⌖ {report.place || 'Место не указано'}</p></div>
       </div>
       <div className="report-content">
         <div className="report-actions"><button className="outline-button" onClick={() => toggleFavorite(report)}>{report.favorite ? '★ В избранном' : '☆ В избранное'}</button><button className="outline-button" onClick={() => { setEdit(report); setReport(null); setModal(true); }}>Редактировать</button><button className="danger-button" onClick={() => removeOuting(report)}>Удалить</button></div>
