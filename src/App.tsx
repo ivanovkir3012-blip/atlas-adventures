@@ -539,7 +539,7 @@ export default function App() {
   }
 
   function pdfEscape(value: unknown): string {
-    return String(value ?? '').replace(/[&<>\"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]!);
+    return String(value ?? '').replace(/[&<>\"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]!));
   }
   async function blobAsDataUrl(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Не удалось прочитать фотографию.')); reader.readAsDataURL(blob); });
