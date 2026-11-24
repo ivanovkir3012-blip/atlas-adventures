@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atlas-shell-v4';
+const CACHE_NAME = 'atlas-shell-v5';
 const APP_BASE = new URL('./', self.registration.scope);
 const APP_FILES = [
   APP_BASE.href,
