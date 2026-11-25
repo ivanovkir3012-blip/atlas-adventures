@@ -1,42 +1,48 @@
-/** Google Drive provider for «Путь».
- * This module is staged and not yet wired into the UI or IndexedDB upload queue.
- * Pass a short-lived OAuth access token obtained through Google's browser OAuth flow.
- * It uses the narrow drive.file scope and a user-visible app folder.
+/** Filebase media adapter for «Путь».
+ * Browser-safe: S3 credentials never live in the client. A trusted backend must
+ * issue short-lived presigned URLs (and authorize each object key).
  */
-const DRIVE_API = "https://www.googleapis.com/drive/v3";
-const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
-export type DriveFile = { id: string; name: string; mimeType: string; size?: string; parents?: string[] };
-function headers(token: string) { return { Authorization: `Bearer ${token}` }; }
-async function checked(response: Response) {
-  if (!response.ok) throw new Error(`Google Drive API error: ${response.status} ${await response.text()}`);
-  return response;
+export type PresignedUpload = { url: string; method?: "PUT"; headers?: Record<string,string>; objectKey: string };
+export type PresignedDownload = { url: string; headers?: Record<string,string> };
+
+export type FilebaseGateway = {
+  /** Backend endpoint that returns a presigned PUT URL and object key. */
+  uploadUrlEndpoint: string;
+  /** Backend endpoint that returns a presigned download URL for a given object key. */
+  downloadUrlEndpoint: string;
+};
+
+async function parseJson<T>(response: Response): Promise<T> {
+  if (!response.ok) throw new Error(`Облачный сервис: ${response.status} ${await response.text()}`);
+  return response.json() as Promise<T>;
 }
-export async function createFolder(token: string, name: string, parentId?: string): Promise<DriveFile> {
-  const body = { name, mimeType: "application/vnd.google-apps.folder", ...(parentId ? { parents: [parentId] } : {}) };
-  const r = await checked(await fetch(`${DRIVE_API}/files?fields=id,name,mimeType,parents`, {
-    method: "POST", headers: { ...headers(token), "Content-Type": "application/json" }, body: JSON.stringify(body)
-  }));
-  return r.json();
+
+export async function requestUploadUrl(gateway: FilebaseGateway, fileName: string, mimeType: string, size: number, outingId: string, mediaId: string): Promise<PresignedUpload> {
+  const response = await fetch(gateway.uploadUrlEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fileName, mimeType, size, outingId, mediaId }),
+  });
+  return parseJson<PresignedUpload>(response);
 }
-export async function listFiles(token: string, query: string): Promise<DriveFile[]> {
-  const params = new URLSearchParams({ q: query, fields: "files(id,name,mimeType,size,parents)", pageSize: "100" });
-  const r = await checked(await fetch(`${DRIVE_API}/files?${params}`, { headers: headers(token) }));
-  const data = await r.json() as { files?: DriveFile[] };
-  return data.files || [];
+
+export async function uploadWithPresignedUrl(presigned: PresignedUpload, blob: Blob): Promise<void> {
+  const response = await fetch(presigned.url, {
+    method: presigned.method || "PUT",
+    headers: { ...(presigned.headers || {}), ...(blob.type ? { "Content-Type": blob.type } : {}) },
+    body: blob,
+  });
+  if (!response.ok) throw new Error(`Не удалось загрузить файл в облако: ${response.status}`);
 }
-export async function uploadFile(token: string, folderId: string, file: Blob, name: string): Promise<DriveFile> {
-  const metadata = { name, parents: [folderId] };
-  const form = new FormData(); form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-  form.append("file", file, name);
-  const r = await checked(await fetch(`${UPLOAD_API}/files?uploadType=multipart&fields=id,name,mimeType,size,parents`, {
-    method: "POST", headers: headers(token), body: form
-  }));
-  return r.json();
+
+export async function requestDownloadUrl(gateway: FilebaseGateway, objectKey: string): Promise<PresignedDownload> {
+  const endpoint = new URL(gateway.downloadUrlEndpoint, window.location.origin);
+  endpoint.searchParams.set("objectKey", objectKey);
+  return parseJson<PresignedDownload>(await fetch(endpoint.toString()));
 }
-export async function downloadFile(token: string, fileId: string): Promise<Blob> {
-  const r = await checked(await fetch(`${DRIVE_API}/files/${encodeURIComponent(fileId)}?alt=media`, { headers: headers(token) }));
-  return r.blob();
-}
-export async function deleteFile(token: string, fileId: string): Promise<void> {
-  await checked(await fetch(`${DRIVE_API}/files/${encodeURIComponent(fileId)}`, { method: "DELETE", headers: headers(token) }));
+
+export async function downloadFromPresignedUrl(presigned: PresignedDownload): Promise<Blob> {
+  const response = await fetch(presigned.url, { headers: presigned.headers || {} });
+  if (!response.ok) throw new Error(`Не удалось скачать файл из облака: ${response.status}`);
+  return response.blob();
 }
