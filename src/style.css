@@ -2297,3 +2297,6 @@ html,body,#root{min-height:100%;background:transparent!important}
  .app-shell>.topbar>.main-nav{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;gap:8px!important;}
  .app-shell>.topbar>.main-nav>button{display:inline-flex!important;flex:0 0 auto!important;white-space:nowrap!important;word-break:keep-all!important;}
 }
+
+/* Cloud storage panel: prominent full-width placement in settings */
+.cloud-sync-card{grid-column:1/-1;border-width:2px!important;}
