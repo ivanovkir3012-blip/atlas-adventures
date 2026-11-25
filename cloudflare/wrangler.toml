@@ -1,0 +1,7 @@
+name = "put-media-gateway"
+main = "worker.ts"
+compatibility_date = "2026-11-25"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "put-media"
