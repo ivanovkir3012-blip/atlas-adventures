@@ -1,0 +1,7 @@
+name = "path-filebase-gateway"
+main = "src/index.ts"
+compatibility_date = "2026-11-25"
+
+[vars]
+FILEBASE_BUCKET = "REPLACE_WITH_BUCKET_NAME"
+APP_ORIGIN = "https://ivanovkir3012-blip.github.io"
