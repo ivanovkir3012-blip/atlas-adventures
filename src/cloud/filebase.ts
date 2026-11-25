@@ -10,6 +10,7 @@ export type FilebaseGateway = {
   uploadUrlEndpoint: string;
   /** Backend endpoint that returns a presigned download URL for a given object key. */
   downloadUrlEndpoint: string;
+  gatewayToken?: string;
 };
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -20,7 +21,7 @@ async function parseJson<T>(response: Response): Promise<T> {
 export async function requestUploadUrl(gateway: FilebaseGateway, fileName: string, mimeType: string, size: number, outingId: string, mediaId: string): Promise<PresignedUpload> {
   const response = await fetch(gateway.uploadUrlEndpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(gateway.gatewayToken ? { "Authorization": `Bearer ${gateway.gatewayToken}` } : {}) },
     body: JSON.stringify({ fileName, mimeType, size, outingId, mediaId }),
   });
   return parseJson<PresignedUpload>(response);
@@ -38,7 +39,7 @@ export async function uploadWithPresignedUrl(presigned: PresignedUpload, blob: B
 export async function requestDownloadUrl(gateway: FilebaseGateway, objectKey: string): Promise<PresignedDownload> {
   const endpoint = new URL(gateway.downloadUrlEndpoint, window.location.origin);
   endpoint.searchParams.set("objectKey", objectKey);
-  return parseJson<PresignedDownload>(await fetch(endpoint.toString()));
+  return parseJson<PresignedDownload>(await fetch(endpoint.toString(), { headers: gateway.gatewayToken ? { "Authorization": `Bearer ${gateway.gatewayToken}` } : {} }));
 }
 
 export async function downloadFromPresignedUrl(presigned: PresignedDownload): Promise<Blob> {
