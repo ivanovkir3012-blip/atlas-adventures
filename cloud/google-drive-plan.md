@@ -1,31 +1,32 @@
-# Google Drive cloud media plan — «Путь»
+# Filebase cloud-media plan — «Путь»
 
-## Selected architecture
-- IndexedDB: original local media, offline operation and pending-upload queue.
-- Google Drive: media cloud archive, authenticated per Google account.
-- Supabase (later): application record sync and user/account coordination.
-- Provider abstraction: Drive IDs stored as provider-specific references; future R2 migration copies objects and then verifies before switching.
+## Architecture
+- **IndexedDB:** local originals, offline access, and upload queue.
+- **Supabase (later):** app records/account sync, if adopted.
+- **Filebase:** cloud media objects via S3-compatible storage.
+- **Client adapter:** only calls an authenticated backend gateway for short-lived presigned URLs. No S3 secret or access key in the PWA.
+- **Provider-neutral metadata:** retain provider/object-key fields so migration to R2 can be copy-and-verify.
 
-## Drive API access
-Use OAuth 2.0 access tokens and the narrow `drive.file` scope, not full Drive access. The user-visible folder is created by the app and only files created/selected for the app are managed through this scope.
+## Browser security
+The PWA must never contain Filebase S3 credentials. A backend endpoint must authenticate the user, validate request size/type and ownership, generate a unique object key, and return a short-lived presigned PUT URL. Download URLs must also be short-lived and authorized. Do not expose public buckets or arbitrary object-key access.
 
-Create a user-visible folder named `Путь — облако`, then subfolders for media, journal and backups. Avoid `appDataFolder` for media because it is hidden and has special restrictions.
+## Client groundwork
+`src/cloud/filebase.ts` implements the browser-side presigned URL gateway and upload/download helpers. It is not yet wired into the app UI, upload queue, or a live backend.
 
-## Staged provider module
-`src/cloud/googleDrive.ts` provides basic folder creation, listing, multipart upload, download and delete functions. It is not yet wired to the app UI, OAuth flow, IndexedDB queue, retry logic, or automatic syncing.
+Gateway contract:
+- POST upload endpoint with JSON `{fileName,mimeType,size,outingId,mediaId}`; returns `{url,method?,headers?,objectKey}`.
+- GET download endpoint with `objectKey` query; returns `{url,headers?}`.
+- Backend must authorize the request and return only short-lived signed URLs.
 
-## Next implementation steps
-1. Configure a Google Cloud project, enable Drive API and configure OAuth consent.
-2. Create OAuth web-client credentials with the published app origin and redirect URI.
-3. Implement sign-in/token lifecycle (avoid storing long-lived secrets in the frontend; tokens should be short-lived and safely handled).
-4. Add cloud settings UI and explicit connect/disconnect controls.
-5. Create Drive folders and persist folder/file IDs locally.
-6. Integrate the upload queue, resumable upload for large files, retries and download-on-demand.
-7. Verify each upload before marking media as synced; retain local originals.
-8. Add migration/export capability so files can be copied to R2 without deleting Drive originals until validation completes.
+## Rollout
+1. Confirm Filebase account/bucket and storage costs/limits before committing to it.
+2. Set up a trusted backend gateway; do not put Filebase credentials in GitHub, app source, or browser storage.
+3. Connect the app's media queue and persist remote object keys/provider status additively.
+4. Upload a test file, download it, compare bytes/hash, then test offline behavior.
+5. Add retries, pause/resume, queue status and upload-on-Wi-Fi controls.
+6. Copy and verify cloud media before any provider migration; never delete local originals or old cloud copies during migration without explicit confirmation.
 
 ## Data safety
-- Do not delete local originals after upload.
-- Never expose public sharing links by default.
-- Do not mark media synced until the remote upload and metadata save succeed.
-- Keep a full local backup before enabling cloud migration.
+- Local IndexedDB blobs remain the source of truth until verified upload and download tests pass.
+- Do not change or clear the current database.
+- Existing full backup remains the safety net.
