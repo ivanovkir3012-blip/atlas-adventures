@@ -323,7 +323,7 @@ export async function getStorageSummary(): Promise<StorageSummary> {
 /** Full portable backup: every IndexedDB store and every local Blob is included. */
 const BACKUP_STORES = [OUTINGS, MEDIA, SETTINGS, JOURNAL, PLACES] as const;
 const BACKUP_FORMAT = 'atlas-adventures-backup';
-const BACKUP_VERSION = 2;
+const BACKUP_VERSION = 3;
 
 async function sha256Hex(value: string): Promise<string> {
   if (!globalThis.crypto?.subtle) throw new Error('Проверка целостности недоступна в этом браузере. Открой Атлас через защищённое соединение.');
@@ -392,8 +392,9 @@ export async function createFullBackup(): Promise<Blob> {
 }
 
 export async function restoreFullBackup(file: File): Promise<{ createdAt: string; counts: Record<string, number> }> {
+  if (file.size > 1024 * 1024 * 1024) throw new Error('Файл резервной копии слишком большой (максимум 1 ГБ).');
   const parsed = JSON.parse(await file.text());
-  if (!parsed || parsed.format !== BACKUP_FORMAT || ![1, BACKUP_VERSION].includes(parsed.version) || !parsed.stores) {
+  if (!parsed || parsed.format !== BACKUP_FORMAT || ![1, 2, BACKUP_VERSION].includes(parsed.version) || !parsed.stores) {
     throw new Error('Файл не распознан как резервная копия Атласа приключений.');
   }
   if (parsed.version >= 2) {
@@ -406,6 +407,25 @@ export async function restoreFullBackup(file: File): Promise<{ createdAt: string
     if (!Array.isArray(parsed.stores[name])) throw new Error('В резервной копии отсутствуют данные раздела: ' + name);
   }
   const restored = Object.fromEntries(BACKUP_STORES.map(name => [name, parsed.stores[name].map(decodeBackupValue)]));
+  // Preflight validation before opening a write transaction. Existing database remains untouched if validation fails.
+  for (const name of BACKUP_STORES) {
+    if (restored[name].some((row: any) => !row || typeof row !== 'object' || typeof row.id !== 'string' || !row.id)) {
+      throw new Error('Резервная копия содержит некорректные записи в разделе: ' + name);
+    }
+  }
+  for (const item of restored[MEDIA] as MediaItem[]) {
+    if (!item.outingId || !['image','video'].includes(item.type) || !(item.blob instanceof Blob)) {
+      throw new Error('Резервная копия содержит некорректный медиафайл. Данные не восстановлены.');
+    }
+  }
+  for (const entry of restored[JOURNAL] as JournalEntry[]) {
+    if (!Array.isArray(entry.photos)) throw new Error('Некорректные фотографии журнала. Данные не восстановлены.');
+    for (const photo of entry.photos) {
+      if (!photo || typeof photo.id !== 'string' || !(photo.blob instanceof Blob)) {
+        throw new Error('Резервная копия содержит некорректное фото журнала. Данные не восстановлены.');
+      }
+    }
+  }
   const database = await openDb();
   try {
     const tx = database.transaction([...BACKUP_STORES], 'readwrite');
